@@ -7,6 +7,12 @@
 # General application configuration
 import Config
 
+# Guardian config
+
+config :rebu_web_api, RebuWebApi.Guardian,
+  issuer: "rebu_web_api",
+  secret_key: "aBaKJGLEf/MGhpgOaVOidvypHHIRHeY9S0xlYW7ita7GeAylQCWTqRqgWX+ZwRzU"
+
 config :rebu_web_api,
   ecto_repos: [RebuWebApi.Repo],
   generators: [timestamp_type: :utc_datetime]
