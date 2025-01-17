@@ -3,6 +3,11 @@ defmodule RebuWebApi.Accounts do
   The Accounts context.
   """
 
+  @doc ~S"""
+
+
+  """
+
   import Ecto.Query, warn: false
   alias RebuWebApi.Repo
 
