@@ -1,6 +1,6 @@
 import './styles/index.css';
 import { Routes, Route } from 'react-router-dom';
-import { HomePage } from './pages/HomePage.js';
+import HomePage from './pages/HomePage';
 import { Login } from './Login.js';
 
 function App() {
