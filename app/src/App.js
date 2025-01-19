@@ -1,6 +1,6 @@
-import './App.css';
+import './styles/index.css';
 import { Routes, Route } from 'react-router-dom';
-import { Home } from './Home.js';
+import HomePage from './pages/HomePage';
 import { Login } from './Login.js';
 import RequireAuth from '@auth-kit/react-router/RequireAuth';
 // import AuthOutlet from '@auth-kit/react-router/AuthOutlet';
@@ -13,10 +13,10 @@ function App() {
     <Routes>
       <Route path='/login' element={<Login />}/>
       <Route element={<ProtectedRoutes/>}>
-        <Route path='/' element={<Home/>}/>
+        <Route path='/' element={<HomePage/>}/>
       </Route>
       <Route element={<Route/>}>
-      <Route path='/hello' element={<RequireAuth fallbackPath='/login'><Home/></RequireAuth>}></Route>
+      <Route path='/hello' element={<RequireAuth fallbackPath='/login'><HomePage/></RequireAuth>}></Route>
       </Route>
     </Routes>
   </div>
