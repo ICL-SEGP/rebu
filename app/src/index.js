@@ -14,6 +14,8 @@ const store = createStore({
   cookieSecure: window.location.protocol === 'https:',
 });
 
+// const store = createStore();
+
 console.log(AuthProvider);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
