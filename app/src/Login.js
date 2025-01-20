@@ -17,9 +17,8 @@ const Login=() =>{
         const data = new FormData(event.currentTarget)
         const formData = {
             name: data.get('username'),
-            email: data.get('password'),
+            password: data.get('password'),
         };
-        console.log(formData);
 
         // axios.post('/api/login', formData)
         //     .then((res)=>{
@@ -40,13 +39,19 @@ const Login=() =>{
         //             }
         //         }
         //     })
-        // localStorage.setItem('user','test')
-        // signIn({
-        //     token: 'your_token',
-        //     expiresIn: 3600,
-        //     tokenType: 'Bearer',
-        //     // authState: "vevwefvew"
-        // });
+        // localStorage.setItem('user','')
+
+        const c = signIn({
+            auth: {
+                token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE5MTYyMzkwMjJ9.dMD3MLuHTiO-Qy9PvOoMchNM4CzFIgI7jKVrRtlqlM0',
+                type: 'Bearer',
+            },
+            
+            userState: {
+                name: 'React User',
+                uid: 123456
+            }
+        })
         navigate('/');
     }
 

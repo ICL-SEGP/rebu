@@ -1,15 +1,9 @@
 import React from 'react'
 import {Navigate, Outlet} from 'react-router-dom'
-
-
-const useAuth=()=>{
-    const user=localStorage.getItem('user')
-    return user ? true : false
-}
-
+import useAuthUser from 'react-auth-kit/hooks/useAuthUser';
 
 const ProtectedRoutes=(props) =>{
-    const auth=useAuth()
+    const auth=useAuthUser() ? true : false
     return auth?<Outlet/>: <Navigate to="/login"/>
 }
 

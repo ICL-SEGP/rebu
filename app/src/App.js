@@ -2,7 +2,7 @@ import './styles/index.css';
 import { Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import { Login } from './Login.js';
-import RequireAuth from '@auth-kit/react-router/RequireAuth';
+// import RequireAuth from '@auth-kit/react-router/RequireAuth';
 // import AuthOutlet from '@auth-kit/react-router/AuthOutlet';
 // import { AuthOutlet } from "react-auth-kit";
 import ProtectedRoutes from './ProtectedRoutes.js';
@@ -15,9 +15,7 @@ function App() {
       <Route element={<ProtectedRoutes/>}>
         <Route path='/' element={<HomePage/>}/>
       </Route>
-      <Route element={<Route/>}>
-      <Route path='/hello' element={<RequireAuth fallbackPath='/login'><HomePage/></RequireAuth>}></Route>
-      </Route>
+      {/* <Route path='/hello' element={<RequireAuth fallbackPath='/login'><HomePage/></RequireAuth>}></Route> */}
     </Routes>
   </div>
   );

@@ -8,12 +8,13 @@ import {BrowserRouter} from 'react-router-dom';
 import createStore from 'react-auth-kit/createStore';
 
 const store = createStore({
+  debug: true,
   authName: '_auth',
   authType: 'cookie',
   cookieDomain: window.location.hostname,
   cookieSecure: window.location.protocol === 'https:',
 });
-
+console.log(store)
 // const store = createStore();
 
 console.log(AuthProvider);
