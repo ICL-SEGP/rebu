@@ -21,4 +21,10 @@ defmodule RebuWebApiWeb.FallbackController do
     |> put_view(html: RebuWebApiWeb.ErrorHTML, json: RebuWebApiWeb.ErrorJSON)
     |> render(:"404")
   end
+
+  def call(conn, {:error, error}) do
+    conn
+    |> put_status(:unauthorized)
+    |> render(:error, error: error)
+  end
 end

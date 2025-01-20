@@ -9,7 +9,7 @@ import Config
 
 # Guardian config
 
-config :rebu_web_api, RebuWebApi.Guardian,
+config :rebu_web_api, RebuWebApi.Auth.Guardian,
   issuer: "rebu_web_api",
   secret_key: "aBaKJGLEf/MGhpgOaVOidvypHHIRHeY9S0xlYW7ita7GeAylQCWTqRqgWX+ZwRzU"
 

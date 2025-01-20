@@ -2,6 +2,8 @@ defmodule RebuWebApi.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @derive {Jason.Encoder, only: [:first_name, :last_name, :email, :balance]}
+
   schema "users" do
     field :first_name, :string
     field :last_name, :string

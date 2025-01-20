@@ -16,14 +16,18 @@ defmodule RebuWebApiWeb.Router do
   end
 
   pipeline :auth do
-    # plug RebuWebApiWeb.Auth
+    plug RebuWebApi.Auth.Pipeline
+  end
+
+  scope "/api", RebuWebApiWeb do
+    pipe_through [:api, :auth]
+    get "/", DefaultController, :default
   end
 
   scope "/api", RebuWebApiWeb do
     pipe_through :api
-    get "/", DefaultController, :default
-    post "/register", AccountsController, :create
-    resources "/sales", SaleController, except: [:new, :edit]
+    post "/register", AccountsController, :register
+    post "/sign-in", AccountsController, :sign_in
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

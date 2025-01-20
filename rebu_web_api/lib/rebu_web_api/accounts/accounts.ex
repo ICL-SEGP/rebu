@@ -13,6 +13,8 @@ defmodule RebuWebApi.Accounts do
 
   alias RebuWebApi.Accounts.User
 
+  alias RebuWebApi.Auth.Guardian
+
   @doc """
   Returns the list of users.
 
@@ -41,6 +43,8 @@ defmodule RebuWebApi.Accounts do
 
   """
   def get_user!(id), do: Repo.get!(User, id)
+
+  def get_user_by_email!(email), do: Repo.get_by!(User, email: email)
 
   @doc """
   Creates a user.
@@ -113,6 +117,25 @@ defmodule RebuWebApi.Accounts do
     User.changeset(user, attrs)
   end
 
+  def authenticate_sign_in(email, password) do
+    query_results = from u in User, where: u.email == ^email
 
-  def login_token(%User{id: id} = )
+    case Repo.one(query_results) do
+      nil ->
+        Bcrypt.no_user_verify()
+        {:error, :invalid_credentials}
+
+      user ->
+        if Bcrypt.verify_pass(password, user.hashed_password) do
+          {:ok, user, create_user_token(user)}
+        else
+          {:error, :invalid_credentials}
+        end
+    end
+  end
+
+  def create_user_token(user)do
+    {:ok, token, claims} = Guardian.encode_and_sign(user)
+    token
+  end
 end
