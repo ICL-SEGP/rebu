@@ -54,9 +54,9 @@ defmodule RebuWebApi.Accounts do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_user(attrs \\ %{}) do
+  def register_user(attrs \\ %{}) do
     %User{}
-    |> User.changeset(attrs)
+    |> User.registration_changeset(attrs)
     |> Repo.insert()
   end
 
@@ -72,9 +72,15 @@ defmodule RebuWebApi.Accounts do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_user(%User{} = user, attrs) do
+  def update_email(%User{} = user, attrs) do
     user
-    |> User.changeset(attrs)
+    |> User.email_changeset(attrs)
+    |> Repo.update()
+  end
+
+  def update_name(%User{} = user, attrs) do
+    user
+    |> User.name_changeset(attrs)
     |> Repo.update()
   end
 
@@ -106,4 +112,7 @@ defmodule RebuWebApi.Accounts do
   def change_user(%User{} = user, attrs \\ %{}) do
     User.changeset(user, attrs)
   end
+
+
+  def login_token(%User{id: id} = )
 end
