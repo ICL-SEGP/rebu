@@ -12,28 +12,19 @@ defmodule RebuWebApi.Accounts.User do
     field :password, :string, redact: true, virtual: true
     field :hashed_password, :string, redact: true
 
+    field :role, Ecto.Enum, values: [:user, :admin, :super_admin], default: :user
+
+    has_many :orders, RebuWebApi.Sales.Order
+    has_many :offers, RebuWebApi.Sales.Offer
+
     timestamps(type: :utc_datetime)
   end
 
-  @spec registration_changeset(
-          {map(),
-           %{
-             optional(atom()) =>
-               atom()
-               | {:array | :assoc | :embed | :in | :map | :parameterized | :supertype | :try,
-                  any()}
-           }}
-          | %{
-              :__struct__ => atom() | %{:__changeset__ => any(), optional(any()) => any()},
-              optional(atom()) => any()
-            },
-          :invalid | %{optional(:__struct__) => none(), optional(atom() | binary()) => any()}
-        ) :: any()
-  @doc false
   def registration_changeset(user, attrs) do
     user
-    |> cast(attrs, [:first_name, :last_name, :email, :balance, :password])
+    |> cast(attrs, [:first_name, :last_name, :email, :balance, :password, :role])
     |> validate_required([:first_name, :last_name, :balance])
+    |> validate_inclusion(:role, [:user])
     |> validate_email()
     |> validate_password()
   end
@@ -82,6 +73,16 @@ defmodule RebuWebApi.Accounts.User do
     |> case do
       %{changes: %{name: _}} = changeset -> changeset
       %{} = changeset -> add_error(changeset, :name, "no change to email")
+    end
+  end
+
+  def role_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:role])
+    |> validate_inclusion(:status, [:user, :admin, :super_admin ])
+    |> case do
+      %{changes: %{admin: _}} = changeset -> changeset
+      %{} = changeset -> add_error(changeset, :name, "invalid option")
     end
   end
 end

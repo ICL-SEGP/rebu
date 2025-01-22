@@ -3,17 +3,13 @@ defmodule RebuWebApi.Accounts do
   The Accounts context.
   """
 
-  @doc ~S"""
-
-
-  """
-
   import Ecto.Query, warn: false
   alias RebuWebApi.Repo
 
   alias RebuWebApi.Accounts.User
-
   alias RebuWebApi.Auth.Guardian
+  alias RebuWebApi.Sales
+  alias RebuWebApi.Sales.Offer
 
   @doc """
   Returns the list of users.
@@ -104,19 +100,6 @@ defmodule RebuWebApi.Accounts do
     Repo.delete(user)
   end
 
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking user changes.
-
-  ## Examples
-
-      iex> change_user(user)
-      %Ecto.Changeset{data: %User{}}
-
-  """
-  def change_user(%User{} = user, attrs \\ %{}) do
-    User.changeset(user, attrs)
-  end
-
   def authenticate_sign_in(email, password) do
     query_results = from u in User, where: u.email == ^email
 
@@ -134,8 +117,60 @@ defmodule RebuWebApi.Accounts do
     end
   end
 
-  def create_user_token(user)do
-    {:ok, token, claims} = Guardian.encode_and_sign(user)
+  def create_user_token(user) do
+    {:ok, token, _claims} = Guardian.encode_and_sign(user)
     token
   end
+
+  def update_user_balance(user, amount, :debit) do
+    if user.balance - amount < 0 do
+      {:error, :insufficient_funds}
+    else
+      subtract_from_balance(user.id, amount)
+    end
+  end
+
+  def update_user_balance(user, amount, :credit) do
+    add_to_balance(user.id, amount)
+  end
+
+  defp add_to_balance(user_id, amount) when is_number(amount) and amount > 0 do
+    from(u in User, where: u.id == ^user_id)
+    |> Repo.update_all(inc: [balance: amount])
+  end
+
+  defp subtract_from_balance(user_id, amount) when is_number(amount) and amount > 0 do
+    from(u in User, where: u.id == ^user_id)
+    |> Repo.update_all(inc: [balance: -amount])
+  end
+
+  def set_admin(%User{id: _id} = user, role) do
+    # TODO: add authorization checking of super admin later
+    case role do
+      :super_admin -> {:error, :unauthorized}
+      :admin -> User.role_changeset(user, %{role: role})
+      :user -> User.role_changeset(user, %{role: role})
+      _ -> {:error, :invalid_role_passed}
+    end
+  end
+
+  def is_admin(%User{id: id}) do
+    result = get_user!(id)
+
+    result.role == :admin || result.role == :super_admin
+  end
+
+  def create_rebate_offer(%User{id: id} = user, offer_attrs) do
+    if !is_admin(user) do
+      {:error, :unauthorized}
+    else
+      Sales.create_offer(Map.put(offer_attrs, :user_id, id))
+    end
+  end
+
+  def process_order_for_offer(%User{id: user_id}, %Offer{id: offer_id}, order_attrs) do
+    Sales.create_order(Map.merge(order_attrs, %{user_id: user_id, offer_id: offer_id}))
+  end
+
+  
 end

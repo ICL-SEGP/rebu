@@ -13,7 +13,7 @@ defmodule RebuWebApiWeb.AccountsJSON do
 
   defp data(%User{} = user) do
     Map.from_struct(user)
-    |> Map.drop([:__meta__, :password, :hashed_password])
+    |> Map.drop([:__meta__, :password, :hashed_password, :offers, :orders])
     |> Map.put(:balance, handle_balance(user.balance))
   end
 
