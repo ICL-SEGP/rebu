@@ -24,6 +24,7 @@ defmodule RebuWebApiWeb.Router do
     pipe_through [:api, :auth]
     get "/", DefaultController, :default
     resources "/orders", OrderController, except: [:new, :edit]
+    resources "/offers", OfferController, except: [:new, :edit]
   end
 
   scope "/api", RebuWebApiWeb do
