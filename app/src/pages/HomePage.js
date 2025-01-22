@@ -6,6 +6,7 @@ import TransactionHistory from "../components/TransactionHistory";
 import useFetch from "../hooks/useFetch";
 
 const HomePage = () => {
+  // Add test data in case load fails
     const { data, loading, error } = useFetch("http://localhost:5000/user-data");
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error}</p>;
