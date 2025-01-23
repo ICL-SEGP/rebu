@@ -2,9 +2,24 @@
 
 import { useDashboard } from "@/context/DashboardContext";
 import { signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
+
 
 const DashboardPage = () => {
   const { availableTokens, lockedTokens, purchases } = useDashboard();
+
+  const { data: session, status } = useSession();
+
+  if (status === "loading") {
+    return <p>Loading...</p>;
+  }
+
+  if (!session) {
+    if (typeof window !== "undefined") {
+      window.location.href = "/";
+    }
+    return null;
+  }
 
   const handleLogout = async () => {
     await signOut({ redirect: true, callbackUrl: "/auth/login" });

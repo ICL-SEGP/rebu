@@ -25,7 +25,7 @@ const Register = () => {
       return;
     }
 
-    router.push("/auth/login");
+    router.push("/dashboard");
   };
 
   return (
