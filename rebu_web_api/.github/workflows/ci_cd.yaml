@@ -32,6 +32,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Navigate to mix project
+        run: cd $GITHUB_WORKSPACE/rebu_web_api
+
       - name: Setup Elixir v${{ env.ELIXIR_VRSN }}-otp-${{ env.OTP_VRSN }}
         uses: erlef/setup-beam@v1
         with:
@@ -86,6 +89,9 @@ jobs:
     name: Build Docker image & push to ghcr.io
     steps:
       - uses: actions/checkout@v3
+
+      - name: Navigate to mix project
+        run: cd $GITHUB_WORKSPACE/rebu_web_api
 
       - uses: qoomon/actions--access-token@v3
         id: access-token
