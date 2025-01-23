@@ -10,6 +10,7 @@ defmodule RebuWebApi.Guardian do
     sub = to_string(email)
     {:ok, sub}
   end
+
   def subject_for_token(_, _) do
     {:error, :reason_for_error}
   end
@@ -19,8 +20,9 @@ defmodule RebuWebApi.Guardian do
     # found in the `"sub"` key. In above `subject_for_token/2` we returned
     # the resource id so here we'll rely on that to look it up.
     resource = Accounts.get_user!(email)
-    {:ok,  resource}
+    {:ok, resource}
   end
+
   def resource_from_claims(_claims) do
     {:error, :reason_for_error}
   end
