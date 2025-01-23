@@ -124,5 +124,5 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           push: true
           build-args: |
-            ELIXIR_VERSION=${{ env.ELIXIR_VERSION }}
-            OTP_VERSION=${{ env.ERLANG_VERSION }}
+            ELIXIR_VERSION=${{ env.ELIXIR_VRSN }}
+            OTP_VERSION=${{ env.OTP_VRSN }}
