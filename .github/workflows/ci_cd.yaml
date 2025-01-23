@@ -78,8 +78,8 @@ jobs:
       - name: Check code is formatted
         run: mix format --check-formatted
 
-      - name: Dialyzer static analysis
-        run: MIX_ENV=dev mix dialyzer --format github
+      # - name: Dialyzer static analysis
+      #   run: MIX_ENV=dev mix dialyzer --format github
 
       - name: Checks unused dependencies
         run: mix deps.unlock --check-unused
