@@ -11,6 +11,10 @@ env:
   ELIXIR_VRSN: 1.18.2
   MIX_ENV: test
 
+defaults:
+  run:
+    working-directory: ./rebu_web_api
+
 jobs:
   ci:
     runs-on: ubuntu-latest
@@ -31,9 +35,6 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v3
-
-      - name: Navigate to mix project
-        run: cd ./rebu_web_api
 
       - name: Setup Elixir v${{ env.ELIXIR_VRSN }}-otp-${{ env.OTP_VRSN }}
         uses: erlef/setup-beam@v1
