@@ -91,18 +91,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: qoomon/actions--access-token@v3
-        id: access-token
-        with:
-          permissions: |
-            actions: write
-
       - name: Login to GHCR
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ steps.access-token.outputs.token }}
+          password: ${{ secrets.GH_PAT }}
 
       - name: Docker meta
         id: meta
