@@ -67,7 +67,7 @@ jobs:
 
       - name: Get dependencies
         if: steps.cache-deps.outputs.cache-hit != 'true'
-        run: mix deps.get
+        run: pwd && mix deps.get
 
       - run: mix compile
 
