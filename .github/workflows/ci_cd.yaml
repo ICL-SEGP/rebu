@@ -8,7 +8,7 @@ on:
 
 env:
   OTP_VRSN: 27.1
-  ELIXIR_VRSN: 1.18.2
+  ELIXIR_VRSN: 1.18.1
   MIX_ENV: test
 
 defaults:
