@@ -9,7 +9,6 @@ export async function POST(req: Request) {
 
   // If registration is successful
   return NextResponse.json({ message: "User registered successfully." }, { status: 201 });
-
   // If registration fails
   // return NextResponse.json({ message: "Registration failed." }, { status: 400 });
 }
