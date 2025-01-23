@@ -60,7 +60,7 @@ jobs:
           KEY_BASE: plt-${{ runner.os }}-${{ env.EX_OTP_VERSIONS }}
         with:
           path: |
-            priv/plts
+            rebu_web_api/priv/plts
           key: |
             ${{ env.KEY_BASE }}-${{ hashFiles('**/mix.lock') }}
           restore-keys: |
@@ -91,9 +91,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Navigate to mix project
-        run: cd $GITHUB_WORKSPACE/rebu_web_api
-
       - uses: qoomon/actions--access-token@v3
         id: access-token
         with:
@@ -112,7 +109,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            ghcr.io/ICL-SEGP/rebu
+            ghcr.io/ICL-SEGP/rebu/rebu_web_api
           tags: |
             type=ref,event=pr
             type=raw,value=latest,enable={{is_default_branch}}
@@ -125,9 +122,9 @@ jobs:
 
       - uses: docker/build-push-action@v5
         with:
-          context: .
-          cache-from: type=registry,ref=ghcr.io/ICL-SEGP/rebu:cache
-          cache-to: type=registry,ref=ghcr.io/ICL-SEGP/rebu:cache,mode=max
+          context: ./rebu_web_api
+          cache-from: type=registry,ref=ghcr.io/ICL-SEGP/rebu/rebu_web_api:cache
+          cache-to: type=registry,ref=ghcr.io/ICL-SEGP/rebu/rebu_web_api:cache,mode=max
           tags: ${{ steps.meta.outputs.tags }}
           platforms: linux/amd64,linux/arm64
           labels: ${{ steps.meta.outputs.labels }}
