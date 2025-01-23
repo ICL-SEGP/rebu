@@ -103,7 +103,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            ghcr.io/ICL-SEGP/rebu/rebu_web_api
+            ghcr.io/icl-segp/rebu/rebu_web_api
           tags: |
             type=ref,event=pr
             type=raw,value=latest,enable={{is_default_branch}}
@@ -117,8 +117,8 @@ jobs:
       - uses: docker/build-push-action@v5
         with:
           context: ./rebu_web_api
-          cache-from: type=registry,ref=ghcr.io/ICL-SEGP/rebu/rebu_web_api:cache
-          cache-to: type=registry,ref=ghcr.io/ICL-SEGP/rebu/rebu_web_api:cache,mode=max
+          cache-from: type=registry,ref=ghcr.io/icl-segp/rebu/rebu_web_api:cache
+          cache-to: type=registry,ref=ghcr.io/icl-segp/rebu/rebu_web_api:cache,mode=max
           tags: ${{ steps.meta.outputs.tags }}
           platforms: linux/amd64,linux/arm64
           labels: ${{ steps.meta.outputs.labels }}
