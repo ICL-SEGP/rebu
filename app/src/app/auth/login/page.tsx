@@ -50,11 +50,11 @@ const Login = () => {
           <form onSubmit={handleSubmit}>
             <div className="grid w-full items-center gap-4">
               <div className="flex flex-col space-y-1.5">
-                <Label htmlFor="name">Email</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input id="email" placeholder="user@gmail.com" onChange={(e) => setEmail(e.target.value)}/>
               </div>
               <div className="flex flex-col space-y-1.5">
-                <Label htmlFor="name">Password</Label>
+                <Label htmlFor="password">Password</Label>
                 <Input id="password" placeholder="*******" type="password" onChange={(e) => setPassword(e.target.value)}/>
               </div>
               <div className="flex items-center justify-between">
