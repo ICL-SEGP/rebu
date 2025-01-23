@@ -33,7 +33,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Navigate to mix project
-        run: cd $GITHUB_WORKSPACE/rebu_web_api
+        run: cd ./rebu_web_api
 
       - name: Setup Elixir v${{ env.ELIXIR_VRSN }}-otp-${{ env.OTP_VRSN }}
         uses: erlef/setup-beam@v1
