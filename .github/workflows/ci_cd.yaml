@@ -47,8 +47,8 @@ jobs:
         id: cache-deps
         with:
           path: |
-            deps
-            _build
+            rebu_web_api/deps
+            rebu_web_api/_build
           key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
           restore-keys: |
             ${{ runner.os }}-mix-
