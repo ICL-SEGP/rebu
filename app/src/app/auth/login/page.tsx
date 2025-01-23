@@ -3,6 +3,7 @@
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -60,12 +61,9 @@ const Login = () => {
           />
         </div>
         <div className="flex items-center justify-between">
-          <button
-            type="submit"
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-          >
+          <Button type="submit" className="w-full">
             Sign In
-          </button>
+          </Button>
         </div>
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-600">
