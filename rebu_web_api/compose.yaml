@@ -1,8 +1,3 @@
----
-# 9
-# USER/DB default to postgres
-version: "3.9"
-
 services:
   db:
     image: postgres:15.2
