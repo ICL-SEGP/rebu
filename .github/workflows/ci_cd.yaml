@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 env:
-  OTP_VRSN: 27.1
-  ELIXIR_VRSN: 1.18.1
+  OTP_VRSN: 27.1.3
+  ELIXIR_VRSN: 1.18.2
   MIX_ENV: test
 
 defaults:
