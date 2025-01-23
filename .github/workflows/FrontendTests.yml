@@ -9,11 +9,15 @@ jobs:
   test:
     runs-on: ubuntu-latest
     
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x]
+
     steps:
-      - name: "Run tests"
-        env: 
-          CI: true
-        run: |
-          ls -A
-          npm ci 
-          npm test
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm ci
+    - run: npm test
