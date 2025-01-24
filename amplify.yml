@@ -6,9 +6,9 @@ frontend:
                 - 'npm --prefix app ci'
                 - 'npm run --prefix app build'
     artifacts:
-        baseDirectory: /app/build
+        baseDirectory: /app/.next
         files:
             - '**/*'
     cache:
         paths: 
-           - '/app/nodemodules/**/*'
+           - '/app/node_modules/**/*'
