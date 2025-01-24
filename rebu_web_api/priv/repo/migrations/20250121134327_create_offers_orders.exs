@@ -1,4 +1,5 @@
 defmodule RebuWebApi.Repo.Migrations.CreateOffersOrders do
+  @moduledoc false
   use Ecto.Migration
 
   def change do

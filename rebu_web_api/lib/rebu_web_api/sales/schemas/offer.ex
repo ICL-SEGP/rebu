@@ -11,11 +11,9 @@ defmodule RebuWebApi.Sales.Offer do
 
     belongs_to :user, RebuWebApi.Accounts.User
 
-
     many_to_many :order, RebuWebApi.Sales.Order, join_through: "offers_orders"
 
     timestamps(type: :utc_datetime)
-
   end
 
   @doc false

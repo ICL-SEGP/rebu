@@ -14,7 +14,6 @@ defmodule RebuWebApiWeb.Endpoint do
   # plug RebuWebApi.CORS
   plug Corsica, origins: "*", allow_headers: ["content-type"]
 
-
   socket "/live", Phoenix.LiveView.Socket,
     websocket: [connect_info: [session: @session_options]],
     longpoll: [connect_info: [session: @session_options]]

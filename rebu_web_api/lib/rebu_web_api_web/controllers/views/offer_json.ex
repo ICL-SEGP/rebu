@@ -1,5 +1,4 @@
 defmodule RebuWebApiWeb.OfferJSON do
-
   alias RebuWebApi.Sales.Offer
 
   @doc """

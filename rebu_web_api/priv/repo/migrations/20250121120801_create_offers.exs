@@ -1,4 +1,5 @@
 defmodule RebuWebApi.Repo.Migrations.CreateOffers do
+  @moduledoc false
   use Ecto.Migration
 
   def change do
@@ -8,8 +9,6 @@ defmodule RebuWebApi.Repo.Migrations.CreateOffers do
       add :desc, :string
       add :offer_start, :naive_datetime
       add :offer_end, :naive_datetime
-
-      
 
       timestamps(type: :utc_datetime)
     end

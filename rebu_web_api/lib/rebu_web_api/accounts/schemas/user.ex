@@ -79,7 +79,7 @@ defmodule RebuWebApi.Accounts.User do
   def role_changeset(user, attrs) do
     user
     |> cast(attrs, [:role])
-    |> validate_inclusion(:status, [:user, :admin, :super_admin ])
+    |> validate_inclusion(:status, [:user, :admin, :super_admin])
     |> case do
       %{changes: %{admin: _}} = changeset -> changeset
       %{} = changeset -> add_error(changeset, :name, "invalid option")

@@ -8,7 +8,13 @@ defmodule RebuWebApi.SalesTest do
 
     import RebuWebApi.SalesFixtures
 
-    @invalid_attrs %{desc: nil, affiliate_link: nil, rebate_percentage: nil, offer_start: nil, offer_end: nil}
+    @invalid_attrs %{
+      desc: nil,
+      affiliate_link: nil,
+      rebate_percentage: nil,
+      offer_start: nil,
+      offer_end: nil
+    }
 
     test "list_offers/0 returns all offers" do
       offer = offer_fixture()
@@ -21,7 +27,13 @@ defmodule RebuWebApi.SalesTest do
     end
 
     test "create_offer/1 with valid data creates a offer" do
-      valid_attrs = %{desc: "some desc", affiliate_link: "some affiliate_link", rebate_percentage: "120.5", offer_start: ~N[2025-01-20 12:08:00], offer_end: ~N[2025-01-20 12:08:00]}
+      valid_attrs = %{
+        desc: "some desc",
+        affiliate_link: "some affiliate_link",
+        rebate_percentage: "120.5",
+        offer_start: ~N[2025-01-20 12:08:00],
+        offer_end: ~N[2025-01-20 12:08:00]
+      }
 
       assert {:ok, %Offer{} = offer} = Sales.create_offer(valid_attrs)
       assert offer.desc == "some desc"
@@ -37,7 +49,14 @@ defmodule RebuWebApi.SalesTest do
 
     test "update_offer/2 with valid data updates the offer" do
       offer = offer_fixture()
-      update_attrs = %{desc: "some updated desc", affiliate_link: "some updated affiliate_link", rebate_percentage: "456.7", offer_start: ~N[2025-01-21 12:08:00], offer_end: ~N[2025-01-21 12:08:00]}
+
+      update_attrs = %{
+        desc: "some updated desc",
+        affiliate_link: "some updated affiliate_link",
+        rebate_percentage: "456.7",
+        offer_start: ~N[2025-01-21 12:08:00],
+        offer_end: ~N[2025-01-21 12:08:00]
+      }
 
       assert {:ok, %Offer{} = offer} = Sales.update_offer(offer, update_attrs)
       assert offer.desc == "some updated desc"

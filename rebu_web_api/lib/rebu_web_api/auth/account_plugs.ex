@@ -22,6 +22,7 @@ defmodule RebuWebApi.Auth.AccountPlugs do
         true -> raise(RebuWebApi.Auth.ErrorResponse.NotFound)
       end
     end
+
     conn
   end
 

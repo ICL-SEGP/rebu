@@ -171,6 +171,4 @@ defmodule RebuWebApi.Accounts do
   def process_order_for_offer(%User{id: user_id}, %Offer{id: offer_id}, order_attrs) do
     Sales.create_order(Map.merge(order_attrs, %{user_id: user_id, offer_id: offer_id}))
   end
-
-  
 end

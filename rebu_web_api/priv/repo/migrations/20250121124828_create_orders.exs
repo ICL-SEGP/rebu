@@ -1,4 +1,5 @@
 defmodule RebuWebApi.Repo.Migrations.CreateOrders do
+  @moduledoc false
   use Ecto.Migration
 
   def change do
@@ -6,7 +7,6 @@ defmodule RebuWebApi.Repo.Migrations.CreateOrders do
       add :status, :string
       add :total_rebate_amount, :decimal
       add :user_id, references(:users, on_delete: :nothing)
-
 
       timestamps(type: :utc_datetime)
     end
