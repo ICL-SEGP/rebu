@@ -22,7 +22,7 @@ services:
       - ${POSTGRES_PORT:-5432}
 
   web:
-    image: ${WEB_IMAGE:-ghcr.io/ICL-SEGP/rebu:latest}
+    image: ${WEB_IMAGE:-rebu:latest}
     deploy:
       replicas: 1
       restart_policy:
