@@ -13,6 +13,7 @@ defmodule RebuWebApi.Auth.Guardian do
     {:ok, sub}
   end
 
+
   def subject_for_token(_, _) do
     {:error, :reason_for_error}
   end
@@ -25,6 +26,7 @@ defmodule RebuWebApi.Auth.Guardian do
     resource = Accounts.get_user_by_email!(email)
     {:ok, resource}
   end
+
 
   def resource_from_claims(_claims) do
     dbg("here")
