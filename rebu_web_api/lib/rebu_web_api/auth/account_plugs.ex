@@ -1,9 +1,10 @@
-defmodule RebuWebApi.Auth.SetAccountPlug do
+defmodule RebuWebApi.Auth.AccountPlugs do
   use Plug.Builder
 
   alias RebuWebApi.Accounts
 
   plug :fetch_account
+  plug :check_admin
 
   def fetch_account(conn, _opts) do
     if Map.has_key?(conn.assigns, :user) do
@@ -21,5 +22,11 @@ defmodule RebuWebApi.Auth.SetAccountPlug do
         true -> raise(RebuWebApi.Auth.ErrorResponse.NotFound)
       end
     end
+    conn
+  end
+
+  def check_admin(conn, _opts) do
+    user = conn.assigns[:user]
+    conn
   end
 end

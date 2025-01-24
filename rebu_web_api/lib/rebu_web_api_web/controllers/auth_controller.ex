@@ -24,4 +24,15 @@ defmodule RebuWebApiWeb.AuthController do
       |> render(:auth_success, user: user, token: token)
     end
   end
+
+  def sign_out(conn, %{}) do
+    user = conn.assigns[:user]
+    token = Guardian.Plug.current_token(conn)
+    Guardian.revoke(token)
+
+    conn
+    |> Plug.Conn.clear_session()
+    |> put_status(:ok)
+    |> render(:signed_out, %{user: user, token: nil})
+  end
 end

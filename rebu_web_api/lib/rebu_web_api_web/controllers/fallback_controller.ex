@@ -18,7 +18,7 @@ defmodule RebuWebApiWeb.FallbackController do
   def call(conn, {:error, :not_found}) do
     conn
     |> put_status(:not_found)
-    |> put_view(html: RebuWebApiWeb.ErrorHTML, json: RebuWebApiWeb.ErrorJSON)
+    |> put_view(json: RebuWebApiWeb.ErrorJSON)
     |> render(:"404")
   end
 

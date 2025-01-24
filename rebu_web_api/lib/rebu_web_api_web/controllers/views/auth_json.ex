@@ -1,8 +1,12 @@
-defmodule RebuWebApiWeb.AccountsJSON do
+defmodule RebuWebApiWeb.AuthJSON do
   alias RebuWebApi.Accounts.User
 
   def auth_success(%{user: user, token: token}) do
     Map.put(data(user), :token, token)
+  end
+
+  def signed_out(%{}) do
+    %{sign_out: "successfull", message: "Goodbye!"}
   end
 
   def error(%{error: error}) do
@@ -17,7 +21,12 @@ defmodule RebuWebApiWeb.AccountsJSON do
     |> Map.put(:balance, handle_balance(user.balance))
   end
 
+  defp data(nil), do: %{}
+
   defp handle_balance(balance) do
     String.to_float(to_string(balance))
+  end
+
+  defp tes() do
   end
 end

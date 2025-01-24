@@ -1,6 +1,8 @@
 defmodule RebuWebApiWeb.Router do
   use RebuWebApiWeb, :router
 
+  import RebuWebApi.Auth.AccountPlugs
+
   # pipeline :browser do
   #   plug :accepts, ["html"]
   #   plug :fetch_session
@@ -10,6 +12,14 @@ defmodule RebuWebApiWeb.Router do
   #   plug :put_secure_browser_headers
   # end
 
+  def handle_errors(conn, %{reason: %Phoenix.Router.NoRouteError{message: message}}) do
+    conn |> json(%{errors: message}) |> halt()
+  end
+
+  def handle_errors(conn, %{reason: %{message: message}}) do
+    conn |> json(%{errors: message}) |> halt()
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
     plug :fetch_session
@@ -17,7 +27,7 @@ defmodule RebuWebApiWeb.Router do
 
   pipeline :auth do
     plug RebuWebApi.Auth.Pipeline
-    plug RebuWebApi.Auth.SetAccountPlug
+    plug :fetch_account
   end
 
   scope "/api", RebuWebApiWeb do
@@ -25,6 +35,7 @@ defmodule RebuWebApiWeb.Router do
     get "/", DefaultController, :default
     resources "/orders", OrderController, except: [:new, :edit]
     resources "/offers", OfferController, except: [:new, :edit]
+    get "/sign-out", AuthController, :sign_out
   end
 
   scope "/api", RebuWebApiWeb do
