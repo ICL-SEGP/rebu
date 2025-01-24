@@ -1,0 +1,14 @@
+version: 1
+frontend:
+    phases:
+        build:
+            commands:
+                - 'npm --prefix app ci'
+                - 'npm run --prefix app build'
+    artifacts:
+        baseDirectory: /app/build
+        files:
+            - '**/*'
+    cache:
+        paths: 
+           - '/app/nodemodules/**/*'
