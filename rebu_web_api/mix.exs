@@ -60,7 +60,8 @@ defmodule RebuWebApi.MixProject do
       {:bandit, "~> 1.5"},
       {:guardian, "~> 2.3"},
       {:bcrypt_elixir, "~> 3.2"},
-      {:styler, "~> 1.3", only: [:dev, :test], runtime: false}
+      {:styler, "~> 1.3", only: [:dev, :test], runtime: false},
+      {:corsica, "~> 2.1"}
     ]
   end
 
