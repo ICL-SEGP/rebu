@@ -9,7 +9,7 @@ import Config
 
 # Guardian config
 
-config :rebu_web_api, RebuWebApi.Guardian,
+config :rebu_web_api, RebuWebApi.Auth.Guardian,
   issuer: "rebu_web_api",
   secret_key: "aBaKJGLEf/MGhpgOaVOidvypHHIRHeY9S0xlYW7ita7GeAylQCWTqRqgWX+ZwRzU"
 
@@ -66,6 +66,8 @@ config :logger, :console,
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
+
+config :elixir, :inspect, limit: :infinity, pretty: true
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

@@ -13,7 +13,7 @@ defmodule RebuWebApi.AccountsFixtures do
       |> Enum.into(%{
         name: "some name"
       })
-      |> RebuWebApi.Accounts.create_user()
+      |> RebuWebApi.Accounts.register_user()
 
     user
   end

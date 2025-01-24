@@ -56,4 +56,60 @@ defmodule RebuWebApi.AccountsTest do
       assert %Ecto.Changeset{} = Accounts.change_user(user)
     end
   end
+
+  describe "orders" do
+    alias RebuWebApi.Accounts.Order
+
+    import RebuWebApi.AccountsFixtures
+
+    @invalid_attrs %{status: nil, total_rebate_amount: nil}
+
+    test "list_orders/0 returns all orders" do
+      order = order_fixture()
+      assert Accounts.list_orders() == [order]
+    end
+
+    test "get_order!/1 returns the order with given id" do
+      order = order_fixture()
+      assert Accounts.get_order!(order.id) == order
+    end
+
+    test "create_order/1 with valid data creates a order" do
+      valid_attrs = %{status: :in_progress, total_rebate_amount: "120.5"}
+
+      assert {:ok, %Order{} = order} = Accounts.create_order(valid_attrs)
+      assert order.status == :in_progress
+      assert order.total_rebate_amount == Decimal.new("120.5")
+    end
+
+    test "create_order/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Accounts.create_order(@invalid_attrs)
+    end
+
+    test "update_order/2 with valid data updates the order" do
+      order = order_fixture()
+      update_attrs = %{status: :refunded, total_rebate_amount: "456.7"}
+
+      assert {:ok, %Order{} = order} = Accounts.update_order(order, update_attrs)
+      assert order.status == :refunded
+      assert order.total_rebate_amount == Decimal.new("456.7")
+    end
+
+    test "update_order/2 with invalid data returns error changeset" do
+      order = order_fixture()
+      assert {:error, %Ecto.Changeset{}} = Accounts.update_order(order, @invalid_attrs)
+      assert order == Accounts.get_order!(order.id)
+    end
+
+    test "delete_order/1 deletes the order" do
+      order = order_fixture()
+      assert {:ok, %Order{}} = Accounts.delete_order(order)
+      assert_raise Ecto.NoResultsError, fn -> Accounts.get_order!(order.id) end
+    end
+
+    test "change_order/1 returns a order changeset" do
+      order = order_fixture()
+      assert %Ecto.Changeset{} = Accounts.change_order(order)
+    end
+  end
 end
