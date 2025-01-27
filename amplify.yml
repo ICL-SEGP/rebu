@@ -1,9 +1,11 @@
 version: 1
 frontend:
     phases:
-        build:
+        prebuild:
             commands:
                 - 'npm --prefix app ci'
+        build:
+            commands:
                 - 'npm run --prefix app build'
     artifacts:
         baseDirectory: app/.next
@@ -12,5 +14,3 @@ frontend:
     cache:
         paths: 
            - 'app/node_modules/**/*'
-           - 'app/.next/**/*'
-           - 'app/.cache/**/*'
