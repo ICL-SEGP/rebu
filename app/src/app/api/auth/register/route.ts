@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 
-export async function POST(req: Request) {
-  const { email, password, name } = await req.json();
+export async function POST(/*req: Request*/) {
+  //const { email, password, name } = await req.json();
 
   // Add your logic to store user credentials in a database
   // For example, insert into a users table
-  const user = { email, password, name };
+  //const user = { email, password, name };
 
   // If registration is successful
   return NextResponse.json({ message: "User registered successfully." }, { status: 201 });
