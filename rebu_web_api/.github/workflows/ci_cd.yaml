@@ -120,7 +120,7 @@ jobs:
           cache-from: type=registry,ref=ghcr.io/icl-segp/rebu/rebu_web_api:cache
           cache-to: type=registry,ref=ghcr.io/icl-segp/rebu/rebu_web_api:cache,mode=max
           tags: ${{ steps.meta.outputs.tags }}
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           labels: ${{ steps.meta.outputs.labels }}
           push: true
           build-args: |
