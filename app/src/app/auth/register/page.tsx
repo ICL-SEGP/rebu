@@ -15,15 +15,67 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
+
+export async function fetchWithToken(url:string, token:string) {
+  const response = await fetch(url, {
+    method: 'GET', // or 'POST', etc.
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch');
+  }
+
+  return response.json();
+}
+
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const [first_name, setFirstName] = useState("");
+  const [last_name, setLastName] = useState("");
+
   const [error, setError] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(JSON.stringify({ password, email, first_name, last_name }))
+    // const res = await fetch("https://possible-thankfully-shrew.ngrok-free.app/api/register");
+    console.log(
+      JSON.stringify({
+        password,
+        email,
+        first_name,
+        last_name,
+      })
+    );
+  
+    try {
+      const res = await fetch("http://176.34.210.163:4000/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password, email, first_name, last_name }),
+      });
+  
+      // Check if the response is ok
+      if (!res.ok) {
+        const errorText = await res.text(); // Get the error details as text
+        console.error("Server error:", errorText);
+        throw new Error(`Request failed with status ${res.status}: ${res.statusText}`);
+      }
+  
+      // Parse the JSON response
+      // const data = await res.json();
+      // setToken(data.token)
+      // console.log(returnToken())
+      // console.log("Response data:", data);
+    } catch (error) {
+      console.error("Error during fetch:", error);
+    }
 
     const response = await fetch("/api/auth/register", {
       method: "POST",
@@ -36,8 +88,9 @@ const Register = () => {
       setError(errorData.message || "Something went wrong.");
       return;
     }
+    router.push("/login")
 
-    router.push("/dashboard");
+    // router.push("/dashboard");
   };
 
   return (
@@ -52,7 +105,11 @@ const Register = () => {
           <div className="grid w-full items-center gap-4">
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="name">Name</Label>
-              <Input id="name" placeholder="John" onChange={(e) => setName(e.target.value)}/>
+              <Input id="name" placeholder="John" onChange={(e) => setFirstName(e.target.value)}/>
+            </div>
+            <div className="flex flex-col space-y-1.5">
+              <Label htmlFor="name">Name</Label>
+              <Input id="name2" placeholder="Kerr" onChange={(e) => setLastName(e.target.value)}/>
             </div>
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="email">Email</Label>
