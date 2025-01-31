@@ -2,8 +2,13 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import NextAuth from "next-auth";
 
+interface Credentials {
+  email: string;
+  password: string;
+}
+
 // Define the authentication options
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -11,7 +16,7 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "text", placeholder: "test@gmail.com" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials: Credentials | undefined) {
         // Hardcoded user authentication logic
         if (
           credentials?.email === "test@gmail.com" &&
