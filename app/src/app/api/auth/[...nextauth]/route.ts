@@ -1,9 +1,6 @@
 import NextAuth from "next-auth";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { setCookie } from "cookies-next";
-var x = 0
-
 
 const authOptions: NextAuthOptions = {
   providers: [
@@ -13,45 +10,48 @@ const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      
       async authorize(credentials) {
-        const res = await fetch(
-          "http://176.34.210.163:4000/api/sign-in",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              password: credentials?.password,
-              email: credentials?.email
-              ,
-            }),
+        // Check if credentials are provided
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Email and password are required");
+        }
+
+        try {
+          const res = await fetch(
+            `http://176.34.210.163:4000/api/sign-in`, // Use environment variable for API URL
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: credentials.email,
+                password: credentials.password,
+              }),
+            }
+          );
+
+          // Handle API errors
+          if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.message || "Invalid email or password");
           }
-        );
-        // console.log(res)
-        // console.log(res)
 
-        if (!res.ok) {
-          throw new Error("Invalid email or password");
+          const data = await res.json();
+          const token = data.token; // Assume the backend returns a token
+
+          if (token) {
+            // Return the user object with the token
+            return {
+              id: credentials.email, // Use email as the unique identifier
+              email: credentials.email,
+              token: token, // Include the token in the user object
+            };
+          }
+        } catch (error) {
+          console.error("Authorization error:", error);
+          throw new Error("An error occurred during authorization");
         }
 
-        const data = await res.json();
-        const token = data.token; // Assume the backend returns a token
-        // console.log(token)
-
-        if (token) {
-          // Optionally store token in cookies
-          setCookie("authToken", token, {
-            httpOnly: true,
-            sameSite: "strict",
-            maxAge: 60 * 60 * 24, // 1 day
-          });
-
-          // Return user object with token
-          x += 1
-          return {id: String(x), email: credentials?.email, token };
-        }
-
-        return null;
+        return null; // Return null if authorization fails
       },
     }),
   ],
@@ -70,11 +70,9 @@ const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt", // Use JWT for session management
   },
-  secret: process.env.NEXTAUTH_SECRET, // Add a secret in your .env file
+  secret: process.env.NEXTAUTH_SECRET, // Ensure this is set in your .env file
 };
 
-// Ensure the NextAuth handler supports both GET and POST methods
-const handler = NextAuth(authOptions);
-
 // Export the handler for both GET and POST methods
+const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
