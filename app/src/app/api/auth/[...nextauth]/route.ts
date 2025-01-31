@@ -4,7 +4,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { setCookie } from "cookies-next";
 var x = 0
 
-export const authOptions: NextAuthOptions = {
+
+const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
