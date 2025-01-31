@@ -15,21 +15,21 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 
-export async function fetchWithToken(url:string, token:string) {
-  const response = await fetch(url, {
-    method: 'GET', // or 'POST', etc.
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  });
+// export async function fetchWithToken(url:string, token:string) {
+//   const response = await fetch(url, {
+//     method: 'GET', // or 'POST', etc.
+//     headers: {
+//       'Content-Type': 'application/json',
+//       Authorization: `Bearer ${token}`,
+//     },
+//   });
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch');
-  }
+//   if (!response.ok) {
+//     throw new Error('Failed to fetch');
+//   }
 
-  return response.json();
-}
+//   return response.json();
+// }
 
 const Register = () => {
   const [email, setEmail] = useState("");
