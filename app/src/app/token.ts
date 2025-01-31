@@ -1,4 +1,4 @@
-var token = ""
+let token = ""
 
 export const returnToken = () => {
     return token

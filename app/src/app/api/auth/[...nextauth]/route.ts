@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { setCookie } from "cookies-next";
-var x = 0
+let x = 0
 
 
 const authOptions: NextAuthOptions = {
