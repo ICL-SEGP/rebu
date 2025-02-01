@@ -5,14 +5,17 @@ declare module "next-auth" {
     id: string; // Add `id` property to the User type
     email?: string; // Make `email` optional
     token: string;
+    role: string;
   }
 
   interface Session {
-    accessToken: string; 
+    accessToken: string;
+    role: string;
     user: {
       id: string;
       email?: string;
       token: string;
+      role: string;
     };
   }
 }
@@ -22,5 +25,6 @@ declare module "next-auth/jwt" {
     accessToken: string;
     id?: string; // Add `id` property to the JWT type
     email?: string; // Add `email` to JWT (optional)
+    role: string;
   }
 }
