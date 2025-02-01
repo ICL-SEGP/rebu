@@ -50,7 +50,7 @@ const DashboardPage = () => {
 
   const handleLogout = async () => {
 
-    await signOut();
+    await signOut({callbackUrl: "https://main.d227h8ee1xlxct.amplifyapp.com/"});
   };
 
   return (
