@@ -44,37 +44,13 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log(JSON.stringify({ password, email, first_name, last_name }))
-    // const res = await fetch("https://possible-thankfully-shrew.ngrok-free.app/api/register");
-  
-    // try {
-    //   const res = await fetch("http://176.34.210.163:4000/api/register", {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify({ password, email, first_name, last_name }),
-    //   });
-  
-    //   // Check if the response is ok
-    //   if (!res.ok) {
-    //     const errorText = await res.text(); // Get the error details as text
-    //     console.error("Server error:", errorText);
-    //     throw new Error(`Request failed with status ${res.status}: ${res.statusText}`);
-    //   }
-  
-    //   // Parse the JSON response
-    //   const data = await res.json();
-    //   // setToken(data.token)
-    //   // console.log(returnToken())
-    //   // console.log("Response data:", data);
-    // } catch (error) {
-    //   console.error("Error during fetch:", error);
-    // }
 
     const response = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password, email, first_name, last_name }),
     });
-    console.log(response)
+    // console.log(response)
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -93,7 +69,6 @@ const Register = () => {
     } else {
       router.push("/dashboard"); // Redirect to home or dashboard on success
     }
-    // router.push("/dashboard");
   };
 
   return (

@@ -3,9 +3,8 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   const { password, email, first_name, last_name} = await req.json();
-  // Add your logic to store user credentials in a database
-  // For example, insert into a users table
-  //const user = { email, password, name };
+
+  // Sends request to backend.
   try {
     const res = await fetch("http://176.34.210.163:4000/api/register", {
       method: "POST",

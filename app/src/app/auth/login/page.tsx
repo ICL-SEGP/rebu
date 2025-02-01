@@ -25,37 +25,8 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // try {
-    //   const res = await fetch("https://possible-thankfully-shrew.ngrok-free.app/api/sign-in", {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify({ password, email}),
-    //   });
-  
-    //   // Check if the response is ok
-    //   if (!res.ok) {
-    //     const errorText = await res.text(); // Get the error details as text
-    //     console.error("Server error:", errorText);
-    //     throw new Error(`Request failed with status ${res.status}: ${res.statusText}`);
-    //   }
-  
-    //   // Parse the JSON response
-    //   const data = await res.json();
-      
-    //   setToken(data.token)
-    //   console.log(returnToken())
-    //   console.log("Response data:", data);
-    // } catch (error) {
-    //   console.error("Error during fetch:", error);
-    // }
-
-    // // const response = post
-    // const result = await signIn("credentials", {
-    //   email,
-    //   password,
-    //   redirect: false,
-    // });
-
+    // Attempts sign in with credentials
+    
     const res = await signIn("credentials", {
       email,
       password,
@@ -65,11 +36,8 @@ const Login = () => {
     if (res?.error) {
       setError("Invalid email or password");
     } else {
-      router.push("/dashboard"); // Redirect to home or dashboard on success
+      router.push("/dashboard");
     }
-
-
-    // router.push("/dashboard");
   };
 
   return (
