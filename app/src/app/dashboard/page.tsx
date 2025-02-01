@@ -49,24 +49,7 @@ const DashboardPage = () => {
   
 
   const handleLogout = async () => {
-    try {
-      const res = await fetch("https://possible-thankfully-shrew.ngrok-free.app/api/sign-out", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
-      console.log(res)
-      if (!res.ok) {
-        const errorText = await res.text(); // Get the error details as text
-        console.error("Server error:", errorText);
-        throw new Error(`Request failed with status ${res.status}: ${res.statusText}`);
-      }
-  
-      // Parse the JSON response
-      const data = await res.text();
-      console.log(data)
-    } catch (error) {
-      console.error("Error during fetch:", error);
-    }
+
     await signOut({ redirect: true, callbackUrl: "/auth/login" });
   };
 
