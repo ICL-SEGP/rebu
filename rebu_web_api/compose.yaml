@@ -1,6 +1,8 @@
 services:
   db:
     image: postgres:15.2
+    secrets:
+      - postgrespassword
     healthcheck:
       test: ["CMD", "pg_isready", "--username=postgres"]
       interval: 10s
@@ -14,7 +16,7 @@ services:
         max_attempts: 3
         window: 120s
     environment:
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgrespassword
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - db_data:/var/lib/postgresql/data
@@ -23,6 +25,9 @@ services:
 
   web:
     image: ${WEB_IMAGE:-ghcr.io/icl-segp/rebu/rebu_web_api:latest}
+    secrets:
+      - secretkeybase
+      - databaseurl
     deploy:
       replicas: 1
       restart_policy:
@@ -31,8 +36,8 @@ services:
         max_attempts: 3
         window: 120s
     environment:
-      DATABASE_URL: ecto://postgres:postgres@db/postgres
-      SECRET_KEY_BASE: jEGr4IX4jo1xl3cXNRMcWs4AH9V62/kQjlU/ShSK2Ysv3ZrO5KPcYyw/WbSHrWop
+      DATABASE_URL_FILE: /run/secrets/databaseurl
+      SECRET_KEY_BASE_FILE: /run/secrets/secretkeybase
       PHX_HOST: "localhost"
     ports:
       - 4000:4000
@@ -44,3 +49,11 @@ services:
 
 volumes:
   db_data:
+
+secrets:
+  postgrespassword:
+    file: "priv/secrets/.postgrespassword"
+  databaseurl:
+    file: "priv/secrets/.databaseurl"
+  secretkeybase:
+    file: "priv/secrets/.secretkeybase"
