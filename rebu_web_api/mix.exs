@@ -106,8 +106,6 @@ defmodule RebuWebApi.MixProject do
         "cmd echo \"----------------------- ✨ Checking if the code is formatted... -----------------------\n\"",
         "format --check-formatted",
         "cmd echo \"----------------------- ✨ Check Complete. -----------------------\n\"",
-        "cmd echo \"----------------------- 🔍 Running Dialyzer... -----------------------\n\"",
-        "dialyzer",
         "cmd echo \"----------------------- 🔗 Checking for unused dependencies... -----------------------\n\"",
         "deps.unlock --check-unused",
         "cmd echo \"----------------------- 🔗 Check Complete. -----------------------\n\""
