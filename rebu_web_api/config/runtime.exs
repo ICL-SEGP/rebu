@@ -1,5 +1,30 @@
 import Config
 
+# sops secrets
+
+if config_env() in [:dev, :test] do
+  # Setting and calling the config providers manually during development and
+  # test environments
+  config_providers = [
+    {
+      SopsConfigProvider,
+      %{
+        app_name: :rebu_web_api,
+        secret_file_path: "priv/secrets/secrets.enc.yaml",
+        sops_binary_path: Application.get_env(:rebu_web_api, :sops_binary_path),
+        env_variables: [{"SOPS_AGE_KEY_FILE", "priv/secrets/sops-key.txt"}],
+        config_env: config_env()
+      }
+    }
+  ]
+
+  Enum.each(config_providers, fn {provider, opts} ->
+    state = provider.init(opts)
+    secrets_config = provider.load([], state)
+    Application.put_all_env(secrets_config)
+  end)
+end
+
 # config/runtime.exs is executed for all environments, including
 # during releases. It is executed after compilation and before the
 # system starts, so it is typically used to load production configuration

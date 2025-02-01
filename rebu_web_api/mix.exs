@@ -9,7 +9,20 @@ defmodule RebuWebApi.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      releases: [
+        rebu_web_api: [
+          config_providers: [
+            {
+              SopsConfigProvider,
+              %{
+                app_name: :rebu_web_api,
+                secret_file_path: "priv/secrets/secrets.enc.yaml"
+              }
+            }
+          ]
+        ]
+      ]
     ]
   end
 
@@ -61,7 +74,8 @@ defmodule RebuWebApi.MixProject do
       {:guardian, "~> 2.3"},
       {:bcrypt_elixir, "~> 3.2"},
       {:styler, "~> 1.3", only: [:dev, :test], runtime: false},
-      {:corsica, "~> 2.1"}
+      {:corsica, "~> 2.1"},
+      {:sops_config_provider, "~> 0.2.1"}
     ]
   end
 
