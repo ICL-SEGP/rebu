@@ -87,7 +87,7 @@ const Register = () => {
       setError(errorData.message || "Something went wrong.");
       return;
     }
-    router.push("/login")
+    router.push("/auth/login")
 
     // router.push("/dashboard");
   };
