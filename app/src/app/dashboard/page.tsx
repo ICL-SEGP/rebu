@@ -3,6 +3,7 @@
 import { useDashboard } from "@/context/DashboardContext";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
+import { setToken, returnToken } from "@/app/token";
 
 
 const DashboardPage = () => {
@@ -20,9 +21,36 @@ const DashboardPage = () => {
     }
     return null;
   }
+  const handleSubmit = async () => {
+    try {
+      const res = await fetch("https://possible-thankfully-shrew.ngrok-free.app/api/balance", {
+        method: 'GET', // or 'POST', etc.
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${returnToken()}`,
+        },
+      });
+      // Check if the response is ok
+      if (!res.ok) {
+        const errorText = await res.text(); // Get the error details as text
+        console.error("Server error:", errorText);
+        throw new Error(`Request failed with status ${res.status}: ${res.statusText}`);
+      }
+
+      // Parse the JSON response
+      const data = await res.json();
+      setToken(data.token)
+      console.log(returnToken())
+      console.log("Response data:", data);
+    } catch (error) {
+      console.error("Error during fetch:", error);
+    }
+  }
+  
 
   const handleLogout = async () => {
-    await signOut({ redirect: true, callbackUrl: "/auth/login" });
+
+    await signOut({callbackUrl: "https://main.d227h8ee1xlxct.amplifyapp.com/"});
   };
 
   return (

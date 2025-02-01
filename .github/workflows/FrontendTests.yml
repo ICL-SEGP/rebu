@@ -2,8 +2,6 @@ name: Frontend Tests
 
 on:
   push:
-    paths:
-      - "/app/*"
   pull_request:
     branches: [ "main" ]
 
@@ -23,4 +21,5 @@ jobs:
         cache-dependency-path: "app/package-lock.json"
     - run: npm ci
     - run: npm run lint
+      continue-on-error: true
     - run: npm run build

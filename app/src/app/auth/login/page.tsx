@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { setToken, returnToken } from "@/app/token";
+
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -23,16 +25,18 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const result = await signIn("credentials", {
+    // Attempts sign in with credentials
+    
+    const res = await signIn("credentials", {
       email,
       password,
       redirect: false,
     });
 
-    if (result?.error) {
-      setError(result.error);
+    if (res?.error) {
+      setError("Invalid email or password");
     } else {
-      router.push("/dashboard");
+      router.push("/user/dashboard");
     }
   };
 
