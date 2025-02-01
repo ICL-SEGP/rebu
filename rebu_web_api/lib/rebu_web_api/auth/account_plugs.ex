@@ -27,7 +27,7 @@ defmodule RebuWebApi.Auth.AccountPlugs do
   end
 
   def check_admin(conn, _opts) do
-    user = conn.assigns[:user]
+    _user = conn.assigns[:user]
     conn
   end
 end

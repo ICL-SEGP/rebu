@@ -10,7 +10,7 @@ defmodule RebuWebApiWeb.AuthJSON do
   end
 
   def balance(%{balance: balance}) do
-    %{balance: balance }
+    %{balance: balance}
   end
 
   @spec error(%{:error => any(), optional(any()) => any()}) :: %{error: any()}
