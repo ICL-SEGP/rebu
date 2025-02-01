@@ -70,7 +70,7 @@ const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt", // Use JWT for session management
   },
-  secret: process.env.NEXTAUTH_SECRET, // Ensure this is set in your .env file
+  secret: "83e9b797df942c9769653bee15485beca10a6d2a8ec296b420a36841a3cf9462", // Ensure this is set in your .env file
 };
 
 // Export the handler for both GET and POST methods
