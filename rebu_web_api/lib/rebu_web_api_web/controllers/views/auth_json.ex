@@ -6,9 +6,14 @@ defmodule RebuWebApiWeb.AuthJSON do
   end
 
   def signed_out(%{}) do
-    %{sign_out: "successfull", message: "Goodbye!"}
+    %{sign_out: "successful", message: "Goodbye!"}
   end
 
+  def balance(%{balance: balance}) do
+    %{balance: balance }
+  end
+
+  @spec error(%{:error => any(), optional(any()) => any()}) :: %{error: any()}
   def error(%{error: error}) do
     %{
       error: error
@@ -25,8 +30,5 @@ defmodule RebuWebApiWeb.AuthJSON do
 
   defp handle_balance(balance) do
     String.to_float(to_string(balance))
-  end
-
-  defp tes() do
   end
 end
