@@ -8,14 +8,24 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { BarChart, Bar, CartesianGrid, XAxis, YAxis } from "recharts";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+
+
 
 export default function DashboardPage() {
   // Hardcoded key metrics data
   const stats = {
-    totalUsers: 150,
-    totalRevenue: 23400, 
-    activeOffers: 12,
-    completedOrders: 50, // completed/refunded orders
+    availableTokens: 500,
+    lockedTokens: 200,
   };
 
   // Dummy data 
@@ -35,6 +45,30 @@ export default function DashboardPage() {
     },
   };
 
+  const products = [
+    {
+      date: "2025-01-10",
+      product: "Product A",
+      tokens: "100",
+    },
+    {
+      date: "2025-01-08",
+      product: "Product B",
+      tokens: "400",
+    },
+    {
+      date: "2025-01-07",
+      product: "Product A",
+      tokens: "100",
+    },
+    {
+      date: "2025-01-01",
+      product: "Product C",
+      tokens: "300",
+    },
+  ]
+  
+
   return (
     <div className="space-y-8 p-4">
       <h1 className="text-2xl font-bold">Dashboard with Key Metrics</h1>
@@ -44,69 +78,54 @@ export default function DashboardPage() {
         {/* Total Users */}
         <Card>
           <CardHeader>
-            <CardTitle>Total Users</CardTitle>
+            <CardTitle className="text-green-500">Available Tokens</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-semibold">{stats.totalUsers}</p>
+            <p className="text-3xl font-semibold">{stats.availableTokens}</p>
           </CardContent>
         </Card>
 
         {/* Total Revenue */}
         <Card>
           <CardHeader>
-            <CardTitle>Total Revenue</CardTitle>
+            <CardTitle className="text-red-500">Locked Tokens</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-semibold">
-              ${stats.totalRevenue.toLocaleString()}
+              {stats.lockedTokens}
             </p>
-          </CardContent>
-        </Card>
-
-        {/* Active Offers */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Active Offers</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-semibold">{stats.activeOffers}</p>
-          </CardContent>
-        </Card>
-
-        {/* Completed/Refunded Orders */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Completed/Refunded Orders</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-semibold">{stats.completedOrders}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Sales Trends Chart */}
+      
       <Card>
-        <CardHeader>
-          <CardTitle>Sales Trends Over Time</CardTitle>
-        </CardHeader>
-        <CardContent className="p-4">
-          <ChartContainer config={chartConfig} id="sales-trends">
-            <BarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    hideIndicator
-                    hideLabel={false}
-                  />
-                }
-              />
-              <Bar dataKey="revenue" fill="rgb(54, 162, 235)" />
-            </BarChart>
-          </ChartContainer>
-        </CardContent>
+      <Table className="w-full">
+        <TableCaption>A list of recent products</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[100px]">Date</TableHead>
+            <TableHead className="text-center">Product</TableHead>
+            <TableHead className="text-right">Tokens</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {products.map((product) => (
+            <TableRow>
+              <TableCell className="font-medium">{product.date}</TableCell>
+              <TableCell className="text-center">{product.product}</TableCell>
+              <TableCell className="text-right">{product.tokens}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+        {/* <TableFooter>
+          <TableRow>
+            <TableCell colSpan={3}>Total</TableCell>
+            <TableCell className="text-right">$2,500.00</TableCell>
+          </TableRow>
+        </TableFooter> */}
+      </Table>
       </Card>
     </div>
   );

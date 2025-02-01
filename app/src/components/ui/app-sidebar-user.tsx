@@ -13,8 +13,7 @@ import {
 
 const navItems = [
   { title: "Dashboard", url: "/user/dashboard" },
-  { title: "Offers", url: "/user/offers" },
-  { title: "Orders", url: "/user/orders" },
+  { title: "Products", url: "/user/products" },
   { title: "Logout", url: "/logout" },
 ]
 
