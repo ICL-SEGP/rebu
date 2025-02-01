@@ -60,3 +60,4 @@ rebu_web_api/priv/secrets/sops-key.txt
 rebu_web_api/priv/secrets/.secretkeybase
 rebu_web_api/priv/secrets/.postgrespassword
 rebu_web_api/priv/secrets/.databaseurl
+logfile
