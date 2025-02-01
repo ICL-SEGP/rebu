@@ -97,6 +97,20 @@ defmodule RebuWebApi.MixProject do
         "tailwind rebu_web_api --minify",
         "esbuild rebu_web_api --minify",
         "phx.digest"
+      ],
+      ci: [
+        "cmd echo \"----------------------- 🚀 Compiling with warnings as errors... -----------------------\n\"",
+        "compile --warnings-as-errors",
+        "cmd echo \"----------------------- 🧪 Running tests with max failures set to 1, trace, and warnings as errors... -----------------------\n\"",
+        "test --max-failures 1 --trace --warnings-as-errors",
+        "cmd echo \"----------------------- ✨ Checking if the code is formatted... -----------------------\n\"",
+        "format --check-formatted",
+        "cmd echo \"----------------------- ✨ Check Complete. -----------------------\n\"",
+        "cmd echo \"----------------------- 🔍 Running Dialyzer... -----------------------\n\"",
+        "dialyzer",
+        "cmd echo \"----------------------- 🔗 Checking for unused dependencies... -----------------------\n\"",
+        "deps.unlock --check-unused",
+        "cmd echo \"----------------------- 🔗 Check Complete. -----------------------\n\""
       ]
     ]
   end
