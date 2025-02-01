@@ -44,14 +44,6 @@ const Register = () => {
     e.preventDefault();
     console.log(JSON.stringify({ password, email, first_name, last_name }))
     // const res = await fetch("https://possible-thankfully-shrew.ngrok-free.app/api/register");
-    console.log(
-      JSON.stringify({
-        password,
-        email,
-        first_name,
-        last_name,
-      })
-    );
   
     try {
       const res = await fetch("http://176.34.210.163:4000/api/register", {
@@ -75,19 +67,6 @@ const Register = () => {
     } catch (error) {
       console.error("Error during fetch:", error);
     }
-
-    const response = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, name }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      setError(errorData.message || "Something went wrong.");
-      return;
-    }
-
     const res = await signIn("credentials", {
       email,
       password,
