@@ -10,7 +10,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (session) {
-      router.push("/dashboard"); // Redirect logged-in users to dashboard
+      router.push("/user/dashboard"); // Redirect logged-in users to dashboard
     } else {
       router.push("/auth/login");
     }

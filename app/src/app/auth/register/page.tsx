@@ -67,7 +67,7 @@ const Register = () => {
     if (res?.error) {
       setError("Invalid email or password");
     } else {
-      router.push("/dashboard"); // Redirect to home or dashboard on success
+      router.push("/user/dashboard"); // Redirect to home or dashboard on success
     }
   };
 
