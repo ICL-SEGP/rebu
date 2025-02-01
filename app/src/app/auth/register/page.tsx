@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-
+import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -68,7 +68,7 @@ const Register = () => {
       }
   
       // Parse the JSON response
-      // const data = await res.json();
+      const data = await res.json();
       // setToken(data.token)
       // console.log(returnToken())
       // console.log("Response data:", data);
@@ -87,8 +87,18 @@ const Register = () => {
       setError(errorData.message || "Something went wrong.");
       return;
     }
-    router.push("/auth/login")
 
+    const res = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+
+    if (res?.error) {
+      setError("Invalid email or password");
+    } else {
+      router.push("/dashboard"); // Redirect to home or dashboard on success
+    }
     // router.push("/dashboard");
   };
 
