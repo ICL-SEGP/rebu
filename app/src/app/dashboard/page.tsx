@@ -50,7 +50,7 @@ const DashboardPage = () => {
 
   const handleLogout = async () => {
 
-    await signOut({ redirect: true, callbackUrl: "/auth/login" });
+    await signOut({ redirect: true, callbackUrl: window.location.origin + "/auth/login" });
   };
 
   return (
