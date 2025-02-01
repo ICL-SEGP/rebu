@@ -101,9 +101,12 @@ defmodule RebuWebApi.MixProject do
       ci: [
         "cmd echo \"----------------------- 🚀 Compiling with warnings as errors... -----------------------\n\"",
         "compile --warnings-as-errors",
+        "cmd echo \"----------------------- 🚀 Compiling Complete. -----------------------\n\"",
         "cmd echo \"----------------------- 🧪 Running tests with max failures set to 1, trace, and warnings as errors... -----------------------\n\"",
-        "test --max-failures 1 --trace --warnings-as-errors",
+        "cmd MIX_ENV=test mix test --max-failures 1 --trace --warnings-as-errors",
+        "cmd echo \"----------------------- 🧪 Testing Complete. -----------------------\n\"",
         "cmd echo \"----------------------- ✨ Checking if the code is formatted... -----------------------\n\"",
+        "cmd MIX_ENV=dev",
         "format --check-formatted",
         "cmd echo \"----------------------- ✨ Check Complete. -----------------------\n\"",
         "cmd echo \"----------------------- 🔗 Checking for unused dependencies... -----------------------\n\"",
