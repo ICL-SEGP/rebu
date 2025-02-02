@@ -11,17 +11,17 @@ defmodule RebuWebApi.MixProject do
       aliases: aliases(),
       deps: deps(),
       releases: [
-        rebu_web_api: [
-          config_providers: [
-            {
-              SopsConfigProvider,
-              %{
-                app_name: :rebu_web_api,
-                secret_file_path: "priv/secrets/secrets.enc.yaml"
-              }
-            }
-          ]
-        ]
+        # rebu_web_api: [
+        #   config_providers: [
+        #     {
+        #       SopsConfigProvider,
+        #       %{
+        #         app_name: :rebu_web_api,
+        #         secret_file_path: "priv/secrets/secrets.enc.yaml"
+        #       }
+        #     }
+        #   ]
+        # ]
       ]
     ]
   end
