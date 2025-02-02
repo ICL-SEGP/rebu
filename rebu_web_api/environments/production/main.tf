@@ -1,6 +1,6 @@
 module "compose" {
   source = "../../modules/cloud/aws/compute/compose"
-  private_key_path = "${path.module}/private_key_pem"
+  private_key_path = "${path.module}/private_key.pem"
 }
 
 output "instance_ssh_command" {

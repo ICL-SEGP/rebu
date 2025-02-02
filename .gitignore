@@ -55,7 +55,7 @@ override.tf.json
 .terraformrc
 terraform.rc
 
-rebu_web_api/environments/production/private_key_pem
+rebu_web_api/environments/production/private_key.pem
 rebu_web_api/priv/secrets/sops-key.txt
 logfile
 rebu_web_api/priv/secrets/.secret_key_base
