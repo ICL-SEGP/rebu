@@ -69,6 +69,6 @@ echo "$GITHUB_TOKEN" | docker login ghcr.io \
 # deploy the application
 DOCKER_HOST="ssh://ec2-user@$MANAGER_IP" \
 WEB_IMAGE="$IMAGE" \
-docker compose -f rebu_web_api/compose.yaml up --build -d
+docker compose --build -d
 
 echo "Deployment completed."
