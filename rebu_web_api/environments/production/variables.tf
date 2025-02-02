@@ -8,6 +8,11 @@ variable "aws_secret_access_key" {
   type = string
 }
 
+variable "aws_region" {
+  description = "The AWS region"
+  type = string
+}
+
 variable "age_key" {
   description = "Age decryption key"
   type = string
