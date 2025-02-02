@@ -16,6 +16,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 
 function getPageName(pathname: string): string {
@@ -29,6 +30,20 @@ function getPageName(pathname: string): string {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const pageName = getPageName(pathname);
+  const { data: session, status } = useSession();
+
+  console.log(session)
+
+  if (status === "loading") {
+    return <p>Loading...</p>;
+  }
+
+  if (!session || session.role != 'admin') {
+    if (typeof window !== "undefined") {
+      window.location.href = "/";
+    }
+    return null;
+  }
 
   return (
     <SidebarProvider>

@@ -13,7 +13,9 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { setToken, returnToken } from "@/app/token";
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
+
 
 
 const Login = () => {
@@ -21,6 +23,17 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
+  const { data: session, status } = useSession();
+  // Inside the Login component
+  useEffect(() => {
+    if (session) {
+      if (session.role == "admin") {
+        router.push("/admin/dashboard");
+      } else {
+        router.push("/user/dashboard");
+      }
+  }
+}, [session, router]); // Dependencies: Runs when session changes
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -32,11 +45,17 @@ const Login = () => {
       password,
       redirect: false,
     });
-
+    console.log(res)
     if (res?.error) {
       setError("Invalid email or password");
     } else {
-      router.push("/user/dashboard");
+      if (session) {
+        if (session.role == "admin") {
+          router.push("/admin/dashboard");
+        } else {
+          router.push("/user/dashboard");
+        }
+      }
     }
   };
 

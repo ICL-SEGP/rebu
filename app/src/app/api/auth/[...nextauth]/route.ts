@@ -44,6 +44,7 @@ const authOptions: NextAuthOptions = {
               id: credentials.email, // Use email as the unique identifier
               email: credentials.email,
               token: token, // Include the token in the user object
+              role: credentials.email == "admin@tem.com" ? "admin" : "user",
             };
           }
         } catch (error) {
@@ -59,11 +60,13 @@ const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.accessToken = user.token; // Add token to JWT
+        token.role = user.role;
       }
       return token;
     },
     async session({ session, token }) {
       session.accessToken = token.accessToken; // Add accessToken to session
+      session.role = token.role;
       return session;
     },
   },

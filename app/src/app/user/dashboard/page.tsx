@@ -27,6 +27,7 @@ export default function DashboardPage() {
     availableTokens: 500,
     lockedTokens: 200,
   };
+  let x = 0;
 
   // Dummy data 
   const data = [
@@ -112,7 +113,7 @@ export default function DashboardPage() {
         </TableHeader>
         <TableBody>
           {products.map((product) => (
-            <TableRow>
+            <TableRow key={x++}>
               <TableCell className="font-medium">{product.date}</TableCell>
               <TableCell className="text-center">{product.product}</TableCell>
               <TableCell className="text-right">{product.tokens}</TableCell>
