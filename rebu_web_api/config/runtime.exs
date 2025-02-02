@@ -2,7 +2,7 @@ import Config
 
 # sops secrets
 
-if config_env() in [:dev, :test] do
+if config_env() in [:dev] do
   # Setting and calling the config providers manually during development and
   # test environments
   config_providers = [
