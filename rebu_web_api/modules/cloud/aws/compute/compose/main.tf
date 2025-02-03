@@ -37,7 +37,7 @@ data "aws_ami" "amazon_linux_docker" {
     values = ["amazon-linux-docker*"]
   }
 
-  owners = ["280759493520"]
+  owners = ["699475929998"]
 }
 
 resource "tls_private_key" "key" {
