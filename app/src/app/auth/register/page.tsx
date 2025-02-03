@@ -52,21 +52,21 @@ const Register = () => {
         last_name,
       })
     );
-  
+
     try {
       const res = await fetch("http://176.34.210.163:4000/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password, email, first_name, last_name }),
       });
-  
+
       // Check if the response is ok
       if (!res.ok) {
         const errorText = await res.text(); // Get the error details as text
         console.error("Server error:", errorText);
         throw new Error(`Request failed with status ${res.status}: ${res.statusText}`);
       }
-  
+
       // Parse the JSON response
       // const data = await res.json();
       // setToken(data.token)
@@ -100,15 +100,15 @@ const Register = () => {
           <CardDescription className="text-red-500">{error}</CardDescription>
         </CardHeader>
         <CardContent>
-        <form onSubmit={handleSubmit}> 
+        <form onSubmit={handleSubmit}>
           <div className="grid w-full items-center gap-4">
             <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">First Name</Label>
               <Input id="name" placeholder="John" onChange={(e) => setFirstName(e.target.value)}/>
             </div>
             <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name2" placeholder="Kerr" onChange={(e) => setLastName(e.target.value)}/>
+              <Label htmlFor="name">Last Name</Label>
+              <Input id="name2" placeholder="Smith" onChange={(e) => setLastName(e.target.value)}/>
             </div>
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="email">Email</Label>
@@ -138,7 +138,7 @@ const Register = () => {
                 </button>
               </p>
             </div>
-          </CardDescription>    
+          </CardDescription>
         </CardContent>
       </Card>
     </div>
