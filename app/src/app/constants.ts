@@ -1,4 +1,4 @@
-export const API_BASE_URL = "http://176.34.210.163:4000";
+export const API_BASE_URL = "http://3.254.171.68:4000";
 
 // export const ROUTES = {
 //   HOME: "/",

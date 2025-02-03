@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { API_BASE_URL } from "@/app/constants";
+import { apiBaseUrl } from "next-auth/client/_utils";
 
 
 // export async function fetchWithToken(url:string, token:string) {
@@ -54,7 +56,7 @@ const Register = () => {
     );
 
     try {
-      const res = await fetch("http://176.34.210.163:4000/api/register", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password, email, first_name, last_name }),
@@ -76,7 +78,7 @@ const Register = () => {
       console.error("Error during fetch:", error);
     }
 
-    const response = await fetch("/api/auth/register", {
+    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password, name }),
