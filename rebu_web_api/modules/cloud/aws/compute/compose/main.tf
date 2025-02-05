@@ -71,66 +71,89 @@ resource "aws_instance" "web_server_segp" {
 }
 
 resource "aws_security_group" "compose_sg" {
-  description = "launch-wizard-2 created 2025-01-23T16:47:40.863Z"
+
+  vpc_id = data.aws_vpc.main.id
+
+  # Allow all outbound traffic
   egress = [
     {
-      cidr_blocks = [
-        "0.0.0.0/0",
-      ]
-      description      = null
-      from_port        = 0
+      cidr_blocks = ["0.0.0.0/0"]
+      description = null
+      from_port   = 0
       ipv6_cidr_blocks = []
       prefix_list_ids  = []
-      protocol         = "-1"
+      protocol   = "-1"
       security_groups  = []
-      self             = false
-      to_port          = 0
+      self       = false
+      to_port    = 0
     },
   ]
+
+  # Allow SSH (port 22)
   ingress = [
     {
-      cidr_blocks = [
-        "0.0.0.0/0",
-      ]
-      description      = null
-      from_port        = 22
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "Allow SSH"
+      from_port   = 22
       ipv6_cidr_blocks = []
       prefix_list_ids  = []
-      protocol         = "tcp"
+      protocol   = "tcp"
       security_groups  = []
-      self             = false
-      to_port          = 22
+      self       = false
+      to_port    = 22
     },
+    # Allow HTTPS (port 443)
     {
-      cidr_blocks = [
-        "0.0.0.0/0",
-      ]
-      description      = null
-      from_port        = 443
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "Allow HTTPS"
+      from_port   = 443
       ipv6_cidr_blocks = []
       prefix_list_ids  = []
-      protocol         = "tcp"
+      protocol   = "tcp"
       security_groups  = []
-      self             = false
-      to_port          = 443
+      self       = false
+      to_port    = 443
     },
+    # Allow web service (port 4000)
     {
-      cidr_blocks = [
-        "0.0.0.0/0",
-      ]
-      description      = null
-      from_port        = 4000
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "Allow Web Service"
+      from_port   = 4000
       ipv6_cidr_blocks = []
       prefix_list_ids  = []
-      protocol         = "tcp"
+      protocol   = "tcp"
       security_groups  = []
-      self             = false
-      to_port          = 4000
+      self       = false
+      to_port    = 4000
     },
+    # Allow PostgreSQL standard port (5432)
+    {
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "Allow PostgreSQL"
+      from_port   = 5432
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = []
+      protocol   = "tcp"
+      security_groups  = []
+      self       = false
+      to_port    = 5432
+    },
+    # Allow PostgreSQL high port (32768)
+    {
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "Allow PostgreSQL high port"
+      from_port   = 32768
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = []
+      protocol   = "tcp"
+      security_groups  = []
+      self       = false
+      to_port    = 32768
+    }
   ]
+
   name        = "launch-wizard-2"
   name_prefix = null
   tags        = {}
   tags_all    = {}
-  vpc_id      = data.aws_vpc.main.id
 }
