@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { API_BASE_URL } from "@/lib/constants";
 
 
 export async function POST(req: Request) {
@@ -6,7 +7,7 @@ export async function POST(req: Request) {
 
   // Sends request to backend.
   try {
-    const res = await fetch("http://176.34.210.163:4000/api/register", {
+    const res = await fetch(`${API_BASE_URL}/api/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password, email, first_name, last_name }),
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
     if (!res.ok) {
       const errorText = await res.text(); // Get the error details as text
       console.error("Server error:", errorText);
-      
+
       return NextResponse.json({ message: "Server error" }, { status: 400 });
     }
 

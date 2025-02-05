@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { API_BASE_URL } from "@/lib/constants";
 
 const authOptions: NextAuthOptions = {
   providers: [
@@ -18,7 +19,7 @@ const authOptions: NextAuthOptions = {
 
         try {
           const res = await fetch(
-            `http://176.34.210.163:4000/api/sign-in`, // Use environment variable for API URL
+            `${API_BASE_URL}/api/sign-in`, // Use environment variable for API URL
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
