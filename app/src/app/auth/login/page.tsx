@@ -23,7 +23,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   // Inside the Login component
   useEffect(() => {
     if (session) {
