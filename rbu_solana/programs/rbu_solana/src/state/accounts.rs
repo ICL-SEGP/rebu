@@ -15,7 +15,6 @@ pub struct Redeem {
     pub maker: PubKey,
     pub token_mint: PubKey,
     pub product_id: u64,
-    pub bump,
 }
 
 #[account]

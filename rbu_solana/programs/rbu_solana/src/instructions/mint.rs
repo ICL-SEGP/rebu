@@ -1,26 +1,24 @@
-use {
-    anchor_lang::prelude::*,
-    anchor_spl::{
-        associated_token::AssociatedToken,
-        token::{mint_to, Mint, MintTo, Token, TokenAccount},
-    },
+use anchor_lang::prelude::*;
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token::{mint_to, Mint, MintTo, Token, TokenAccount},
 };
 
 #[derive(Accounts)]
 pub struct MintToken<'info> {
     #[account(mut)]
-    pub mint_authority: Signer<'info>,
+    pub admin: Signer<'info>, // The admin wallet, required to mint
 
-    pub recipient: SystemAccount<'info>,
     #[account(mut)]
-    pub mint_account: Account<'info, Mint>,
+    pub mint_account: Account<'info, Mint>, // The SPL token mint
+
     #[account(
         init_if_needed,
-        payer = mint_authority,
+        payer = admin,
         associated_token::mint = mint_account,
         associated_token::authority = recipient,
     )]
-    pub associated_token_account: Account<'info, TokenAccount>,
+    pub recipient_token_account: Account<'info, TokenAccount>, // User’s token account
 
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
@@ -28,27 +26,19 @@ pub struct MintToken<'info> {
 }
 
 pub fn mint_token(ctx: Context<MintToken>, amount: u64) -> Result<()> {
-    msg!("Minting tokens to associated token account...");
-    msg!("Mint: {}", &ctx.accounts.mint_account.key());
-    msg!(
-        "Token Address: {}",
-        &ctx.accounts.associated_token_account.key()
-    );
+    msg!("Minting {} tokens...", amount);
 
-    // Invoke the mint_to instruction on the token program
-    mint_to(
-        CpiContext::new(
-            ctx.accounts.token_program.to_account_info(),
-            MintTo {
-                mint: ctx.accounts.mint_account.to_account_info(),
-                to: ctx.accounts.associated_token_account.to_account_info(),
-                authority: ctx.accounts.mint_authority.to_account_info(),
-            },
-        ),
-        amount * 10u64.pow(ctx.accounts.mint_account.decimals as u32), // Mint tokens
-    )?;
+    let cpi_accounts = MintTo {
+        mint: ctx.accounts.mint_account.to_account_info(),
+        to: ctx.accounts.recipient_token_account.to_account_info(),
+        authority: ctx.accounts.admin.to_account_info(),
+    };
 
-    msg!("Token minted successfully.");
+    let cpi_program = ctx.accounts.token_program.to_account_info();
+    let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
 
+    mint_to(cpi_ctx, amount * 10u64.pow(6))?; // Mint tokens with correct decimal scaling
+
+    msg!("Minted {} tokens successfully!", amount);
     Ok(())
 }
