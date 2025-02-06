@@ -75,7 +75,8 @@ defmodule RebuWebApi.MixProject do
       {:bcrypt_elixir, "~> 3.2"},
       {:styler, "~> 1.3", only: [:dev, :test], runtime: false},
       {:corsica, "~> 2.1"},
-      {:sops_config_provider, "~> 0.2.1"}
+      {:sops_config_provider, "~> 0.2.1"},
+      {:faker, "~> 0.18.0"}
     ]
   end
 
