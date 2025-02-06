@@ -45,7 +45,7 @@ const authOptions: NextAuthOptions = {
               id: credentials.email, // Use email as the unique identifier
               email: credentials.email,
               token: token, // Include the token in the user object
-              role: credentials.email == "admin@tem.com" ? "admin" : "user",
+              role: data.role != "admin" ? "user" : "admin",
             };
           }
         } catch (error) {
