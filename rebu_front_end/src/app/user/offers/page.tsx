@@ -35,7 +35,7 @@ export default function OffersPage() {
     try {
       setLoading(true);
       const response = await fetch(API_URL);
-      if (!response.ok) throw new Error("Failed to fetch offers");
+      if (!response.ok) return Error("Failed to fetch offers");
 
       const data: Offer[] = await response.json();
       setOffers(data);

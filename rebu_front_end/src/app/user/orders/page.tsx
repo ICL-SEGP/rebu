@@ -33,7 +33,7 @@ export default function OrdersPage() {
     try {
       setLoading(true);
       const response = await fetch(API_URL);
-      if (!response.ok) throw new Error("Failed to fetch orders");
+      if (!response.ok) return Error("Failed to fetch orders");
 
       const data: Invoice[] = await response.json();
       setInvoices(data);

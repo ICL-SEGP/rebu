@@ -24,7 +24,7 @@ export default function WalletPage() {
     const fetchWalletData = async () => {
       try {
         const response = await fetch("/api/user/wallet");
-        if (!response.ok) throw new Error("Failed to fetch wallet data");
+        if (!response.ok) return Error("Failed to fetch wallet data");
 
         const data: CryptoWallet = await response.json();
         setWallet(data);

@@ -50,7 +50,7 @@ export default function DashboardPage() {
     const fetchBalance = async () => {
       try {
         const response = await fetch("/api/user/balance");
-        if (!response.ok) throw new Error("Failed to fetch balance");
+        if (!response.ok) return Error("Failed to fetch balance");
 
         const data: TokenBalance = await response.json();
         setBalance(data);
