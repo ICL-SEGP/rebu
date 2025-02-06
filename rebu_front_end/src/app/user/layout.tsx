@@ -1,6 +1,6 @@
 "use client";
 
-import { AppSidebarUser } from "@/components/ui/app-sidebar-user"
+import { AppSidebarUser } from "@/components/ui/app-sidebar-user";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,24 +8,30 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-
-
 
 function getPageName(pathname: string): string {
   const segments = pathname.split("/").filter(Boolean); // Remove empty segments
   if (segments.length === 0) return "Dashboard"; // Default page name
-  return segments[segments.length - 1]
+
+  let pageName = segments[segments.length - 1]
     .replace(/-/g, " ") // Replace dashes with spaces
     .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize first letter
+
+  // Override "Products" to "Orders"
+  if (pathname.includes("/user/products")) {
+    pageName = "Orders";
+  }
+
+  return pageName;
 }
 
 export default function UserLayout({ children }: { children: React.ReactNode }) {
@@ -34,7 +40,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
 
   const { data: session, status } = useSession();
 
-  console.log(session)
+  console.log(session);
 
   if (status === "loading") {
     return <p>Loading...</p>;
@@ -61,9 +67,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/user/dashboard">
-                    User
-                  </BreadcrumbLink>
+                  <BreadcrumbLink href="/user/dashboard">User</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
@@ -78,5 +82,5 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
         </SidebarInset>
       </div>
     </SidebarProvider>
-  )
+  );
 }

@@ -46,7 +46,7 @@ export default function DashboardPage() {
     },
   };
 
-  const products = [
+  const orders = [
     {
       date: "2025-01-10",
       product: "Product A",
@@ -103,7 +103,7 @@ export default function DashboardPage() {
       
       <Card>
       <Table className="w-full">
-        <TableCaption>A list of recent products</TableCaption>
+        <TableCaption>A list of recent orders</TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead className="w-[100px]">Date</TableHead>
@@ -112,7 +112,7 @@ export default function DashboardPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {products.map((product) => (
+          {orders.map((product) => (
             <TableRow key={x++}>
               <TableCell className="font-medium">{product.date}</TableCell>
               <TableCell className="text-center">{product.product}</TableCell>
