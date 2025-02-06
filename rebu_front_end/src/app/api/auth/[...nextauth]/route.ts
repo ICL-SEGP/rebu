@@ -24,8 +24,9 @@ export const authOptions:NextAuthOptions = {
 
         if (!res.ok) throw new Error("Invalid credentials");
 
+
         // 2️⃣ Phoenix responds with a JWT
-        const user = await res.json(); // Expecting { id, name, email, token }
+        const user = (await res.json()).data; // Expecting { id, name, email, token }
 
 
         // 3️⃣ NextAuth stores the JWT
