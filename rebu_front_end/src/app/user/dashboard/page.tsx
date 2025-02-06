@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "@/hooks/use-toast"; 
-import { Coins, Lock, Wallet } from "lucide-react"; 
+import { toast } from "@/hooks/use-toast";
+import { Coins, Lock, Wallet } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -17,6 +17,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { API_BASE_URL } from "@/lib/constants";
+import { useSession } from "next-auth/react";
 
 
 interface TokenBalance {
@@ -34,8 +36,9 @@ interface Order {
 export default function DashboardPage() {
   const [balance, setBalance] = useState<TokenBalance | null>(null);
   const [withdrawAmount, setWithdrawAmount] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [isWithdrawing, setIsWithdrawing] = useState<boolean>(false);
+  const { data: session } = useSession();
 
   // Dummy Order Data
   const orders: Order[] = [
@@ -45,23 +48,43 @@ export default function DashboardPage() {
     { date: "2025-01-01", product: "Product C", tokens: "300" },
   ];
 
+  const fetchBalance = async () => {
+
+    if (!API_BASE_URL) {
+      console.error("API_BASE_URL is undefined.");
+      return;
+    }
+
+    if (!session) {
+      console.error("No user logged in.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/balance`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch balance");
+
+      const data = await res.json();
+      setBalance({availableTokens: data.balance, lockedTokens: 0, cryptoWallet: ""});
+
+      console.log("balance:", data.balance)
+    } catch (error) {
+      console.error("Error fetching balance:", error);
+      toast({ title: "Error", description: "Failed to load balance.", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch Token Balance from Backend
   useEffect(() => {
-    const fetchBalance = async () => {
-      try {
-        const response = await fetch("/api/user/balance");
-        if (!response.ok) throw new Error("Failed to fetch balance");
-
-        const data: TokenBalance = await response.json();
-        setBalance(data);
-      } catch (error) {
-        console.error("Error fetching balance:", error);
-        toast({ title: "Error", description: "Failed to load balance.", variant: "destructive" });
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchBalance();
   }, []);
 
@@ -136,6 +159,12 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardContent>
+          <Button onClick={fetchBalance} className="w-full mt-5 bg-green-600 hover:bg-green-700"> Refresh Balance </Button>
+        </CardContent>
+      </Card>
 
       {/* Withdrawal Section */}
       <Card>
