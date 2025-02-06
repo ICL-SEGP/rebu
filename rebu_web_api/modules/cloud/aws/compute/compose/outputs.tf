@@ -6,3 +6,9 @@ output "ssh_command" {
   )
   description = "The SSH command to connect to the instance."
 }
+
+output "private_key" {
+  value = local_sensitive_file.private_key.content
+  sensitive = true
+  description = "SSH private key to connect to instance"
+}

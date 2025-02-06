@@ -54,3 +54,10 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+rebu_web_api/environments/production/private_key.pem
+rebu_web_api/priv/secrets/sops-key.txt
+logfile
+rebu_web_api/priv/secrets/.secret_key_base
+rebu_web_api/priv/secrets/.database_url
+rebu_web_api/priv/secrets/.postgres_password

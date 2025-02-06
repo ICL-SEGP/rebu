@@ -35,4 +35,12 @@ defmodule RebuWebApiWeb.AuthController do
     |> put_status(:ok)
     |> render(:signed_out, %{user: user, token: nil})
   end
+
+  def get_balance(conn, %{}) do
+    user = conn.assigns[:user]
+
+    conn
+    |> put_status(:ok)
+    |> render(:balance, %{balance: user.balance})
+  end
 end
