@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge"; // ShadCN's Badge component
+import { Badge } from "@/components/ui/badge"; 
 
 // Define the structure of an order (TypeScript type safety)
 interface Invoice {
