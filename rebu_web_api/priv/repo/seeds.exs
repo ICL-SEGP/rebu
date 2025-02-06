@@ -17,7 +17,12 @@ alias RebuWebApi.Sales.{Offer, Order}
 IO.puts("Seeding database...")
 
 # Step 1: Create an Admin User
-admin = Factory.insert(:user, email: "admin@example.com", role: :admin, balance: Decimal.new("10000.00"))
+admin =
+  Factory.insert(:user,
+    email: "admin@example.com",
+    role: :admin,
+    balance: Decimal.new("10000.00")
+  )
 
 IO.puts("Admin created: #{admin.email}")
 

@@ -77,12 +77,14 @@ defmodule RebuWebApi.Accounts.User do
   end
 
   def role_changeset(user, attrs) do
-  user
-  |> cast(attrs, [:role])
-  |> validate_inclusion(:role, [:user, :admin, :super_admin])  # Fix incorrect field
-  |> case do
-    %{changes: %{role: _}} = changeset -> changeset
-    %{} = changeset -> add_error(changeset, :role, "invalid option")  # Fix incorrect key
+    user
+    |> cast(attrs, [:role])
+    # Fix incorrect field
+    |> validate_inclusion(:role, [:user, :admin, :super_admin])
+    |> case do
+      %{changes: %{role: _}} = changeset -> changeset
+      # Fix incorrect key
+      %{} = changeset -> add_error(changeset, :role, "invalid option")
+    end
   end
-end
 end
