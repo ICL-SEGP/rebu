@@ -15,6 +15,7 @@ const navItems = [
   { title: "Dashboard", url: "/user/dashboard" },
   { title: "Offers", url: "/user/offers"},
   { title: "Orders", url: "/user/orders" },
+  { title: "Profile", url: "/user/orders" },
   { title: "Logout", url: "/logout" },
 ]
 
