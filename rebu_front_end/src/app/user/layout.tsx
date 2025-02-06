@@ -19,14 +19,13 @@ import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 function getPageName(pathname: string): string {
-  const segments = pathname.split("/").filter(Boolean); // Remove empty segments
-  if (segments.length === 0) return "Dashboard"; // Default page name
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments.length === 0) return "Dashboard";
 
   let pageName = segments[segments.length - 1]
-    .replace(/-/g, " ") // Replace dashes with spaces
-    .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize first letter
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 
-  // Override "Products" to "Orders"
   if (pathname.includes("/user/products")) {
     pageName = "Orders";
   }
@@ -39,8 +38,6 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
   const pageName = getPageName(pathname);
 
   const { data: session, status } = useSession();
-
-  console.log(session);
 
   if (status === "loading") {
     return <p>Loading...</p>;
