@@ -35,14 +35,14 @@ defmodule RebuWebApiWeb.Router do
     get "/", DefaultController, :default
     resources "/orders", OrderController, except: [:new, :edit]
     resources "/offers", OfferController, except: [:new, :edit]
-    get "/sign-out", AuthController, :sign_out
+    get "/logout", AuthController, :sign_out
     get "/balance", AuthController, :get_balance
   end
 
   scope "/api", RebuWebApiWeb do
     pipe_through :api
     post "/register", AuthController, :register
-    post "/sign-in", AuthController, :sign_in
+    post "/login", AuthController, :sign_in
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
