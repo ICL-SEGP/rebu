@@ -144,6 +144,10 @@ defmodule RebuWebApi.Accounts do
     |> Repo.update_all(inc: [balance: -amount])
   end
 
+  def get_user_balance!(user_id) do
+    get_user!(user_id).balance
+  end
+
   def set_admin(%User{id: _id} = user, role) do
     # TODO: add authorization checking of super admin later
     case role do

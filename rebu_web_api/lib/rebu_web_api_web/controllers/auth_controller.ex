@@ -18,11 +18,25 @@ defmodule RebuWebApiWeb.AuthController do
 
   def sign_in(conn, %{"email" => email, "password" => password}) do
     with {:ok, user, token} <- Accounts.authenticate_sign_in(email, password) do
+      dbg(user.id)
+
       conn
-      |> Plug.Conn.put_session(:user_id, user.id)
       |> put_status(200)
       |> render(:auth_success, user: user, token: token)
     end
+  end
+
+  def sign_in(conn, %{"email" => email, "password" => password}) do
+    conn =
+      with {:ok, user, token} <- Accounts.authenticate_sign_in(email, password) do
+        conn
+        |> Plug.Conn.put_session(:user_id, user.id)
+        |> put_status(200)
+        |> render(:auth_success, user: user, token: token)
+      end
+
+    IO.inspect(Plug.Conn.get_session(conn, :user_id), label: "🔍 Session user_id after setting")
+    conn
   end
 
   def sign_out(conn, %{}) do
@@ -37,10 +51,12 @@ defmodule RebuWebApiWeb.AuthController do
   end
 
   def get_balance(conn, %{}) do
-    user = conn.assigns[:user]
+    user = Guardian.Plug.current_resource(conn)
+
+    balance = Accounts.get_user_balance!(user.id)
 
     conn
     |> put_status(:ok)
-    |> render(:balance, %{balance: user.balance})
+    |> render(:balance, %{balance: balance})
   end
 end
