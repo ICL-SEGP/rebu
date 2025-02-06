@@ -8,11 +8,16 @@ defmodule RebuWebApiWeb.Endpoint do
     store: :cookie,
     key: "_rebu_web_api_key",
     signing_salt: "qt/tIZ7z",
-    same_site: "Lax"
   ]
 
   # plug RebuWebApi.CORS
-  plug Corsica, origins: "*", allow_headers: ["content-type"]
+  plug CORSPlug,
+    # 🔥 Allow frontend origin
+    origin: "*",
+    methods: ["GET", "POST", "OPTIONS", "PUT", "DELETE"],
+    headers: ["Authorization", "Content-Type"],
+    expose: ["Authorization"],
+    credentials: true
 
   socket "/live", Phoenix.LiveView.Socket,
     websocket: [connect_info: [session: @session_options]],
