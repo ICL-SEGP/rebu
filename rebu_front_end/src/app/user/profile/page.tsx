@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "@/hooks/use-toast"; // Toast notifications
+import { toast } from "@/hooks/use-toast"; 
 
-// User Profile Type
+
 interface UserProfile {
   firstName: string;
   lastName: string;
@@ -21,58 +21,119 @@ interface UserProfile {
   walletProvider?: string; // Optional (MetaMask, Coinbase, etc.)
 }
 
-// Initial User Data (Hardcoded for Testing, Replace with API)
-const initialProfile: UserProfile = {
-  firstName: "John",
-  lastName: "Doe",
-  email: "johndoe@example.com",
-  password: "",
-  cryptoWallet: "",
-  blockchain: "",
-  cryptoType: "",
-  memoTag: "",
-  walletProvider: "",
-};
-
 export default function ProfilePage() {
-  const [profile, setProfile] = useState<UserProfile>(initialProfile);
-  const [isWalletUpdating, setIsWalletUpdating] = useState(false);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
+  const [isWalletUpdating, setIsWalletUpdating] = useState<boolean>(false);
+
+  // Fetch user data 
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch("/api/user/profile");
+        if (!response.ok) throw new Error("Failed to fetch user data");
+
+        const data: UserProfile = await response.json();
+        setProfile(data);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        toast({ title: "Error", description: "Failed to load profile data.", variant: "destructive" });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setProfile({ ...profile, [e.target.name]: e.target.value });
+    if (profile) {
+      setProfile({ ...profile, [e.target.name]: e.target.value });
+    }
   };
 
-  // Handle Profile Update
-  const handleProfileUpdate = (e: React.FormEvent) => {
+  // Handle Profile Update (Name, Email, Password)
+  const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({ title: "Profile Updated!", description: "Your profile info has been updated successfully." });
+    if (!profile) return;
+
+    setIsUpdating(true);
+    try {
+      const response = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: profile.firstName,
+          lastName: profile.lastName,
+          email: profile.email,
+          password: profile.password, // Backend should hash before storing
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to update profile");
+
+      toast({ title: "Profile Updated!", description: "Your profile info has been saved." });
+    } catch (error) {
+        console.error("Error updating profile:", error);
+        toast({
+          title: "Error",
+          description: `Failed to update profile: ${error instanceof Error ? error.message : "Unknown error"}`,
+          variant: "destructive",
+        });
+      }
+       finally {
+      setIsUpdating(false);
+    }
   };
 
   // Handle Crypto Wallet Update
-  const handleWalletUpdate = (e: React.FormEvent) => {
+  const handleWalletUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!profile) return;
 
-    // Basic crypto wallet validation
+    // Basic wallet validation
     if (profile.cryptoWallet.length < 26) {
       toast({ title: "Invalid Wallet", description: "Please enter a valid crypto wallet address.", variant: "destructive" });
       return;
     }
-    if (!profile.blockchain) {
-      toast({ title: "Select Blockchain", description: "Please select a blockchain network.", variant: "destructive" });
-      return;
-    }
-    if (!profile.cryptoType) {
-      toast({ title: "Select Cryptocurrency", description: "Please select the crypto type.", variant: "destructive" });
+    if (!profile.blockchain || !profile.cryptoType) {
+      toast({ title: "Missing Fields", description: "Blockchain and cryptocurrency type are required.", variant: "destructive" });
       return;
     }
 
     setIsWalletUpdating(true);
-    setTimeout(() => {
-      setIsWalletUpdating(false);
+    try {
+      const response = await fetch("/api/user/wallet", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cryptoWallet: profile.cryptoWallet,
+          blockchain: profile.blockchain,
+          cryptoType: profile.cryptoType,
+          walletProvider: profile.walletProvider,
+          memoTag: profile.memoTag || undefined,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to update wallet");
+
       toast({ title: "Wallet Updated!", description: "Your crypto wallet has been saved." });
-    }, 2000);
+    } catch (error) {
+        console.error("Error updating wallet:", error);
+        toast({
+          title: "Error",
+          description: `Failed to update wallet: ${error instanceof Error ? error.message : "Unknown error"}`,
+          variant: "destructive",
+        });
+      }
+       finally {
+      setIsWalletUpdating(false);
+    }
   };
+
+  if (loading) return <p className="text-center">Loading...</p>;
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
@@ -86,34 +147,28 @@ export default function ProfilePage() {
         <CardContent>
           <form onSubmit={handleProfileUpdate} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              {/* First Name */}
               <div>
                 <Label htmlFor="firstName">First Name</Label>
-                <Input id="firstName" name="firstName" value={profile.firstName} onChange={handleChange} required />
+                <Input id="firstName" name="firstName" value={profile?.firstName} onChange={handleChange} required />
               </div>
-
-              {/* Last Name */}
               <div>
                 <Label htmlFor="lastName">Last Name</Label>
-                <Input id="lastName" name="lastName" value={profile.lastName} onChange={handleChange} required />
+                <Input id="lastName" name="lastName" value={profile?.lastName} onChange={handleChange} required />
               </div>
             </div>
 
-            {/* Email */}
             <div>
               <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" value={profile.email} onChange={handleChange} required />
+              <Input id="email" name="email" type="email" value={profile?.email} onChange={handleChange} required />
             </div>
 
-            {/* Password */}
             <div>
               <Label htmlFor="password">New Password</Label>
               <Input id="password" name="password" type="password" placeholder="Enter new password" onChange={handleChange} />
             </div>
 
-            {/* Save Button */}
-            <Button type="submit" className="w-full">
-              Save Profile
+            <Button type="submit" className="w-full" disabled={isUpdating}>
+              {isUpdating ? "Saving..." : "Save Profile"}
             </Button>
           </form>
         </CardContent>
@@ -128,72 +183,21 @@ export default function ProfilePage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleWalletUpdate} className="space-y-4">
-            {/* Wallet Address */}
             <div>
               <Label htmlFor="cryptoWallet">Crypto Wallet Address</Label>
-              <Input
-                id="cryptoWallet"
-                name="cryptoWallet"
-                placeholder="Enter your crypto wallet address"
-                value={profile.cryptoWallet}
-                onChange={handleChange}
-                required
-              />
+              <Input id="cryptoWallet" name="cryptoWallet" value={profile?.cryptoWallet} onChange={handleChange} required />
             </div>
 
-            {/* Blockchain Selection */}
             <div>
-              <Label htmlFor="blockchain">Blockchain Network</Label>
-              <select
-                id="blockchain"
-                name="blockchain"
-                value={profile.blockchain}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border rounded-md"
-                required
-              >
-                <option value="">Select Blockchain</option>
-                <option value="Ethereum">Ethereum (ETH)</option>
-                <option value="Solana">Solana (SOL)</option>
-                <option value="Binance Smart Chain">Binance Smart Chain (BSC)</option>
-                <option value="Polygon">Polygon (MATIC)</option>
-                <option value="Avalanche">Avalanche (AVAX)</option>
-              </select>
+              <Label htmlFor="blockchain">Blockchain</Label>
+              <Input id="blockchain" name="blockchain" value={profile?.blockchain} onChange={handleChange} required />
             </div>
 
-            {/* Cryptocurrency Selection */}
             <div>
-              <Label htmlFor="cryptoType">Cryptocurrency Type</Label>
-              <select
-                id="cryptoType"
-                name="cryptoType"
-                value={profile.cryptoType}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border rounded-md"
-                required
-              >
-                <option value="">Select Cryptocurrency</option>
-                <option value="USDC">USDC</option>
-                <option value="ETH">Ethereum (ETH)</option>
-                <option value="SOL">Solana (SOL)</option>
-                <option value="BTC">Bitcoin (BTC)</option>
-                <option value="BNB">Binance Coin (BNB)</option>
-              </select>
+              <Label htmlFor="cryptoType">Cryptocurrency</Label>
+              <Input id="cryptoType" name="cryptoType" value={profile?.cryptoType} onChange={handleChange} required />
             </div>
 
-            {/* Wallet Provider */}
-            <div>
-              <Label htmlFor="walletProvider">Wallet Provider</Label>
-              <Input
-                id="walletProvider"
-                name="walletProvider"
-                placeholder="e.g., Coinbase, MetaMask, Phantom"
-                value={profile.walletProvider}
-                onChange={handleChange}
-              />
-            </div>
-
-            {/* Update Button */}
             <Button type="submit" className="w-full" disabled={isWalletUpdating}>
               {isWalletUpdating ? "Updating..." : "Update Wallet"}
             </Button>
