@@ -76,7 +76,8 @@ defmodule RebuWebApi.MixProject do
       {:styler, "~> 1.3", only: [:dev, :test], runtime: false},
       {:corsica, "~> 2.1"},
       {:sops_config_provider, "~> 0.2.1"},
-      {:faker, "~> 0.18.0"}
+      {:faker, "~> 0.18.0"},
+      {:ex_machina, "~> 2.7.0"}
     ]
   end
 
