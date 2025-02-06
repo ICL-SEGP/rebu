@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { getSession, signIn} from "next-auth/react";
 
 import { Button } from "@/components/ui/button"
 import {
@@ -14,23 +14,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-
-
-// export async function fetchWithToken(url:string, token:string) {
-//   const response = await fetch(url, {
-//     method: 'GET', // or 'POST', etc.
-//     headers: {
-//       'Content-Type': 'application/json',
-//       Authorization: `Bearer ${token}`,
-//     },
-//   });
-
-//   if (!response.ok) {
-//     throw new Error('Failed to fetch');
-//   }
-
-//   return response.json();
-// }
+import { API_BASE_URL } from "@/lib/constants";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -45,29 +29,40 @@ const Register = () => {
     e.preventDefault();
     console.log(JSON.stringify({ password, email, first_name, last_name }))
 
-    const response = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password, email, first_name, last_name }),
-    });
-    // console.log(response)
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password, email, first_name, last_name }),
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      setError(errorData.message || "Something went wrong.");
-      return;
-    }
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Registration failed");
+      }
 
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
 
-    if (res?.error) {
-      setError("Invalid email or password");
-    } else {
-      router.push("/user/dashboard"); // Redirect to home or dashboard on success
+      // Optional: Auto-login after registration
+      const result = await signIn("credentials", {
+        email: email,
+        password: password,
+        redirect: false, // Prevents full page reload
+      });
+
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        const session = await getSession();
+        if (session) {
+          if (session.role == "admin") {
+            router.push("/admin/dashboard");
+          } else {
+            router.push("/user/dashboard");
+          }
+        }; // Redirect to protected page
+      }
+    } catch (err: any) {
+      setError(err.message);
     }
   };
 
@@ -79,7 +74,7 @@ const Register = () => {
           <CardDescription className="text-red-500">{error}</CardDescription>
         </CardHeader>
         <CardContent>
-        <form onSubmit={handleSubmit}> 
+        <form onSubmit={handleSubmit}>
           <div className="grid w-full items-center gap-4">
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="name">Name</Label>
@@ -117,7 +112,7 @@ const Register = () => {
                 </button>
               </p>
             </div>
-          </CardDescription>    
+          </CardDescription>
         </CardContent>
       </Card>
     </div>

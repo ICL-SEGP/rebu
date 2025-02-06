@@ -39,7 +39,7 @@ const Login = () => {
     e.preventDefault();
 
     // Attempts sign in with credentials
-    
+    console.log("creds", email, password)
     const res = await signIn("credentials", {
       email,
       password,
@@ -85,7 +85,7 @@ const Login = () => {
                 </Button>
               </div>
             </div>
-          </form> 
+          </form>
           <CardDescription>
             <div className="mt-4 text-center">
               <p className="text-sm text-gray-600">
@@ -99,7 +99,7 @@ const Login = () => {
                 </button>
               </p>
             </div>
-          </CardDescription>    
+          </CardDescription>
         </CardContent>
       </Card>
     </div>
