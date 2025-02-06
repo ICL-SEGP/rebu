@@ -1,0 +1,50 @@
+defmodule RebuWebApiWeb.JSONHelpers do
+  alias RebuWebApi.Sales.Offer
+  alias RebuWebApi.Accounts.User
+  alias RebuWebApi.Sales.Order
+  import Ecto.Query, only: [preload: 2]
+
+  @doc """
+  Formats timestamps as ISO8601 strings.
+  """
+  def format_datetime(nil), do: nil
+  def format_datetime(datetime), do: NaiveDateTime.to_iso8601(datetime)
+
+  @doc """
+  Converts order status atoms into human-readable strings.
+  """
+  def transform_status(:in_progress), do: "In Progress"
+  def transform_status(:refunded), do: "Refunded"
+  def transform_status(:completed), do: "Completed"
+  def transform_status(status), do: to_string(status)
+
+  @doc """
+  Standardized error response.
+  """
+  def error_response(message) do
+    %{error: message}
+  end
+
+  @doc """
+  Serializes an Ecto struct into a JSON-safe map dynamically.
+  - Handles associations if preloaded, otherwise ignores them.
+  - Excludes Ecto metadata and sensitive fields.
+  """
+  def serialize_schema(nil), do: nil
+
+  def serialize_schema(%_{} = struct) do
+    struct
+    |> Map.from_struct()
+    |> Map.drop([:__meta__, :password, :hashed_password])
+    |> Enum.map(fn
+      # Ignore unloaded relationships
+      {key, %Ecto.Association.NotLoaded{}} -> {key, nil}
+      # Convert decimals
+      {key, %Decimal{} = decimal} -> {key, Decimal.to_string(decimal)}
+      # Convert dates
+      {key, %NaiveDateTime{} = dt} -> {key, format_datetime(dt)}
+      {key, value} -> {key, value}
+    end)
+    |> Enum.into(%{})
+  end
+end

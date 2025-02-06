@@ -1,24 +1,18 @@
 defmodule RebuWebApiWeb.OfferJSON do
   alias RebuWebApi.Sales.Offer
+  alias RebuWebApiWeb.JSONHelpers
 
   @doc """
   Renders a list of offers.
   """
   def index(%{offers: offers}) do
-    %{data: for(offer <- offers, do: data(offer))}
+    %{data: Enum.map(offers, &JSONHelpers.serialize_schema/1)}
   end
 
   @doc """
   Renders a single offer.
   """
   def show(%{offer: offer}) do
-    %{data: data(offer)}
-  end
-
-  defp data(%Offer{} = offer) do
-    %{
-      id: offer.id,
-      desc: offer.desc
-    }
+    %{data: JSONHelpers.serialize_schema(offer)}
   end
 end

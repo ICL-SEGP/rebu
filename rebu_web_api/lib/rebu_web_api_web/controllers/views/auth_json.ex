@@ -1,34 +1,31 @@
 defmodule RebuWebApiWeb.AuthJSON do
-  alias RebuWebApi.Accounts.User
+  alias RebuWebApiWeb.JSONHelpers
 
+  @doc """
+  Returns auth success response with token.
+  """
   def auth_success(%{user: user, token: token}) do
-    Map.put(data(user), :token, token)
+    %{data: Map.put(JSONHelpers.serialize_schema(user), :token, token)}
   end
 
+  @doc """
+  Returns a successful sign-out response.
+  """
   def signed_out(%{}) do
-    %{sign_out: "successful", message: "Goodbye!"}
+    %{message: "Signed out successfully.", status: "success"}
   end
 
+  @doc """
+  Returns user balance.
+  """
   def balance(%{balance: balance}) do
-    %{balance: balance}
+    %{balance: Decimal.to_string(balance)}
   end
 
-  @spec error(%{:error => any(), optional(any()) => any()}) :: %{error: any()}
+  @doc """
+  Returns a standardized error response.
+  """
   def error(%{error: error}) do
-    %{
-      error: error
-    }
-  end
-
-  defp data(%User{} = user) do
-    Map.from_struct(user)
-    |> Map.drop([:__meta__, :password, :hashed_password, :offers, :orders])
-    |> Map.put(:balance, handle_balance(user.balance))
-  end
-
-  defp data(nil), do: %{}
-
-  defp handle_balance(balance) do
-    String.to_float(to_string(balance))
+    JSONHelpers.error_response(error)
   end
 end
