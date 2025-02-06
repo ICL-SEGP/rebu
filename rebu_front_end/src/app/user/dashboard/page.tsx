@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "@/hooks/use-toast"; // Toast notifications
+import { toast } from "@/hooks/use-toast"; 
+import { Coins, Lock, Wallet } from "lucide-react"; 
 import {
   Table,
   TableBody,
@@ -17,7 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-// Token Balance & Orders Type
+
 interface TokenBalance {
   availableTokens: number;
   lockedTokens: number;
@@ -36,7 +37,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [isWithdrawing, setIsWithdrawing] = useState<boolean>(false);
 
-  // Dummy Order Data (Replace with API Data)
+  // Dummy Order Data
   const orders: Order[] = [
     { date: "2025-01-10", product: "Product A", tokens: "100" },
     { date: "2025-01-08", product: "Product B", tokens: "400" },
@@ -109,23 +110,29 @@ export default function DashboardPage() {
     <div className="space-y-8 p-4">
       <h1 className="text-3xl font-bold text-center">User Dashboard</h1>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-green-500">Available Tokens</CardTitle>
+      {/* Enhanced Key Metrics UI */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Available Tokens */}
+        <Card className="border border-green-400 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-green-600 text-lg">Available Tokens</CardTitle>
+            <Coins className="text-green-500 w-6 h-6" />
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-semibold">{balance?.availableTokens ?? 0}</p>
+            <p className="text-4xl font-semibold text-green-600">{balance?.availableTokens ?? 0}</p>
+            <p className="text-sm text-gray-500">Tokens ready for withdrawal</p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-red-500">Locked Tokens</CardTitle>
+        {/* Locked Tokens */}
+        <Card className="border border-red-400 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-red-600 text-lg">Locked Tokens</CardTitle>
+            <Lock className="text-red-500 w-6 h-6" />
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-semibold">{balance?.lockedTokens ?? 0}</p>
+            <p className="text-4xl font-semibold text-red-600">{balance?.lockedTokens ?? 0}</p>
+            <p className="text-sm text-gray-500">Tokens pending release</p>
           </CardContent>
         </Card>
       </div>
@@ -149,14 +156,14 @@ export default function DashboardPage() {
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={isWithdrawing}>
+            <Button type="submit" className="w-full bg-green-600 hover:bg-green-700" disabled={isWithdrawing}>
               {isWithdrawing ? "Processing..." : "Withdraw"}
             </Button>
 
             {/* Wallet Address Display */}
             <Separator />
             <p className="text-gray-500 text-sm">
-              Withdrawals will be sent to:{" "}
+              <Wallet className="inline-block w-4 h-4 text-blue-500" /> Withdrawals will be sent to:{" "}
               <span className="font-semibold text-blue-600">{balance?.cryptoWallet || "No wallet set"}</span>
             </p>
           </form>
@@ -179,21 +186,13 @@ export default function DashboardPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {orders.length > 0 ? (
-                orders.map((order, index) => (
-                  <TableRow key={index} className="hover:bg-gray-50 transition">
-                    <TableCell className="font-medium px-4 py-2">{order.date}</TableCell>
-                    <TableCell className="px-4 py-2">{order.product}</TableCell>
-                    <TableCell className="text-right px-4 py-2">{order.tokens}</TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={3} className="text-center py-4 text-gray-500">
-                    No transactions found
-                  </TableCell>
+              {orders.map((order, index) => (
+                <TableRow key={index} className="hover:bg-gray-50 transition">
+                  <TableCell className="font-medium px-4 py-2">{order.date}</TableCell>
+                  <TableCell className="px-4 py-2">{order.product}</TableCell>
+                  <TableCell className="text-right px-4 py-2">{order.tokens}</TableCell>
                 </TableRow>
-              )}
+              ))}
             </TableBody>
           </Table>
         </CardContent>
