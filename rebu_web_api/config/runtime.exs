@@ -10,7 +10,7 @@ if config_env() in [:dev] do
       SopsConfigProvider,
       %{
         app_name: :rebu_web_api,
-        secret_file_path: "priv/secrets/secrets.enc.yaml",
+        secret_file_path: "priv/secrets/elixir-secrets.enc.yaml",
         sops_binary_path: Application.get_env(:rebu_web_api, :sops_binary_path),
         env_variables: [{"SOPS_AGE_KEY_FILE", "priv/secrets/sops-key.txt"}],
         config_env: config_env()
