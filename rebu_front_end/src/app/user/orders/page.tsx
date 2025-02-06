@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -8,53 +11,46 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge"; // ShadCN's Badge component
 
-const invoices = [
-  {
-    invoice: "INV001",
-    paymentStatus: "Paid",
-    totalAmount: "$250.00",
-    paymentMethod: "Credit Card",
-  },
-  {
-    invoice: "INV002",
-    paymentStatus: "Pending",
-    totalAmount: "$150.00",
-    paymentMethod: "PayPal",
-  },
-  {
-    invoice: "INV003",
-    paymentStatus: "Unpaid",
-    totalAmount: "$350.00",
-    paymentMethod: "Bank Transfer",
-  },
-  {
-    invoice: "INV004",
-    paymentStatus: "Paid",
-    totalAmount: "$450.00",
-    paymentMethod: "Credit Card",
-  },
-  {
-    invoice: "INV005",
-    paymentStatus: "Paid",
-    totalAmount: "$550.00",
-    paymentMethod: "PayPal",
-  },
-  {
-    invoice: "INV006",
-    paymentStatus: "Pending",
-    totalAmount: "$200.00",
-    paymentMethod: "Bank Transfer",
-  },
-  {
-    invoice: "INV007",
-    paymentStatus: "Unpaid",
-    totalAmount: "$300.00",
-    paymentMethod: "Credit Card",
-  },
-];
+// Define the structure of an order (TypeScript type safety)
+interface Invoice {
+  invoice: string;
+  paymentStatus: "Paid" | "Pending" | "Unpaid";
+  totalAmount: string; // e.g., "$250.00"
+  paymentMethod: string;
+}
+
+// Backend API endpoint (Replace with your actual API)
+const API_URL = "/api/orders";
 
 export default function OrdersPage() {
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  // Fetch orders from the backend
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(API_URL);
+      if (!response.ok) throw new Error("Failed to fetch orders");
+
+      const data: Invoice[] = await response.json();
+      setInvoices(data);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch orders on mount and refresh every 5 seconds
+  useEffect(() => {
+    fetchOrders();
+    const interval = setInterval(fetchOrders, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Orders</h1>
@@ -69,19 +65,49 @@ export default function OrdersPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {invoices.map((invoice) => (
-            <TableRow key={invoice.invoice} className="hover:bg-gray-50 transition">
-              <TableCell className="font-medium px-4 py-2">{invoice.invoice}</TableCell>
-              <TableCell className="px-4 py-2">{invoice.paymentStatus}</TableCell>
-              <TableCell className="px-4 py-2">{invoice.paymentMethod}</TableCell>
-              <TableCell className="text-right px-4 py-2">{invoice.totalAmount}</TableCell>
+          {loading ? (
+            <TableRow>
+              <TableCell colSpan={4} className="text-center py-4 text-gray-500">
+                Loading orders...
+              </TableCell>
             </TableRow>
-          ))}
+          ) : invoices.length > 0 ? (
+            invoices.map((invoice) => (
+              <TableRow key={invoice.invoice} className="hover:bg-gray-50 transition">
+                <TableCell className="font-medium px-4 py-2">{invoice.invoice}</TableCell>
+                <TableCell className="px-4 py-2">
+                  <Badge
+                    className={`px-3 py-1 text-sm font-semibold ${
+                      invoice.paymentStatus === "Paid"
+                        ? "bg-green-100 text-green-700"
+                        : invoice.paymentStatus === "Pending"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {invoice.paymentStatus}
+                  </Badge>
+                </TableCell>
+                <TableCell className="px-4 py-2">{invoice.paymentMethod}</TableCell>
+                <TableCell className="text-right px-4 py-2">{invoice.totalAmount}</TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={4} className="text-center py-4 text-gray-500">
+                No orders available
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
         <TableFooter>
           <TableRow>
             <TableCell colSpan={3} className="px-4 py-3 font-semibold">Total</TableCell>
-            <TableCell className="text-right px-4 py-3 font-semibold">$2,500.00</TableCell>
+            <TableCell className="text-right px-4 py-3 font-semibold">
+              {invoices
+                .reduce((sum, invoice) => sum + parseFloat(invoice.totalAmount.replace("$", "")), 0)
+                .toFixed(2) || "$0.00"}
+            </TableCell>
           </TableRow>
         </TableFooter>
       </Table>
