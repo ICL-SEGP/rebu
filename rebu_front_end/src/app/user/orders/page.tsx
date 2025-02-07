@@ -11,7 +11,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge"; 
+import { Badge } from "@/components/ui/badge";
+import { useSession } from "next-auth/react";
+import { API_BASE_URL } from "@/lib/constants";
+import OrderTable from "@/components/ui/orders_table";
 
 // Define the structure of an order (TypeScript type safety)
 interface Invoice {
@@ -21,26 +24,53 @@ interface Invoice {
   paymentMethod: string;
 }
 
+interface Order {
+  id: number;
+  status: string;
+  date: string;
+  totalRebateAmount: number; // ✅ Matches parseFloat()
+}
+
 // Backend API endpoint (Replace with your actual API)
 const API_URL = "/api/orders";
 
 export default function OrdersPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const { data: session } = useSession();
+
 
   // Fetch orders from the backend
   const fetchOrders = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(API_URL);
-      if (!response.ok) throw new Error("Failed to fetch orders");
 
-      const data: Invoice[] = await response.json();
-      setInvoices(data);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/orders`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch balance");
+
+      const orders = (await res.json()).orders;
+
+      let fetchedOrders: Order[] = await orders.map((order) => ({
+        id: order.id,
+        status: order.status,
+        date: order.inserted_at, // Renaming inserted_at to date
+        totalRebateAmount: parseFloat(order.total_rebate_amount).toFixed(2),
+        offers: order.offers // Convert to number
+      }))
+
+
+      setOrders(fetchedOrders.slice(0, 3));
+
+
     } catch (error) {
       console.error("Error fetching orders:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -52,65 +82,12 @@ export default function OrdersPage() {
   }, []);
 
   return (
+
+
     <div>
       <h1 className="text-2xl font-bold mb-4">Orders</h1>
-      <Table className="w-full border rounded-lg shadow-md">
-        <TableCaption>A list of recent orders</TableCaption>
-        <TableHeader>
-          <TableRow className="bg-gray-100">
-            <TableHead className="w-[150px] px-4 py-3">Invoice</TableHead>
-            <TableHead className="px-4 py-3">Status</TableHead>
-            <TableHead className="px-4 py-3">Method</TableHead>
-            <TableHead className="text-right px-4 py-3">Amount</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {loading ? (
-            <TableRow>
-              <TableCell colSpan={4} className="text-center py-4 text-gray-500">
-                Loading orders...
-              </TableCell>
-            </TableRow>
-          ) : invoices.length > 0 ? (
-            invoices.map((invoice) => (
-              <TableRow key={invoice.invoice} className="hover:bg-gray-50 transition">
-                <TableCell className="font-medium px-4 py-2">{invoice.invoice}</TableCell>
-                <TableCell className="px-4 py-2">
-                  <Badge
-                    className={`px-3 py-1 text-sm font-semibold ${
-                      invoice.paymentStatus === "Paid"
-                        ? "bg-green-100 text-green-700"
-                        : invoice.paymentStatus === "Pending"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {invoice.paymentStatus}
-                  </Badge>
-                </TableCell>
-                <TableCell className="px-4 py-2">{invoice.paymentMethod}</TableCell>
-                <TableCell className="text-right px-4 py-2">{invoice.totalAmount}</TableCell>
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={4} className="text-center py-4 text-gray-500">
-                No orders available
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell colSpan={3} className="px-4 py-3 font-semibold">Total</TableCell>
-            <TableCell className="text-right px-4 py-3 font-semibold">
-              {invoices
-                .reduce((sum, invoice) => sum + parseFloat(invoice.totalAmount.replace("$", "")), 0)
-                .toFixed(2) || "$0.00"}
-            </TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
+      <OrderTable orders={orders}/>
+
     </div>
   );
 }
