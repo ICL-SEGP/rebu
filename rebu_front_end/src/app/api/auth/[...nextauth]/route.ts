@@ -30,17 +30,24 @@ export const authOptions:NextAuthOptions = {
 
 
         // 3️⃣ NextAuth stores the JWT
-        return user ? { id: user.id, email: user.email, token: user.token, role: user.role } : null;
+        return user ? { id: user.id, email: user.email, token: user.token, role: user.role, name: user.first_name } : null;
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.accessToken = user.token; // 4️⃣ Store JWT in NextAuth
+      if (user) {
+        token.accessToken = user.token; // 4️⃣ Store JWT in NextAuth
+        token.email = user.email;
+        token.name = user.name;
+      }
+      console.log("token", token)
       return token;
     },
     async session({ session, token }) {
       session.accessToken = token.accessToken; // 5️⃣ Add JWT to session object
+      session.user.email = token.email;
+      session.user.name = token.name;
       return session;
     },
   },
