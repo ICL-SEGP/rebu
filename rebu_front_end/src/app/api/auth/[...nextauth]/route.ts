@@ -3,7 +3,7 @@ import NextAuth from "next-auth";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-export const authOptions:NextAuthOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -40,6 +40,7 @@ export const authOptions:NextAuthOptions = {
         token.accessToken = user.token; // 4️⃣ Store JWT in NextAuth
         token.email = user.email;
         token.name = user.name;
+        token.role = user.role
       }
       return token;
     },
@@ -47,6 +48,7 @@ export const authOptions:NextAuthOptions = {
       session.accessToken = token.accessToken; // 5️⃣ Add JWT to session object
       session.user.email = token.email;
       session.user.name = token.name;
+      session.user.role = token.role;
       return session;
     },
   },

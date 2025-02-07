@@ -38,13 +38,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return <p>Loading...</p>;
   }
 
-  if (!session || session.role != 'admin') {
-    if (typeof window !== "undefined") {
-      window.location.href = "/";
-    }
-    return null;
-  }
-
   return (
     <SidebarProvider>
       <div className="flex">

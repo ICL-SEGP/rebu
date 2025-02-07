@@ -10,11 +10,15 @@ export default function HomePage() {
 
   useEffect(() => {
     if (session) {
-      router.push("/user/dashboard"); // Redirect logged-in users to dashboard
+      if (session.user.role == "admin") {
+        router.push("/admin/dashboard");
+      } else {
+        router.push("/user/dashboard");
+      }
     } else {
       router.push("/auth/login");
     }
   }, [session, router]);
 
-  return null; 
+  return null;
 }

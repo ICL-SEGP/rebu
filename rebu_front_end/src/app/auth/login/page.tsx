@@ -1,6 +1,6 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -23,17 +23,6 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
-  const { data: session } = useSession();
-  // Inside the Login component
-  useEffect(() => {
-    if (session) {
-      if (session.role == "admin") {
-        router.push("/admin/dashboard");
-      } else {
-        router.push("/user/dashboard");
-      }
-  }
-}, [session, router]); // Dependencies: Runs when session changes
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -49,8 +38,9 @@ const Login = () => {
     if (res?.error) {
       setError("Invalid email or password");
     } else {
+      const session = await getSession();
       if (session) {
-        if (session.role == "admin") {
+        if (session.user.role == "admin") {
           router.push("/admin/dashboard");
         } else {
           router.push("/user/dashboard");
@@ -73,11 +63,11 @@ const Login = () => {
             <div className="grid w-full items-center gap-4">
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" placeholder="user@gmail.com" onChange={(e) => setEmail(e.target.value)}/>
+                <Input id="email" placeholder="user@gmail.com" onChange={(e) => setEmail(e.target.value)} />
               </div>
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" placeholder="*******" type="password" onChange={(e) => setPassword(e.target.value)}/>
+                <Input id="password" placeholder="*******" type="password" onChange={(e) => setPassword(e.target.value)} />
               </div>
               <div className="flex items-center justify-between">
                 <Button type="submit" className="w-full">
