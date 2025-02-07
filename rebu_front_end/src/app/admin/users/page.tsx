@@ -9,7 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, /*DialogTrigger*/ } f
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Trash2, Pencil } from "lucide-react";
+import { useToast } from "@/hooks/use-toast"; 
 import { Toaster } from "@/components/ui/toaster"
+
 
 // Define User type
 interface User {
@@ -35,6 +37,7 @@ export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"All" | "Admin" | "Regular">("All");
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
+  const { toast, dismiss } = useToast();
 
   // Handle search
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,7 +106,8 @@ export default function UsersPage() {
     if (isNaN(numericValue)) {
       numericValue = 0
     }
-    console.log(numericValue)
+    toast({ title: "Tokens Given!", description: numericValue + " tokens given." })
+    console.log(inputValue)
   }
 
   return (
@@ -196,7 +200,7 @@ export default function UsersPage() {
                       <Button onClick={() => handleTokenGive(user.email)}>
                         Submit
                       </Button>
-                      <Toaster />
+                      {/* <Toaster /> */}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -239,6 +243,7 @@ export default function UsersPage() {
           </div>
         </DialogContent>
       </Dialog>
+      <Toaster />
     </div>
   );
 }
