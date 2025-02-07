@@ -123,9 +123,10 @@ defmodule RebuWebApi.Sales do
     Repo.all(Order)
   end
 
-  def list_orders_by_user(%User{} = user) do
-    from(o in "orders", where: o.user_id == ^user.id)
+  def get_orders_by_user(%User{} = user) do
+    from(o in Order, where: o.user_id == ^user.id)
     |> Repo.all()
+    |> Repo.preload(:offers)
   end
 
   @doc """

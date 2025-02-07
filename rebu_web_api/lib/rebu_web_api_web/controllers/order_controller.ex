@@ -1,13 +1,22 @@
 defmodule RebuWebApiWeb.OrderController do
   use RebuWebApiWeb, :controller
 
+  alias RebuWebApi.Accounts
   alias RebuWebApi.Sales
   alias RebuWebApi.Sales.Order
 
   action_fallback RebuWebApiWeb.FallbackController
 
   def index(conn, _params) do
-    orders = Sales.list_orders()
+    user = Guardian.Plug.current_resource(conn)
+
+    orders =
+      if Accounts.is_admin(user) do
+        Sales.list_orders()
+      else
+        Sales.get_orders_by_user(user)
+      end
+
     render(conn, :index, orders: orders)
   end
 
