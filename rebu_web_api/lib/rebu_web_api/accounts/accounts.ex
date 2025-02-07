@@ -148,6 +148,23 @@ defmodule RebuWebApi.Accounts do
     get_user!(user_id).balance
   end
 
+  def calculate_balances!(user) do
+    orders = Sales.get_orders_by_user(user)
+
+    Enum.reduce(orders, %{tokens: 0, locked: 0, rescinded: 0}, fn order, acc ->
+      case order.status do
+        :in_progress ->
+          %{acc | locked: acc.locked + Decimal.to_float(order.total_rebate_amount)}
+
+        :completed ->
+          %{acc | tokens: acc.tokens + Decimal.to_float(order.total_rebate_amount)}
+
+        :refunded ->
+          %{acc | rescinded: acc.rescinded + Decimal.to_float(order.total_rebate_amount)}
+      end
+    end)
+  end
+
   def set_admin(%User{id: _id} = user, role) do
     # TODO: add authorization checking of super admin later
     case role do
@@ -162,6 +179,11 @@ defmodule RebuWebApi.Accounts do
     result = get_user!(id)
 
     result.role == :admin || result.role == :super_admin
+  end
+
+  def get_users_by_role(role) do
+    query = from u in User, where: u.role == ^role
+    Repo.all(query)
   end
 
   def create_rebate_offer(%User{id: id} = user, offer_attrs) do

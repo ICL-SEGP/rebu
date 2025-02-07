@@ -53,10 +53,10 @@ defmodule RebuWebApiWeb.AuthController do
   def get_balance(conn, %{}) do
     user = Guardian.Plug.current_resource(conn)
 
-    balance = Accounts.get_user_balance!(user.id)
+    balances = Accounts.calculate_balances!(user)
 
     conn
     |> put_status(:ok)
-    |> render(:balance, %{balance: balance})
+    |> render(:balances, %{balances: balances})
   end
 end
