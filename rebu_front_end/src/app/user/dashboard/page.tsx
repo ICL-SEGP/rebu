@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
-import { Coins, Lock, Wallet } from "lucide-react";
+import { Coins, Link, Lock, Trash, Wallet } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -19,46 +19,79 @@ import {
 } from "@/components/ui/table";
 import { API_BASE_URL } from "@/lib/constants";
 import { useSession } from "next-auth/react";
+import OrderTable from "@/components/ui/orders_table";
+import { useRouter } from "next/navigation";
 
 
 interface TokenBalance {
   availableTokens: number;
   lockedTokens: number;
+  rescindedTokens: number;
   cryptoWallet: string;
 }
 
 interface Order {
+  id: number;
+  status: string;
   date: string;
-  product: string;
-  tokens: string;
+  totalRebateAmount: number; // ✅ Matches parseFloat()
 }
+
 
 export default function DashboardPage() {
   const [balance, setBalance] = useState<TokenBalance | null>(null);
   const [withdrawAmount, setWithdrawAmount] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [isWithdrawing, setIsWithdrawing] = useState<boolean>(false);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const router = useRouter();
   const { data: session } = useSession();
 
+  if (!session) {
+    throw new Error("No user logged in.");
+  }
+
   // Dummy Order Data
-  const orders: Order[] = [
-    { date: "2025-01-10", product: "Product A", tokens: "100" },
-    { date: "2025-01-08", product: "Product B", tokens: "400" },
-    { date: "2025-01-07", product: "Product A", tokens: "100" },
-    { date: "2025-01-01", product: "Product C", tokens: "300" },
-  ];
+  // const orders: Order[] = [
+  //   { date: "2025-01-10", product: "Product A", tokens: "100" },
+  //   { date: "2025-01-08", product: "Product B", tokens: "400" },
+  //   { date: "2025-01-07", product: "Product A", tokens: "100" },
+  //   { date: "2025-01-01", product: "Product C", tokens: "300" },
+  // ];
+
+
+  const fetchOrders = async () => {
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/orders`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch balance");
+
+      const orders = (await res.json()).orders;
+
+      let fetchedOrders: Order[] = await orders.map((order) => ({
+        id: order.id,
+        status: order.status,
+        date: order.inserted_at, // Renaming inserted_at to date
+        totalRebateAmount: parseFloat(order.total_rebate_amount).toFixed(2), // Convert to number
+      }))
+
+
+      setOrders(fetchedOrders.slice(0, 3));
+
+
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    }
+  };
 
   const fetchBalance = async () => {
-
-    if (!API_BASE_URL) {
-      console.error("API_BASE_URL is undefined.");
-      return;
-    }
-
-    if (!session) {
-      console.error("No user logged in.");
-      return;
-    }
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/balance`, {
@@ -71,10 +104,8 @@ export default function DashboardPage() {
 
       if (!res.ok) throw new Error("Failed to fetch balance");
 
-      const data = await res.json();
-      setBalance({availableTokens: data.balance, lockedTokens: 0, cryptoWallet: ""});
-
-      console.log("balance:", data.balance)
+      const balance = await res.json();
+      setBalance({ availableTokens: balance.tokens.toFixed(2), lockedTokens: balance.locked.toFixed(2), rescindedTokens: balance.rescinded.toFixed(2), cryptoWallet: "" });
     } catch (error) {
       console.error("Error fetching balance:", error);
       toast({ title: "Error", description: "Failed to load balance.", variant: "destructive" });
@@ -83,9 +114,11 @@ export default function DashboardPage() {
     }
   };
 
+
   // Fetch Token Balance from Backend
   useEffect(() => {
     fetchBalance();
+    fetchOrders();
   }, []);
 
   // Handle Withdrawal
@@ -131,30 +164,41 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8 p-4">
-      <h1 className="text-3xl font-bold text-center">User Dashboard</h1>
+      <h1 className="text-3xl font-bold text-center">Hello {session.user.name}!</h1>
 
       {/* Enhanced Key Metrics UI */}
+
+      {/* Available Tokens */}
+      <Card className="border border-green-400 shadow-lg">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-green-600 text-lg">Available Tokens</CardTitle>
+          <Coins className="text-green-500 w-6 h-6" />
+        </CardHeader>
+        <CardContent>
+          <p className="text-4xl font-semibold text-green-600">{balance?.availableTokens ?? 0}</p>
+          <p className="text-sm text-gray-500">Tokens ready for withdrawal</p>
+        </CardContent>
+      </Card>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Available Tokens */}
-        <Card className="border border-green-400 shadow-lg">
+        {/* Locked Tokens */}
+        <Card className="border border-orange-400 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-green-600 text-lg">Available Tokens</CardTitle>
-            <Coins className="text-green-500 w-6 h-6" />
+            <CardTitle className="text-orange-600 text-lg">Locked Tokens</CardTitle>
+            <Lock className="text-orange-500 w-6 h-6" />
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-semibold text-green-600">{balance?.availableTokens ?? 0}</p>
-            <p className="text-sm text-gray-500">Tokens ready for withdrawal</p>
+            <p className="text-4xl font-semibold text-orange-600-600">{balance?.lockedTokens ?? 0}</p>
+            <p className="text-sm text-gray-500">Tokens pending release</p>
           </CardContent>
         </Card>
 
-        {/* Locked Tokens */}
         <Card className="border border-red-400 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-red-600 text-lg">Locked Tokens</CardTitle>
-            <Lock className="text-red-500 w-6 h-6" />
+            <CardTitle className="text-red-600 text-lg">Rescinded Tokens</CardTitle>
+            <Trash className="text-red-500 w-6 h-6" />
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-semibold text-red-600">{balance?.lockedTokens ?? 0}</p>
+            <p className="text-4xl font-semibold text-red-600">{balance?.rescindedTokens ?? 0}</p>
             <p className="text-sm text-gray-500">Tokens pending release</p>
           </CardContent>
         </Card>
@@ -202,24 +246,29 @@ export default function DashboardPage() {
       {/* Recent Orders */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Transactions</CardTitle>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <CardTitle>Recent Transactions</CardTitle>
+            <Button onClick={() => router.push("/user/orders")}> My Orders </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <Table className="w-full border rounded-lg shadow-md">
             <TableCaption>A list of your recent purchases</TableCaption>
             <TableHeader>
               <TableRow className="bg-gray-100">
-                <TableHead className="w-[150px] px-4 py-3">Date</TableHead>
-                <TableHead className="px-4 py-3">Product</TableHead>
-                <TableHead className="text-right px-4 py-3">Tokens</TableHead>
+                <TableHead className="w-[150px] px-4 py-3">Order Id</TableHead>
+                <TableHead className="px-4 py-3">Date</TableHead>
+                <TableHead className="px-4 py-3">Order Status</TableHead>
+                <TableHead className="text-right px-4 py-3">Token's Earned</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {orders.map((order, index) => (
                 <TableRow key={index} className="hover:bg-gray-50 transition">
+                  <TableCell className="font-medium px-4 py-2">{order.id}</TableCell>
                   <TableCell className="font-medium px-4 py-2">{order.date}</TableCell>
-                  <TableCell className="px-4 py-2">{order.product}</TableCell>
-                  <TableCell className="text-right px-4 py-2">{order.tokens}</TableCell>
+                  <TableCell className="px-4 py-2">{order.status}</TableCell>
+                  <TableCell className="text-right px-4 py-2">{order.totalRebateAmount}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -227,5 +276,7 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
     </div>
+
+
   );
 }
