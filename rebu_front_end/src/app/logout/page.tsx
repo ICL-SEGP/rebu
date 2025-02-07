@@ -1,11 +1,11 @@
 "use client";
 import { signOut } from "next-auth/react";
-
+import { API_BASE_URL } from "@/lib/constants";
 
 const LogOutPage = () => {
     const handleLogout = async () => {
 
-        await signOut({callbackUrl: "https://main.d227h8ee1xlxct.amplifyapp.com/"});
+        await signOut({callbackUrl: API_BASE_URL});
     };
     handleLogout();
     return (<div>Logging out</div>);
