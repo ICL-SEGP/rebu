@@ -30,12 +30,23 @@ defmodule RebuWebApiWeb.Router do
     plug :fetch_account
   end
 
+  pipeline :admin do
+    plug RebuWebApi.Auth.Pipeline
+    plug :check_admin
+  end
+
+  scope "/api/admin", RebuWebApiWeb do
+    pipe_through [:api, :auth, :admin]
+
+    get "/users", AdminController, :get_users
+  end
+
   scope "/api", RebuWebApiWeb do
     pipe_through [:api, :auth]
     get "/", DefaultController, :default
     resources "/orders", OrderController, except: [:new, :edit]
     resources "/offers", OfferController, except: [:new, :edit]
-    get "/logout", AuthController, :sign_out
+    delete "/logout", AuthController, :sign_out
     get "/balance", AuthController, :get_balance
   end
 
