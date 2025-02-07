@@ -8,7 +8,9 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
@@ -19,7 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, Wallet, LogOut } from "lucide-react";
+import { User, Wallet, LogOut, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
@@ -34,23 +36,8 @@ export function AppSidebarUser({ ...props }: React.ComponentProps<typeof Sidebar
 
   return (
     <Sidebar {...props}>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>{item.title}</a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
 
-      {/* Profile Button at Bottom */}
+
       <div className="mt-auto p-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -74,6 +61,26 @@ export function AppSidebarUser({ ...props }: React.ComponentProps<typeof Sidebar
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Nav</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {navItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <a href={item.url}>{item.title}</a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+
+      {/* Profile Button at Bottom */}
+
 
       <SidebarRail />
     </Sidebar>
