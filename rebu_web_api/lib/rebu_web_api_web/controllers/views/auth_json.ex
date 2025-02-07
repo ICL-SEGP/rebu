@@ -18,8 +18,8 @@ defmodule RebuWebApiWeb.AuthJSON do
   @doc """
   Returns user balance.
   """
-  def balance(%{balance: balance}) do
-    %{balance: Decimal.to_string(balance)}
+  def balances(%{balances: balances}) do
+    balances
   end
 
   @doc """
