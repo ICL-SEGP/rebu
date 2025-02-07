@@ -13,7 +13,7 @@ const LogOutPage = () => {
     }
 
     await fetch(`${API_BASE_URL}/api/logout`, {
-      method: "POST",
+      method: "DELETE",
       headers: { Authorization: `Bearer ${session.accessToken}` },
     });
 
