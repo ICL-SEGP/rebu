@@ -1,126 +1,196 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { API_BASE_URL } from "@/lib/constants";
+import { useSession } from "next-auth/react";
 
-// Define the structure of an offer (TypeScript type safety)
+// // Define the structure of an offer (TypeScript type safety)
 interface Offer {
   id: string;
-  product: string;
-  affiliate: string;
-  cryptoRebate: string; // e.g., "10% BTC Cashback"
-  purchaseLink: string;
+  desc: string;
+  affiliate_link: string;
+  offer_started: string;
+  offer_end: string;
+  rebate_percentage: string; // e.g., "10% BTC Cashback"
 }
 
-// Backend API endpoint (Replace with actual API)
-const API_URL = "/api/offers";
 
-export default function OffersPage() {
+const initialOffers = [
+  {
+    id: 1,
+    desc: "Itaque et eligendi ipsa eligendi!",
+    affiliate_link: "https://oconnell.com",
+    offer_start: "2025-02-02T14:08:01",
+    offer_end: "2025-02-10T23:11:37",
+    rebate_percentage: "9.84%",
+  },
+  {
+    id: 2,
+    desc: "Reiciendis sed accusamus aliquid laboriosam.",
+    affiliate_link: "https://lang.net",
+    offer_start: "2025-02-03T19:41:32",
+    offer_end: "2025-02-10T00:43:35",
+    rebate_percentage: "7.54%",
+  },
+  {
+    id: 3,
+    desc: "Limited-time deal! Save big today.",
+    affiliate_link: "https://limiteddeal.com",
+    offer_start: "2025-02-05T10:15:30",
+    offer_end: "2025-02-08T18:30:00",
+    rebate_percentage: "12.50%",
+  },
+];
+
+export default function OffersList() {
+  const [selectedOffer, setSelectedOffer] = useState(null);
+  // const [offers, setOffers] = useState(initialOffers);
+  const [sortBy, setSortBy] = useState("endingSoonest");
   const [offers, setOffers] = useState<Offer[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const { data: session } = useSession();
 
-  // Fetch offers from backend
   const fetchOffers = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(API_URL);
-      if (!response.ok) throw new Error("Failed to fetch offers");
 
-      const data: Offer[] = await response.json();
-      setOffers(data);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/offers`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch balance");
+
+      const offers = (await res.json()).data;
+
+      let fetchedOffers= await offers.map((offer) => ({
+        id: offer.id,
+        desc: offer.desc,
+        affiliate_link: offer.affiliate_link,
+        offer_started: offer.offer_start,
+        offer_end: offer.offer_end,
+        rebate_percentage: parseFloat(offer.rebate_percentage).toFixed(2)
+      }))
+
+
+      setOffers(fetchedOffers);
+
+
     } catch (error) {
-      console.error("Error fetching offers:", error);
-    } finally {
-      setLoading(false);
+      console.error("Error fetching orders:", error);
     }
   };
 
-  // Fetch offers on mount
   useEffect(() => {
     fetchOffers();
   }, []);
 
+  // Sorting Function
+  const sortOffers = (criteria: string) => {
+    let sortedOffers = [...offers];
+
+    switch (criteria) {
+      case "endingSoonest":
+        sortedOffers.sort(
+          (a, b) => new Date(a.offer_end).getTime() - new Date(b.offer_end).getTime()
+        );
+        break;
+      case "highestRebate":
+        sortedOffers.sort(
+          (a, b) => parseFloat(b.rebate_percentage) - parseFloat(a.rebate_percentage)
+        );
+        break;
+      case "newest":
+        sortedOffers.sort(
+          (a, b) => new Date(b.offer_started).getTime() - new Date(a.offer_started).getTime()
+        );
+        break;
+      default:
+        break;
+    }
+
+    setSortBy(criteria);
+    setOffers(sortedOffers);
+  };
+
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Affiliate Offers with Crypto Rebates</h1>
+    <div className="space-y-6 p-6">
+      <h1 className="text-3xl font-bold text-center">Rebate Offers</h1>
 
-      {/* Display Offers in a Table */}
-      <Table className="w-full border rounded-lg shadow-md">
-        <TableCaption>Exclusive affiliate offers with crypto rebates</TableCaption>
-        <TableHeader>
-          <TableRow className="bg-gray-100">
-            <TableHead className="px-4 py-3">Product</TableHead>
-            <TableHead className="px-4 py-3">Affiliate</TableHead>
-            <TableHead className="px-4 py-3">Crypto Rebate</TableHead>
-            <TableHead className="text-right px-4 py-3">Action</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {loading ? (
-            <TableRow>
-              <TableCell colSpan={4} className="text-center py-4 text-gray-500">
-                Loading offers...
-              </TableCell>
-            </TableRow>
-          ) : offers.length > 0 ? (
-            offers.map((offer) => (
-              <TableRow key={offer.id} className="hover:bg-gray-50 transition">
-                <TableCell className="font-medium px-4 py-2">{offer.product}</TableCell>
-                <TableCell className="px-4 py-2">{offer.affiliate}</TableCell>
-                <TableCell className="px-4 py-2">
-                  <Badge className="bg-blue-100 text-blue-700">{offer.cryptoRebate}</Badge>
-                </TableCell>
-                <TableCell className="text-right px-4 py-2">
-                  <a
-                    href={offer.purchaseLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
-                  >
-                    View Offer
-                  </a>
-                </TableCell>
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={4} className="text-center py-4 text-gray-500">
-                No offers available
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+      {/* Sorting Buttons */}
+      <div className="flex justify-center gap-4">
+        <Button
+          size="sm"
+          variant={sortBy === "endingSoonest" ? "default" : "outline"}
+          onClick={() => sortOffers("endingSoonest")}
+        >
+          Ending Soonest
+        </Button>
+        <Button
+          size="sm"
+          variant={sortBy === "highestRebate" ? "default" : "outline"}
+          onClick={() => sortOffers("highestRebate")}
+        >
+          Highest Rebate
+        </Button>
+        <Button
+          size="sm"
+          variant={sortBy === "newest" ? "default" : "outline"}
+          onClick={() => sortOffers("newest")}
+        >
+          Newest
+        </Button>
+      </div>
 
-      {/* Display Featured Offers as Cards */}
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {offers.slice(0, 3).map((offer) => (
-          <Card key={offer.id}>
+      {/* Offers Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {offers.map((offer) => (
+          <Card key={offer.id} className="border shadow-md p-4 flex flex-col justify-between">
             <CardHeader>
-              <CardTitle>{offer.product}</CardTitle>
+              <CardTitle>{offer.desc}</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-500">Affiliate: {offer.affiliate}</p>
-              <p className="text-lg font-semibold mt-2">{offer.cryptoRebate}</p>
-              <a
-                href={offer.purchaseLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block mt-4 text-blue-600 hover:underline"
-              >
-                View Offer
-              </a>
+            <CardContent className="flex flex-col gap-3">
+              <p>
+                <Badge className="bg-blue-500">{offer.rebate_percentage} Rebate</Badge>
+              </p>
+              <p className="text-sm text-gray-500">Starts: {new Date(offer.offer_started).toLocaleDateString()}</p>
+              <p className="text-sm text-gray-500">Ends: {new Date(offer.offer_end).toLocaleDateString()}</p>
+
+              {/* Dialog for Offer Details */}
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="w-full" onClick={() => setSelectedOffer(offer)}>
+                    View Details
+                  </Button>
+                </DialogTrigger>
+
+                {selectedOffer && selectedOffer.id === offer.id && (
+                  <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                      <DialogTitle>Offer Details</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <p className="text-lg font-semibold">{selectedOffer.desc}</p>
+                      <p className="text-gray-500">
+                        Rebate: <Badge className="bg-green-500">{selectedOffer.rebate_percentage}</Badge>
+                      </p>
+                      <p>Offer starts on: {new Date(selectedOffer.offer_started).toLocaleString()}</p>
+                      <p>Offer ends on: {new Date(selectedOffer.offer_end).toLocaleString()}</p>
+
+                      <Button className="w-full bg-blue-600 hover:bg-blue-700" asChild>
+                        <a href={selectedOffer.affiliate_link} target="_blank" rel="noopener noreferrer">
+                          Buy with Offer
+                        </a>
+                      </Button>
+                    </div>
+                  </DialogContent>
+                )}
+              </Dialog>
             </CardContent>
           </Card>
         ))}
