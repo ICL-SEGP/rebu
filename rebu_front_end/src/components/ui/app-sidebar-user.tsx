@@ -21,7 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, Wallet, LogOut, MoreHorizontal } from "lucide-react";
+import { User, Wallet, LogOut, MoreHorizontal, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
@@ -36,7 +36,6 @@ export function AppSidebarUser({ ...props }: React.ComponentProps<typeof Sidebar
 
   return (
     <Sidebar {...props}>
-
 
       <div className="mt-auto p-4">
         <DropdownMenu>
@@ -62,6 +61,28 @@ export function AppSidebarUser({ ...props }: React.ComponentProps<typeof Sidebar
         </DropdownMenu>
       </div>
 
+      <div className="px-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="default"
+              className="w-full flex justify-between"
+            >
+              Wallet <Wallet className="w-4 h-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem onClick={() => router.push("/user/wallet")}>
+              <Link className="w-4 h-4 mr-2" /> Connect Wallet
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/user/wallet")}>
+              <Wallet className="w-4 h-4 mr-2" /> View Wallet
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+      </div>
+
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Nav</SidebarGroupLabel>
@@ -80,7 +101,6 @@ export function AppSidebarUser({ ...props }: React.ComponentProps<typeof Sidebar
       </SidebarContent>
 
       {/* Profile Button at Bottom */}
-
 
       <SidebarRail />
     </Sidebar>
