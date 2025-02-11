@@ -9,6 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, /*DialogTrigger*/ } f
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Trash2, Pencil } from "lucide-react";
+import { useToast } from "@/hooks/use-toast"; 
+import { Toaster } from "@/components/ui/toaster"
+
 
 // Define User type
 interface User {
@@ -33,6 +36,8 @@ export default function UsersPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"All" | "Admin" | "Regular">("All");
+  const [inputValues, setInputValues] = useState<Record<string, string>>({});
+  const { toast, dismiss } = useToast();
 
   // Handle search
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,6 +93,23 @@ export default function UsersPage() {
     setFilteredUsers(updatedUsers);
   };
 
+  const handleInputChange = (email: string, value: string) => {
+    setInputValues((prev) => ({
+      ...prev,
+      [email]: value,
+    }));
+  };
+
+  const handleTokenGive = (user: string) => {
+    const inputValue = inputValues[user] || "";
+    let numericValue = Number(inputValue);
+    if (isNaN(numericValue)) {
+      numericValue = 0
+    }
+    toast({ title: "Tokens Given!", description: numericValue + " tokens given." })
+    console.log(inputValue)
+  }
+
   return (
     <div className="space-y-6 p-6">
       <h1 className="text-2xl font-bold">Manage Users</h1>
@@ -127,6 +149,7 @@ export default function UsersPage() {
                 <TableHead>Role</TableHead>
                 <TableHead>Total Orders</TableHead>
                 <TableHead>Actions</TableHead>
+                <TableHead>Tokens</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -162,6 +185,23 @@ export default function UsersPage() {
                     <Button variant="destructive" size="icon" onClick={() => handleDeleteUser(user.id)}>
                       <Trash2 size={16} />
                     </Button>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center space-x-2">
+                      <Input
+                      type="number"
+                      className="flex-grow"
+                      placeholder="Enter value"
+                      value={inputValues[user.email] || 0}
+                      onChange={(e) =>
+                        handleInputChange(user.email, e.target.value)
+                      }
+                      />
+                      <Button onClick={() => handleTokenGive(user.email)}>
+                        Submit
+                      </Button>
+                      {/* <Toaster /> */}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -203,6 +243,7 @@ export default function UsersPage() {
           </div>
         </DialogContent>
       </Dialog>
+      <Toaster />
     </div>
   );
 }
