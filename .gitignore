@@ -61,3 +61,5 @@ logfile
 rebu_web_api/priv/secrets/.secret_key_base
 rebu_web_api/priv/secrets/.database_url
 rebu_web_api/priv/secrets/.postgres_password
+rebu_front_end/.nx/cache/
+rebu_web_api/output.exs
