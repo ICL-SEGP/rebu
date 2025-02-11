@@ -1,9 +1,4 @@
 defmodule RebuWebApiWeb.JSONHelpers do
-  alias RebuWebApi.Sales.Offer
-  alias RebuWebApi.Accounts.User
-  alias RebuWebApi.Sales.Order
-  import Ecto.Query, only: [preload: 2]
-
   @doc """
   Formats timestamps as ISO8601 strings.
   """

@@ -7,7 +7,7 @@ defmodule RebuWebApiWeb.Endpoint do
   @session_options [
     store: :cookie,
     key: "_rebu_web_api_key",
-    signing_salt: "qt/tIZ7z",
+    signing_salt: "qt/tIZ7z"
   ]
 
   # plug RebuWebApi.CORS

@@ -17,7 +17,13 @@ defmodule RebuWebApiWeb.OrderJSON do
   end
 
   defp serialize_order(%Order{} = order) do
-    order = Map.put(order, :inserted_at, Calendar.strftime(DateTime.to_naive(order.inserted_at), "%d %B %Y %H:%M:%S"))
+    order =
+      Map.put(
+        order,
+        :inserted_at,
+        Calendar.strftime(DateTime.to_naive(order.inserted_at), "%d %B %Y %H:%M:%S")
+      )
+
     order_map = JSONHelpers.serialize_schema(order)
 
     # Handle relationships if preloaded, otherwise return nil
