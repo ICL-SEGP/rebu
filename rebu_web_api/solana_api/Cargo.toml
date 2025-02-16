@@ -1,0 +1,19 @@
+[package]
+name = "solana_api"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "solana_api"
+path = "src/lib.rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+rustler = "0.36.1"
+solana-sdk = "2.1.7"
+solana-client = "2.1.7"
+spl-associated-token-account = "6.0.0"
+
+# [patch.crates-io.curve25519-dalek]
+# git = "https://github.com/solana-labs/curve25519-dalek.git"
+# rev = "b500cdc2a920cd5bff9e2dd974d7b97349d61464"
