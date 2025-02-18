@@ -22,7 +22,6 @@ fn new_rpc_client() -> RpcClient {
     RpcClient::new("https://api.devnet.solana.com")
 }
 
-
 fn request_airdrop(rpc_client: &RpcClient, pub_key: &Pubkey, amount_sol: f64) -> Result<Signature, Box<dyn Error>> {
     let sig = rpc_client.request_airdrop(&pub_key, (amount_sol * LAMPORTS_PER_SOL) as u64)?;
     while !rpc_client.confirm_transaction(&sig)? {}
@@ -41,15 +40,6 @@ fn get_keypair_from_file(path: &str) -> Keypair {
 
 fn get_pubkey_from_file(path: &str) -> Pubkey {
     get_keypair_from_file(path).pubkey()
-}
-
-fn get_user_pda(program_id: &Pubkey, username: &str, _mint_id: &Pubkey) -> Option<bool> {
-    let (_user_pubkey, _user_bump) = Pubkey::try_find_program_address(
-        &[b"rbu_token_user", username.as_bytes()],
-        &program_id
-    )?;
-    todo!()
-
 }
 
 fn get_user_token_account(user_pubkey: &Pubkey, mint_pubkey: &Pubkey) -> Pubkey {
@@ -77,30 +67,6 @@ fn mint_tokens_to_user(admin: &Keypair, rpc_client: &RpcClient, mint_pubkey: &Pu
 
     Ok(())
 }
-
-fn transfer_to_user(
-    _rpc_client: &RpcClient, 
-    _program_id: &Pubkey, 
-    _username: &str,
-    _mint_pubkey: &Pubkey,
-    _account_pubkey: &Pubkey,
-    _owner_pubkey: &Pubkey,
-    _signer_pubkey: &Pubkey,
-    _amount: u64) -> Result<Signature, Box<dyn Error>> {
-    // let mint_to_instruction = mint_to(
-    //     &spl_token::ID,
-    //     mint_pubkey,
-    //     owner_pubkey,
-    //     signer_pubkey,
-    //     &[signer_pubkey],
-    //     amount,
-    // )?;
-    // while !rpc_client.confirm_transaction(&mint_to_instruction)? {}
-    // Ok(mint_to_instruction)
-    todo!()
-}
-
-
 
 
 mod atoms {
