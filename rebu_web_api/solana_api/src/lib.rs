@@ -4,12 +4,16 @@
 use std::error::Error;
 
 use solana_client::rpc_client::RpcClient;
-#[allow(unused_imports)]
+use spl_associated_token_account::get_associated_token_address;
 use solana_sdk::{
     pubkey::Pubkey,
-    system_transaction, 
-    signature::{Keypair, Signature},
-    signer::keypair::read_keypair_file};
+    signature::{Keypair, Signer, Signature},
+    signer::keypair::read_keypair_file,
+    transaction::Transaction,
+};
+use spl_token::{
+    id, instruction,
+};
 
 
 const LAMPORTS_PER_SOL: f64 = 1_000_000_000.0;
@@ -35,6 +39,10 @@ fn get_keypair_from_file(path: &str) -> Keypair {
     }).unwrap()
 }
 
+fn get_pubkey_from_file(path: &str) -> Pubkey {
+    get_keypair_from_file(path).pubkey()
+}
+
 fn get_user_pda(program_id: &Pubkey, username: &str, _mint_id: &Pubkey) -> Option<bool> {
     let (_user_pubkey, _user_bump) = Pubkey::try_find_program_address(
         &[b"rbu_token_user", username.as_bytes()],
@@ -44,9 +52,30 @@ fn get_user_pda(program_id: &Pubkey, username: &str, _mint_id: &Pubkey) -> Optio
 
 }
 
-fn get_user_token_account(_user_pda: &Pubkey, _mint: &Pubkey) -> Result<Pubkey, Box<dyn Error>> {
-    // get_associated_token_address(user_pda, mint);
-    todo!()
+fn get_user_token_account(user_pubkey: &Pubkey, mint_pubkey: &Pubkey) -> Pubkey {
+    get_associated_token_address(user_pubkey, mint_pubkey)
+}
+
+fn mint_tokens_to_user(admin: &Keypair, rpc_client: &RpcClient, mint_pubkey: &Pubkey, user_aca_pubkey: &Pubkey, amount: u64) -> Result<(), Box<dyn Error>> {
+    let mint_transaction = instruction::mint_to(
+        &id(),
+        mint_pubkey,
+        user_aca_pubkey,
+        &admin.pubkey(),
+        &[],
+        amount * LAMPORTS_PER_SOL as u64,
+    )?;
+
+    let mint_transaction = Transaction::new_signed_with_payer(
+        &[mint_transaction],
+        Some(&admin.pubkey()),
+        &[&admin],
+        rpc_client.get_latest_blockhash()?
+    );
+
+    rpc_client.send_and_confirm_transaction(&mint_transaction)?;
+
+    Ok(())
 }
 
 fn transfer_to_user(
