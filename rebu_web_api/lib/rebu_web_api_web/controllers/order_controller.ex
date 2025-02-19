@@ -29,6 +29,23 @@ defmodule RebuWebApiWeb.OrderController do
     end
   end
 
+  def create_complete(conn, %{"offer_id" => offer_id, "order" => order_params}) do
+    user = Guardian.Plug.current_resource(conn)
+
+    case Sales.create_complete_order(user, %Offer{id: offer_id}, order_params) do
+      {:ok, %Order{} = order} ->
+        conn
+        |> put_status(:created)
+        |> put_resp_header("location", ~p"/api/orders/#{order.id}")
+        |> render(:show, order: order)
+
+      {:error, changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> render(RebuWebApiWeb.ChangesetView, "error.json", changeset: changeset)
+    end
+  end
+
   def show(conn, %{"id" => id}) do
     order = Sales.get_order!(id)
     render(conn, :show, order: order)
