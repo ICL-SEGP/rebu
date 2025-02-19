@@ -3076,17 +3076,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "solana"
-version = "0.1.0"
-dependencies = [
- "rustler",
- "solana-client",
- "solana-sdk",
- "spl-associated-token-account",
- "spl-token-2022 7.0.0",
-]
-
-[[package]]
 name = "solana-account"
 version = "2.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5077,6 +5066,17 @@ dependencies = [
  "thiserror 2.0.11",
  "wasm-bindgen",
  "zeroize",
+]
+
+[[package]]
+name = "solana_api"
+version = "0.1.0"
+dependencies = [
+ "rustler",
+ "solana-client",
+ "solana-sdk",
+ "spl-associated-token-account",
+ "spl-token-2022 7.0.0",
 ]
 
 [[package]]

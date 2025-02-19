@@ -15,21 +15,20 @@ fn main() {
     println!("Mint account: {:?}", &mint.get_pubkey());
 
 
-    let user_pubkey = get_pubkey_from_str("6nyYhkrgDfb3f1eVCaAjTPoPkVRxx5sev9tzr5f1mCDY");
+    let user_pubkey = get_pubkey_from_str("HfXD1tnshbbLVgZe8UTbmPGt2rvCVQNKwhi78T3R27Fd");
     println!("User account: {:?}", user_pubkey);
     
     let owner_token_account = get_token_account(&owner.get_pubkey(), &mint.get_pubkey());
     println!("Owner token account: {:?}", owner_token_account);
-    
+
     let user_token_account = get_token_account(&user_pubkey, &mint.get_pubkey());
     println!("User token account: {:?}", user_token_account);
+
     
     let result = mint_tokens_to_user(
-        &owner, 
-        &client, 
-        &mint, 
-        &user_token_account,
-        10
+        &client, &owner, 
+        &mint.get_pubkey(), &user_pubkey,
+        10, true
     );
 
     println!("Result: {:?}", result);

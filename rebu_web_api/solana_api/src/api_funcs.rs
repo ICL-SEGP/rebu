@@ -4,7 +4,10 @@
 use std::error::Error;
 
 use solana_client::rpc_client::RpcClient;
-use spl_associated_token_account::get_associated_token_address_with_program_id;
+use spl_associated_token_account::{
+    instruction::create_associated_token_account,
+    get_associated_token_address_with_program_id,
+};
 
 use solana_sdk::{
     pubkey::Pubkey,
@@ -61,18 +64,38 @@ pub fn get_token_account(user_pubkey: &Pubkey, mint_pubkey: &Pubkey) -> Pubkey {
     get_associated_token_address_with_program_id(user_pubkey, mint_pubkey, &id())
 }
 
-pub fn mint_tokens_to_user(owner: &Keypair, rpc_client: &RpcClient, mint: &Keypair, user_ata_pubkey: &Pubkey, amount: u64) -> Result<(), Box<dyn Error>> {
-    let mint_transaction = instruction::mint_to(
+pub fn mint_tokens_to_user(
+    rpc_client: &RpcClient, owner: &Keypair, 
+    mint_pubkey: &Pubkey, user_pubkey: &Pubkey, 
+    amount: u64, is_new_user: bool,
+) -> Result<(), Box<dyn Error>> {
+    
+    let user_ata_pubkey = get_token_account(user_pubkey, mint_pubkey);
+
+    let mint_instruction = instruction::mint_to(
         &id(),
-        &mint.pubkey(),
-        user_ata_pubkey,
+        &mint_pubkey,
+        &user_ata_pubkey,
         &owner.pubkey(),
         &[&owner.pubkey()],
         amount * LAMPORTS_PER_SOL as u64,
     )?;
 
+    let instrs = if !is_new_user {
+        vec![mint_instruction]
+    } else {
+        let create_ata_instruction = create_associated_token_account(
+            &owner.pubkey(),
+            user_pubkey,
+            mint_pubkey,
+            &id(),
+        );
+
+        vec![create_ata_instruction, mint_instruction]
+    };
+
     let mint_transaction = Transaction::new_signed_with_payer(
-        &[mint_transaction],
+        &instrs,
         Some(&owner.pubkey()),
         &[&owner],
         rpc_client.get_latest_blockhash()?
