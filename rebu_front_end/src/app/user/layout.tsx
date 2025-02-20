@@ -75,7 +75,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
           </header>
 
           {/* Page Content */}
-          <main className="p-6 flex-1">{children}</main>
+          <main className="p-6 flex-1 w-screen">{children}</main>
         </SidebarInset>
       </div>
     </SidebarProvider>
