@@ -1,6 +1,12 @@
 mod api_funcs;
 use api_funcs::*;
 
+// use solana_sdk::{
+//     pubkey::Pubkey,
+//     signature::Signer,
+//     signer::keypair::{read_keypair_file, Keypair},
+// };
+
 
 fn main() {
     let client = new_rpc_client();
@@ -15,7 +21,7 @@ fn main() {
     println!("Mint account: {:?}", &mint.get_pubkey());
 
 
-    let user_pubkey = get_pubkey_from_str("HfXD1tnshbbLVgZe8UTbmPGt2rvCVQNKwhi78T3R27Fd");
+    let user_pubkey = get_pubkey_from_str("6nyYhkrgDfb3f1eVCaAjTPoPkVRxx5sev9tzr5f1mCDY");
     println!("User account: {:?}", user_pubkey);
     
     let owner_token_account = get_token_account(&owner.get_pubkey(), &mint.get_pubkey());
@@ -25,11 +31,18 @@ fn main() {
     println!("User token account: {:?}", user_token_account);
 
     
-    let result = mint_tokens_to_user(
-        &client, &owner, 
-        &mint.get_pubkey(), &user_pubkey,
-        10, true
-    );
+    // let result = mint_tokens_to_user(
+    //     &client, &owner, 
+    //     &mint.get_pubkey(), &user_pubkey,
+    //     10, fa
+    // );
 
-    println!("Result: {:?}", result);
+    // println!("Result: {:?}", result);
 }
+
+
+// pub fn get_keypair_from_file(path: &str) -> Keypair {
+//     read_keypair_file(path).map_err(|e| {
+//         panic!("Failed to read keypair file ({}): ({})", path, e)
+//     }).unwrap()
+// }

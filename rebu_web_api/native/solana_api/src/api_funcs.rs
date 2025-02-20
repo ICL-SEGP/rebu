@@ -52,6 +52,10 @@ pub fn get_keypair_from_file(path: &str) -> Keypair {
     }).unwrap()
 }
 
+fn get_keypair_from_str(kp_str: String) -> Keypair {
+    Keypair::from_base58_string(&kp_str)
+}
+
 pub fn get_pubkey_from_file(path: &str) -> Pubkey {
     get_keypair_from_file(path).pubkey()
 }
@@ -64,11 +68,17 @@ pub fn get_token_account(user_pubkey: &Pubkey, mint_pubkey: &Pubkey) -> Pubkey {
     get_associated_token_address_with_program_id(user_pubkey, mint_pubkey, &id())
 }
 
+#[rustler::nif]
 pub fn mint_tokens_to_user(
-    rpc_client: &RpcClient, owner: &Keypair, 
-    mint_pubkey: &Pubkey, user_pubkey: &Pubkey, 
-    amount: u64, is_new_user: bool,
-) -> Result<(), Box<dyn Error>> {
+    owner: String, mint_pubkey: String,
+    user_pubkey: String, amount: u64, 
+    is_new_user: bool,
+) -> Result<(), String> {
+
+    let rpc_client = &new_rpc_client();
+    let owner = &get_keypair_from_str(owner);
+    let mint_pubkey = &get_pubkey_from_str(&mint_pubkey);
+    let user_pubkey = &get_pubkey_from_str(&user_pubkey);
     
     let user_ata_pubkey = get_token_account(user_pubkey, mint_pubkey);
 
@@ -79,7 +89,7 @@ pub fn mint_tokens_to_user(
         &owner.pubkey(),
         &[&owner.pubkey()],
         amount * LAMPORTS_PER_SOL as u64,
-    )?;
+    ).expect("Something went wrong with mint instruction.");
 
     let instrs = if !is_new_user {
         vec![mint_instruction]
@@ -98,7 +108,7 @@ pub fn mint_tokens_to_user(
         &instrs,
         Some(&owner.pubkey()),
         &[&owner],
-        rpc_client.get_latest_blockhash()?
+        rpc_client.get_latest_blockhash().expect("Something went wrong with getting blockhash.")
     );
 
     println!("Mint Transaction: {:?}", &mint_transaction);
@@ -107,7 +117,7 @@ pub fn mint_tokens_to_user(
     //     request_airdrop(rpc_client, &owner.pubkey(), 1.0)?;
     // }
 
-    rpc_client.send_and_confirm_transaction_with_spinner(&mint_transaction)?;
+    rpc_client.send_and_confirm_transaction_with_spinner(&mint_transaction).expect("Something went wrong in comfirming the transaction.");
 
     Ok(())
 }
