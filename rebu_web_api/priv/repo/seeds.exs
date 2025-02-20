@@ -56,13 +56,11 @@ users =
 IO.puts("Created #{length(users)} users.")
 
 # Step 4: Each User Creates Orders Linked to Admin's Offers
-# Enum.each(users, fn user ->
-#   Factory.insert_list(3, :order, user: user, offers: [Enum.random(offers)])
-# end)
 
 Enum.each(users, fn user ->
   Enum.map(1..3, fn _x ->
-    Sales.create_offer(Factory.order(%{user: user, offers: [Enum.random(offers)]}))
+    order_params = Factory.order(%{user: user, offers: [Enum.random(offers)]})
+    Sales.create_order(order_params)
   end)
 end)
 
