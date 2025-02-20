@@ -160,6 +160,7 @@ defmodule RebuWebApi.Sales do
   def create_order(attrs \\ %{}) do
     %Order{}
     |> Order.changeset(attrs)
+    |> Ecto.Changeset.put_assoc(:offers, attrs.offers)
     |> Repo.insert()
   end
 
