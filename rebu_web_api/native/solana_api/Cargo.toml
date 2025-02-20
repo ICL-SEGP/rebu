@@ -1,0 +1,20 @@
+[package]
+name = "solana_api"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "solana_api"
+path = "src/main.rs"
+
+[lib]
+name = "solana_api"
+path = "src/lib.rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+rustler = "0.36.1"
+solana-sdk = "2.1.7"
+solana-client = "2.1.7"
+spl-associated-token-account = "6.0.0"
+spl-token-2022 = { version = "7.0.0", features = ["no-entrypoint"] }

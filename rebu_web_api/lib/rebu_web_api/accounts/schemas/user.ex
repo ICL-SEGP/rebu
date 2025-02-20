@@ -11,6 +11,7 @@ defmodule RebuWebApi.Accounts.User do
     field :balance, :decimal, default: 0.0
     field :password, :string, redact: true, virtual: true
     field :hashed_password, :string, redact: true
+    field :solana_pub_key, :string
 
     field :role, Ecto.Enum, values: [:user, :admin, :super_admin], default: :user
 
