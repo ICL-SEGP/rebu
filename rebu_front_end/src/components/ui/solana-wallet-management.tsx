@@ -1,38 +1,36 @@
-import { useWallet } from '@solana/wallet-adapter-react'
-import { WalletButton } from '@/components/ui/solana-provider'
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletButton } from '@/components/ui/solana-provider';
 import { API_BASE_URL } from '@/lib/constants';
 import { useSession } from 'next-auth/react';
 
 export default function WalletSolana() {
-  const { publicKey } = useWallet()
+  const { publicKey } = useWallet();
   const { data: session } = useSession();
 
   const pushKey = async (key) => {
-
     if (!session) {
-      return
+      return;
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/user/publicKey`, {
-        method: "POST",
+      const res = await fetch(`${API_BASE_URL}/api/solana/publickey`, {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${session.accessToken}`,
         },
         body: JSON.stringify({
-          publicKey: key
+          public_key: key,
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to push key");
+      if (!res.ok) throw new Error('Failed to push key');
 
-      const response = (await res.json());
+      const response = await res.json();
 
-      console.log(response)
-
+      console.log(response);
     } catch (error) {
-      console.error("Error pushing key", error);
+      console.error('Error pushing key', error);
     }
   };
 
@@ -46,5 +44,5 @@ export default function WalletSolana() {
         <WalletButton />
       </div>
     </div>
-  )
+  );
 }

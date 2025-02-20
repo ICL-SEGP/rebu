@@ -23,7 +23,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { User, Wallet, LogOut, MoreHorizontal, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { WalletButton } from '@/components/ui/solana-provider'
+import  WalletSolana from "@/components/ui/solana-wallet-management";
+
+
 
 const navItems = [
   { title: "Dashboard", url: "/user/dashboard" },
@@ -103,11 +105,9 @@ export function AppSidebarUser({ ...props }: React.ComponentProps<typeof Sidebar
       </SidebarContent>
 
       {/* Profile Button at Bottom */}
-      <div className="hero py-[64px]">
-        <div className="hero-content text-center">
-          <WalletButton />
-        </div>
-      </div>
+
+      <WalletSolana></WalletSolana>
+
       <SidebarRail />
     </Sidebar>
   );
