@@ -30,6 +30,8 @@ fn main() {
     let user_token_account = get_token_account(&user_pubkey, &mint.get_pubkey());
     println!("User token account: {:?}", user_token_account);
 
+    // let balance = get_user_token_balance("6nyYhkrgDfb3f1eVCaAjTPoPkVRxx5sev9tzr5f1mCDY".to_string(), "mntSPLHmrFAELUiNxDC31Nm44TofrAs7VXBknPoqiBY".to_string());
+    // println!("User token balance: {:?}", balance);
     
     // let result = mint_tokens_to_user(
     //     &client, &owner, 
