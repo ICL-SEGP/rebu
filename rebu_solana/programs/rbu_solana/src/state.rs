@@ -1,2 +1,3 @@
-pub mod accounts;
-pub use accounts::*;
+pub mod offer;
+
+pub use offer::*;
