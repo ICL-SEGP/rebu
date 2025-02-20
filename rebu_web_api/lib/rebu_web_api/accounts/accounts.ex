@@ -7,6 +7,7 @@ defmodule RebuWebApi.Accounts do
   alias RebuWebApi.Repo
 
   alias RebuWebApi.Accounts.User
+  alias RebuWebApi.Accounts.Admin
   alias RebuWebApi.Auth.Guardian
   alias RebuWebApi.Sales
   alias RebuWebApi.Sales.Offer
@@ -105,15 +106,25 @@ defmodule RebuWebApi.Accounts do
 
     case Repo.one(query_results) do
       nil ->
-        Bcrypt.no_user_verify()
-        {:error, :invalid_credentials}
+        case Repo.one(from u in Admin, where: u.email == ^email) do
+          nil ->
+            Bcrypt.no_user_verify()
+            {:error, :invalid_credentials}
+
+          admin ->
+            verify_pass(password, admin)
+        end
 
       user ->
-        if Bcrypt.verify_pass(password, user.hashed_password) do
-          {:ok, user, create_user_token(user)}
-        else
-          {:error, :invalid_credentials}
-        end
+        verify_pass(password, user)
+    end
+  end
+
+  def verify_pass(password, user) do
+    if Bcrypt.verify_pass(password, user.hashed_password) do
+      {:ok, user, create_user_token(user)}
+    else
+      {:error, :invalid_credentials}
     end
   end
 
