@@ -69,6 +69,20 @@ pub fn get_token_account(user_pubkey: &Pubkey, mint_pubkey: &Pubkey) -> Pubkey {
 }
 
 #[rustler::nif]
+pub fn get_user_token_balance(user_pubkey: String, mint_pubkey: String) -> u64 {
+    let rpc_client = &new_rpc_client();
+    let mint_pubkey = &get_pubkey_from_str(&mint_pubkey);
+    let user_pubkey = &get_pubkey_from_str(&user_pubkey);
+    let user_ata_pubkey = get_token_account(user_pubkey, mint_pubkey);
+
+    let amount = rpc_client
+                   .get_token_account_balance(&user_ata_pubkey)
+                   .expect("Something went wrong when getting user balance.");
+
+    amount.ui_amount.expect("Something went wrong when getting user ui amount balance.") as u64
+}
+
+#[rustler::nif]
 pub fn mint_tokens_to_user(
     owner: String, mint_pubkey: String,
     user_pubkey: String, amount: u64, 
