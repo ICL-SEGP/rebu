@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 interface Product {
@@ -36,41 +35,41 @@ export default function MarketplaceUser() {
   }, []);
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-bold">Marketplace</h1>
+    <div className="p-8 space-y-8">
+      <h1 className="text-4xl font-bold text-center">Marketplace</h1>
 
-      <div className="flex items-center space-x-3">
+      <div className="flex justify-center">
         <Input
           type="text"
           placeholder="Search for products..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-lg"
+          className="w-full max-w-lg rounded-lg shadow-sm border-gray-300"
         />
       </div>
 
-      <div className="flex space-x-4 overflow-auto py-2">
+      <div className="flex justify-center space-x-4 py-3">
         {categories.map((category) => (
-          <Button key={category} variant="outline" onClick={() => setSearch(category)}>
+          <Button key={category} variant="outline" onClick={() => setSearch(category)} className="rounded-full px-6 py-2">
             {category}
           </Button>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         {products
           .filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || p.category.includes(search))
           .map(product => (
             <Card
               key={product.id}
-              className="relative rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-200 cursor-pointer"
+              className="relative rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer bg-white border border-gray-200"
               onClick={() => { setSelectedProduct(product); setShowDialog(true); }}
             >
-              <img src={product.imageUrl} alt={product.name} className="w-full h-40 object-cover rounded-t-lg" />
-              <CardHeader className="p-4">
+              <img src={product.imageUrl} alt={product.name} className="w-full h-44 object-cover rounded-t-lg" />
+              <CardHeader className="p-5">
                 <CardTitle className="text-lg font-semibold text-gray-800">{product.name}</CardTitle>
               </CardHeader>
-              <CardContent className="p-4 flex flex-col items-start">
+              <CardContent className="p-5 flex flex-col items-start">
                 <p className="text-xl font-bold text-green-600">{product.price} Tokens</p>
               </CardContent>
             </Card>
@@ -78,14 +77,14 @@ export default function MarketplaceUser() {
       </div>
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-lg p-6 rounded-lg shadow-xl">
           {selectedProduct && (
             <div>
-              <DialogTitle className="text-2xl font-bold">{selectedProduct.name}</DialogTitle>
-              <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="w-full h-60 object-cover rounded-lg" />
-              <p className="text-gray-700 mt-4">{selectedProduct.description}</p>
+              <DialogTitle className="text-2xl font-bold mb-4">{selectedProduct.name}</DialogTitle>
+              <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="w-full h-64 object-cover rounded-lg" />
+              <p className="text-gray-700 mt-4 text-lg">{selectedProduct.description}</p>
               <p className="text-xl font-bold text-green-600 mt-2">{selectedProduct.price} Tokens</p>
-              <Button className="w-full mt-4">Buy</Button>
+              <Button className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg">Buy</Button>
             </div>
           )}
         </DialogContent>
