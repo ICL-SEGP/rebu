@@ -10,12 +10,12 @@ defmodule RebuWebApi.Factory do
 
   # User Factory
   def user_factory do
-    user()
+    merge_attributes(%User{}, user())
   end
 
   def user(attrs \\ %{}) do
     merge_attributes(
-      %User{
+      %{
         first_name: Faker.Person.first_name(),
         last_name: Faker.Person.last_name(),
         email: Faker.Internet.free_email(),
@@ -31,12 +31,12 @@ defmodule RebuWebApi.Factory do
   end
 
   def admin_factory do
-    admin()
+    merge_attributes(%Admin{}, admin())
   end
 
   def admin(attrs \\ %{}) do
     merge_attributes(
-      %Admin{
+      %{
         first_name: Faker.Person.first_name(),
         last_name: Faker.Person.last_name(),
         email: Faker.Internet.free_email(),
@@ -53,12 +53,12 @@ defmodule RebuWebApi.Factory do
 
   # Offer Factory
   def offer_factory do
-    offer()
+    merge_attributes(%Offer{}, offer())
   end
 
   def offer(attrs \\ %{}) do
     merge_attributes(
-      %Offer{
+      %{
         desc: Faker.Lorem.sentence(5),
         affiliate_link: Faker.Internet.url(),
         # Corrected
@@ -73,12 +73,13 @@ defmodule RebuWebApi.Factory do
 
   # Order Factory
   def order_factory do
-    order()
+    merge_attributes(%Order{}, order())
   end
 
+  @spec order(map()) :: map()
   def order(attrs \\ %{}) do
     merge_attributes(
-      %Order{
+      %{
         status: Enum.random([:in_progress, :refunded, :completed]),
         # Corrected
         total_rebate_amount: Decimal.from_float(:rand.uniform() * 500),
