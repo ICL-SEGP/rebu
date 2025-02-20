@@ -23,12 +23,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { User, Wallet, LogOut, MoreHorizontal, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { WalletButton } from '@/components/ui/solana-provider'
 
 const navItems = [
   { title: "Dashboard", url: "/user/dashboard" },
   { title: "Offers", url: "/user/offers" },
   { title: "Orders", url: "/user/orders" },
-  { title: "Products", url: "/user/products"}
+  { title: "Products", url: "/user/products" }
 ];
 
 export function AppSidebarUser({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -102,7 +103,11 @@ export function AppSidebarUser({ ...props }: React.ComponentProps<typeof Sidebar
       </SidebarContent>
 
       {/* Profile Button at Bottom */}
-
+      <div className="hero py-[64px]">
+        <div className="hero-content text-center">
+          <WalletButton />
+        </div>
+      </div>
       <SidebarRail />
     </Sidebar>
   );
