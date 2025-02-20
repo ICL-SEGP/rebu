@@ -27,6 +27,7 @@ const navItems = [
   { title: "Users", url: "/admin/users" },
   { title: "Offers", url: "/admin/offers" },
   { title: "Orders", url: "/admin/orders" },
+  { title: "Marketplace", url: "/admin/marketplace"}
 ];
 
 export function AppSidebarAdmin({ ...props }: React.ComponentProps<typeof Sidebar>) {
