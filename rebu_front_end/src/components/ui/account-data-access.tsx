@@ -25,6 +25,7 @@ export function ExplorerLink({ path, label, className }: { path: string; label: 
       {label}
     </a>
   )
+}
 
 
 export function useTransactionToast() {
