@@ -10,6 +10,7 @@ defmodule RebuWebApi.Sales.Offer do
     field :offer_end, :naive_datetime
 
     belongs_to :user, RebuWebApi.Accounts.User
+    belongs_to :admin, RebuWebApi.Accounts.Admin
 
     many_to_many :order, RebuWebApi.Sales.Order, join_through: "offers_orders"
 
