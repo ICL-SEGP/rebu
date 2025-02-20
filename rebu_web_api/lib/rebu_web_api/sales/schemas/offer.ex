@@ -9,7 +9,6 @@ defmodule RebuWebApi.Sales.Offer do
     field :offer_start, :naive_datetime
     field :offer_end, :naive_datetime
 
-    belongs_to :user, RebuWebApi.Accounts.User
     belongs_to :admin, RebuWebApi.Accounts.Admin
 
     many_to_many :order, RebuWebApi.Sales.Order, join_through: "offers_orders"
@@ -20,7 +19,19 @@ defmodule RebuWebApi.Sales.Offer do
   @doc false
   def changeset(offer, attrs) do
     offer
-    |> cast(attrs, [:affiliate_link, :rebate_percentage, :desc, :offer_start, :offer_end])
-    |> validate_required([:affiliate_link, :rebate_percentage, :desc, :offer_start, :offer_end])
+    |> cast(attrs, [
+      :affiliate_link,
+      :rebate_percentage,
+      :desc,
+      :offer_start,
+      :offer_end,
+    ])
+    |> validate_required([
+      :affiliate_link,
+      :rebate_percentage,
+      :desc,
+      :offer_start,
+      :offer_end
+    ])
   end
 end

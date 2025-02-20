@@ -60,6 +60,7 @@ defmodule RebuWebApi.Sales do
   def create_offer(attrs \\ %{}) do
     %Offer{}
     |> Offer.changeset(attrs)
+    |> Ecto.Changeset.put_assoc(:admin, attrs.admin)
     |> Repo.insert()
   end
 
@@ -161,6 +162,7 @@ defmodule RebuWebApi.Sales do
     %Order{}
     |> Order.changeset(attrs)
     |> Ecto.Changeset.put_assoc(:offers, attrs.offers)
+    |> Ecto.Changeset.put_assoc(:user, attrs.user)
     |> Repo.insert()
   end
 
