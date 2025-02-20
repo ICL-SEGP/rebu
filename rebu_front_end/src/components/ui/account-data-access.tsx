@@ -14,6 +14,9 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 
+// const MINT_PUBKEY: PublicKey = new PublicKey('mntSPLHmrFAELUiNxDC31Nm44TofrAs7VXBknPoqiBY');
+// const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID: PublicKey = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL');
+
 export function ExplorerLink({ path, label, className }: { path: string; label: string; className?: string }) {
   return (
     <a
@@ -56,6 +59,30 @@ export function useGetSignatures({ address }: { address: PublicKey }) {
     queryFn: () => connection.getSignaturesForAddress(address),
   })
 }
+
+// export async function useGetTokenBalance() {
+//   const { connection } = useConnection();
+//   const { publicKey } = useWallet();
+
+//   let ataAccount = useGetATAAccount(publicKey);
+
+//   const info = await connection.getTokenAccountBalance(ataAccount);
+//   if (info.value.uiAmount == null) throw new Error("No balance found.");
+
+//   console.log('Balance (using Solana-Web3.js): ', info.value.uiAmount);
+//   return info.value.uiAmount;
+// }
+
+// export function useGetATAAccount({ address }: { address: PublicKey }) {
+//   return PublicKey.findProgramAddressSync(
+//     [
+//       address.toBuffer(),
+//       TOKEN_2022_PROGRAM_ID.toBuffer(),
+//       MINT_PUBKEY.toBuffer(),
+//     ],
+//     SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID
+//   )[0];
+// }
 
 export function useGetTokenAccounts({ address }: { address: PublicKey }) {
   const { connection } = useConnection()

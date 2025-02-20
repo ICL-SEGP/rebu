@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+// import { useGetTokenBalance } from "@/components/ui/account-data-access";
 import { toast } from "@/hooks/use-toast";
 import { Coins, Link, Lock, Trash, Wallet } from "lucide-react";
 import {
@@ -92,7 +93,7 @@ export default function DashboardPage() {
   };
 
   const fetchBalance = async () => {
-
+    // useGetTokenBalance()
     try {
       const res = await fetch(`${API_BASE_URL}/api/balance`, {
         method: "GET",
