@@ -40,7 +40,7 @@ defmodule RebuWebApi.Accounts.User do
   def registration_changeset(user, attrs) do
     user
     |> cast(attrs, [:first_name, :last_name, :email, :token_balance, :locked_tokens, :rescinded_tokens, :password, :role])
-    |> validate_required([:first_name, :last_name, :balance])
+    |> validate_required([:first_name, :last_name, :token_balance, :locked_tokens, :rescinded_tokens])
     |> validate_inclusion(:role, [:user])
     |> AccountChangesetHelpers.validate_email()
     |> AccountChangesetHelpers.validate_password()
