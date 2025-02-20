@@ -1,6 +1,6 @@
 "use client";
 
-import { AppSidebar } from "@/components/ui/app-sidebar"
+import { AppSidebarAdmin } from "@/components/ui/app-sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,31 +8,29 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
+} from "@/components/ui/breadcrumb";
+import { Separator } from "@/components/ui/separator";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 
-
 function getPageName(pathname: string): string {
-  const segments = pathname.split("/").filter(Boolean); // Remove empty segments
-  if (segments.length === 0) return "Dashboard"; // Default page name
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments.length === 0) return "Dashboard";
+
   return segments[segments.length - 1]
-    .replace(/-/g, " ") // Replace dashes with spaces
-    .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize first letter
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const pageName = getPageName(pathname);
   const { data: session, status } = useSession();
-
-  console.log(session)
 
   if (status === "loading") {
     return <p>Loading...</p>;
@@ -42,7 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <SidebarProvider>
       <div className="flex">
         {/* Sidebar */}
-        <AppSidebar />
+        <AppSidebarAdmin />
 
         {/* Main Content */}
         <SidebarInset className="flex flex-1 flex-col">
@@ -52,9 +50,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/admin/dashboard">
-                    Admin
-                  </BreadcrumbLink>
+                  <BreadcrumbLink href="/admin/dashboard">Admin</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
@@ -69,5 +65,5 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </SidebarInset>
       </div>
     </SidebarProvider>
-  )
+  );
 }
