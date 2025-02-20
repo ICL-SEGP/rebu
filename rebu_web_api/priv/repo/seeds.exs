@@ -35,7 +35,7 @@ offers =
   Enum.map(
     1..10,
     fn _x ->
-      {:ok, offer} = Sales.create_offer(Factory.offer(%{user: admin}))
+      {:ok, offer} = Sales.create_offer(Factory.offer(%{admin: admin}))
       offer
     end
   )

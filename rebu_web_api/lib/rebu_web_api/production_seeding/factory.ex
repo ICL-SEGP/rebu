@@ -10,11 +10,11 @@ defmodule RebuWebApi.Factory do
 
   # User Factory
   def user_factory do
-    merge_attributes(%User{}, user())
+    Map.merge(%User{}, user())
   end
 
   def user(attrs \\ %{}) do
-    merge_attributes(
+    Map.merge(
       %{
         first_name: Faker.Person.first_name(),
         last_name: Faker.Person.last_name(),
@@ -31,11 +31,11 @@ defmodule RebuWebApi.Factory do
   end
 
   def admin_factory do
-    merge_attributes(%Admin{}, admin())
+    Map.merge(%Admin{}, admin())
   end
 
   def admin(attrs \\ %{}) do
-    merge_attributes(
+    Map.merge(
       %{
         first_name: Faker.Person.first_name(),
         last_name: Faker.Person.last_name(),
@@ -45,7 +45,7 @@ defmodule RebuWebApi.Factory do
         locked_tokens: Decimal.new("0.0"),
         password: @password,
         hashed_password: Bcrypt.hash_pwd_salt(@password),
-        role: :user
+        role: :admin
       },
       attrs
     )
@@ -53,11 +53,11 @@ defmodule RebuWebApi.Factory do
 
   # Offer Factory
   def offer_factory do
-    merge_attributes(%Offer{}, offer())
+    Map.merge(%Offer{}, offer())
   end
 
   def offer(attrs \\ %{}) do
-    merge_attributes(
+    Map.merge(
       %{
         desc: Faker.Lorem.sentence(5),
         affiliate_link: Faker.Internet.url(),
@@ -65,7 +65,7 @@ defmodule RebuWebApi.Factory do
         rebate_percentage: Decimal.from_float(:rand.uniform() * 10),
         offer_start: Faker.DateTime.backward(10),
         offer_end: Faker.DateTime.forward(30),
-        user: build(:user)
+        admin: build(:admin)
       },
       attrs
     )
@@ -73,12 +73,12 @@ defmodule RebuWebApi.Factory do
 
   # Order Factory
   def order_factory do
-    merge_attributes(%Order{}, order())
+    Map.merge(%Order{}, order())
   end
 
   @spec order(map()) :: map()
   def order(attrs \\ %{}) do
-    merge_attributes(
+    Map.merge(
       %{
         status: Enum.random([:in_progress, :refunded, :completed]),
         # Corrected
