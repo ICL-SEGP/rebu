@@ -16,7 +16,7 @@ defmodule RebuWebApi.Repo.Migrations.CreateSeparateAdminEntity do
     end
 
     alter table(:offers) do
-      add :admin_user_id, references(:admin_users, on_delete: :nothing)
+      add :admin_id, references(:admin_users, on_delete: :nothing)
     end
   end
 end
