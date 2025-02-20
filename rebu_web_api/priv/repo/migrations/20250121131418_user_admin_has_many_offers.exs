@@ -4,7 +4,7 @@ defmodule RebuWebApi.Repo.Migrations.UserAdminHasManyOffers do
 
   def change do
     alter table(:offers) do
-      add :user_id, references(:users)
+      add :user_id, references(:users, on_delete: :nothing)
     end
   end
 end
