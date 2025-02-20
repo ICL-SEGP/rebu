@@ -1,23 +1,37 @@
-defmodule RebuWebApi.Accounts.User do
-  alias RebuWebApi.Accounts.AccountChangesetHelpers
+defmodule RebuWebApi.Accounts.Admin do
   use Ecto.Schema
   import Ecto.Changeset
+  alias RebuWebApi.Accounts.AccountChangesetHelpers
 
-  @derive {Jason.Encoder, only: [:first_name, :last_name, :email]}
+  #  const stats = {
+  #   totalUsers: 150,
+  #   totalRevenue: 23400,
+  #   activeOffers: 12,
+  #   completedOrders: 50, // completed/refunded orders
+  # };
 
-  schema "users" do
+  # Dummy data
+  # const data = [
+  #   { month: "January", revenue: 3000 },
+  #   { month: "February", revenue: 5000 },
+  #   { month: "March", revenue: 4000 },
+  #   { month: "April", revenue: 6000 },
+  #   { month: "May", revenue: 5500 },
+  #   { month: "June", revenue: 7000 },
+  # ];
+
+  schema "admin_users" do
     field :first_name, :string
     field :last_name, :string
     field :email, :string
-    field :token_balance, :decimal, default: 0.0
-    field :locked_tokens, :decimal, default: 0.0
-    field :rescinded_tokens, :decimal, default: 0.0
     field :password, :string, redact: true, virtual: true
     field :hashed_password, :string, redact: true
+    field :revenue, :decimal, default: 0.0
+    field :token_balance, :decimal, default: 0.0
+    field :locked_tokens, :decimal, default: 0.0
 
-    field :role, Ecto.Enum, values: [:user, :admin, :super_admin], default: :user
+    field :role, Ecto.Enum, values: [:admin, :super_admin], default: :admin
 
-    has_many :orders, RebuWebApi.Sales.Order
     has_many :offers, RebuWebApi.Sales.Offer, where: [role: :admin]
 
     timestamps(type: :utc_datetime)
@@ -40,21 +54,9 @@ defmodule RebuWebApi.Accounts.User do
   def registration_changeset(user, attrs) do
     user
     |> cast(attrs, [:first_name, :last_name, :email, :token_balance, :locked_tokens, :rescinded_tokens, :password, :role])
-    |> validate_required([:first_name, :last_name, :balance])
+    |> validate_required([:first_name, :last_name])
     |> validate_inclusion(:role, [:user])
     |> AccountChangesetHelpers.validate_email()
     |> AccountChangesetHelpers.validate_password()
-  end
-
-  def role_changeset(user, attrs) do
-    user
-    |> cast(attrs, [:role])
-    # Fix incorrect field
-    |> validate_inclusion(:role, [:user, :admin, :super_admin])
-    |> case do
-      %{changes: %{role: _}} = changeset -> changeset
-      # Fix incorrect key
-      %{} = changeset -> add_error(changeset, :role, "invalid option")
-    end
   end
 end
