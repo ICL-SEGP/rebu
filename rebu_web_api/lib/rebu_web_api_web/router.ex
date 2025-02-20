@@ -42,12 +42,16 @@ defmodule RebuWebApiWeb.Router do
   end
 
   scope "/api", RebuWebApiWeb do
-    pipe_through [:api, :auth]
     get "/", DefaultController, :default
     resources "/orders", OrderController, except: [:new, :edit]
     resources "/offers", OfferController, except: [:new, :edit]
     delete "/logout", AuthController, :sign_out
     get "/balance", AuthController, :get_balance
+
+    scope "/solana" do
+      pipe_through [:api, :auth]
+      post "/publickey", SolanaController, :update_key
+    end
   end
 
   scope "/api", RebuWebApiWeb do
