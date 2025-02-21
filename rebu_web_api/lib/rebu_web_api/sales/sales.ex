@@ -369,6 +369,7 @@ defmodule RebuWebApi.Sales do
     case process_order_for_offer(%User{id: user_id}, %Offer{id: offer_id}, order_attrs) do
       {:ok, order} ->
         process_order_completion(order)
+
       {:error, changeset} ->
         {:error, changeset}
     end

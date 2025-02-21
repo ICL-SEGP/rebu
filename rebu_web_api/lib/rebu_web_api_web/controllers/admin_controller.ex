@@ -73,14 +73,14 @@ defmodule RebuWebApiWeb.AdminController do
         "status" => status,
         "user" => user
       }) do
-
-    with {:ok, %Order{} = order} <- Sales.new_order(%{
-        total_rebate_amount: amount,
-        date: date,
-        offers: offers,
-        status: normalize_status(status),
-        user: user
-      }) do
+    with {:ok, %Order{} = order} <-
+           Sales.new_order(%{
+             total_rebate_amount: amount,
+             date: date,
+             offers: offers,
+             status: normalize_status(status),
+             user: user
+           }) do
       conn
       |> put_status(:created)
       |> render(:order, order: order)

@@ -194,7 +194,6 @@ defmodule RebuWebApi.Factory do
 
     attrs = Map.drop(attrs, [:offers])
 
-
     # 7) Build the final struct
     Map.merge(
       %{

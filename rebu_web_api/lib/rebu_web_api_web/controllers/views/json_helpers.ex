@@ -27,8 +27,6 @@ defmodule RebuWebApiWeb.JSONHelpers do
   """
   def serialize_schema(nil), do: nil
 
-
-
   def serialize_schema(%_{} = struct) do
     struct
     |> Map.from_struct()
