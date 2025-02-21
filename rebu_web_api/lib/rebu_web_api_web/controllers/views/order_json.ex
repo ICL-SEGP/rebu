@@ -16,7 +16,7 @@ defmodule RebuWebApiWeb.OrderJSON do
     serialize_order(order)
   end
 
-  defp serialize_order(%Order{} = order) do
+  def serialize_order(%Order{} = order) do
     order =
       Map.put(
         order,
