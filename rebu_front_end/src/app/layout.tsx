@@ -4,6 +4,7 @@ import { SessionProvider } from "next-auth/react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { DashboardProvider } from "@/context/DashboardContext";
+import { SolanaProvider } from "@/components/ui/solana-provider"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,7 +27,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SessionProvider>
-          <DashboardProvider>{children}</DashboardProvider>
+          <SolanaProvider>
+            <DashboardProvider>{children}</DashboardProvider>
+          </SolanaProvider>
         </SessionProvider>
       </body>
     </html>
