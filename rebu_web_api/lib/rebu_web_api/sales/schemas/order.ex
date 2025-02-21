@@ -5,10 +5,14 @@ defmodule RebuWebApi.Sales.Order do
   schema "orders" do
     field :status, Ecto.Enum, values: [:in_progress, :refunded, :completed], default: :in_progress
     field :total_rebate_amount, :decimal
+    field :date, :date
 
     belongs_to :user, RebuWebApi.Accounts.User
 
-    many_to_many :offers, RebuWebApi.Sales.Offer, join_through: "offers_orders"
+    many_to_many :offers, RebuWebApi.Sales.Offer,
+      join_through: "offers_orders",
+      on_delete: :delete_all,
+      on_replace: :delete
 
     timestamps(type: :utc_datetime)
   end
@@ -16,7 +20,7 @@ defmodule RebuWebApi.Sales.Order do
   @doc false
   def changeset(order, attrs) do
     order
-    |> cast(attrs, [:status, :total_rebate_amount])
+    |> cast(attrs, [:status, :total_rebate_amount, :date])
     |> validate_inclusion(:status, [:in_progress, :refunded, :completed])
     |> validate_required([:status, :total_rebate_amount])
   end
