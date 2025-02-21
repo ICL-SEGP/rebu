@@ -30,7 +30,7 @@ function getPageName(pathname: string): string {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const pageName = getPageName(pathname);
-  const { status } = useSession();
+  const { data: session, status } = useSession();
 
   if (status === "loading") {
     return <p>Loading...</p>;

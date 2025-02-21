@@ -8,9 +8,9 @@ defmodule RebuWebApiWeb.JSONHelpers do
   @doc """
   Converts order status atoms into human-readable strings.
   """
-  def transform_status(:in_progress), do: "In Progress"
-  def transform_status(:refunded), do: "Refunded"
-  def transform_status(:completed), do: "Completed"
+  def transform_status(:in_progress), do: "in_progress"
+  def transform_status(:refunded), do: "refunded"
+  def transform_status(:completed), do: "completed"
   def transform_status(status), do: to_string(status)
 
   @doc """
@@ -26,6 +26,8 @@ defmodule RebuWebApiWeb.JSONHelpers do
   - Excludes Ecto metadata and sensitive fields.
   """
   def serialize_schema(nil), do: nil
+
+
 
   def serialize_schema(%_{} = struct) do
     struct

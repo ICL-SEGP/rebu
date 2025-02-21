@@ -9,7 +9,10 @@ defmodule RebuWebApi.Repo.Migrations.CreateUsers do
       add :first_name, :string
       add :last_name, :string
       add :email, :citext
-      add :balance, :integer
+      add :token_balance, :numeric, default: 0.0, null: false
+      add :locked_tokens, :numeric, default: 0.0, null: false
+      add :rescinded_tokens, :numeric, default: 0.0, null: false
+      add :date_joined, :date, null: false
 
       timestamps(type: :utc_datetime)
     end
