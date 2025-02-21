@@ -3,17 +3,24 @@
 <head>
   <title>Tracker Settings</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 10px; }
+    body { font-family: Arial, sans-serif; padding: 10px; min-width: 200px;}
     button { margin: 5px; padding: 5px 10px; }
     #log { margin-top: 10px; max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; }
   </style>
 </head>
 <body>
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button id="login">Login</button>
+    <p id="message"></p>
+    <script src="popup.js"></script>
   <h2>Tracking Permission</h2>
   <div id="permissionStatus"></div>
-  <button id="enableTracking">Enable Tracking</button>
-  <button id="disableTracking">Disable Tracking</button>
-  
+  <div>
+    <button id="enableTracking">Enable Tracking</button>
+    <button id="disableTracking">Disable Tracking</button>
+  </div>
   <h2>Tracked Events</h2>
   <div id="log"></div>
   <button id="clearLog">Clear Log</button>

@@ -53,3 +53,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
   
+  document.getElementById("login").addEventListener("click", async () => {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+    console.log(username)
+    if (!username || !password) {
+        document.getElementById("message").innerText = "Please enter credentials";
+        return;
+    }
+
+    // Mock API call (replace with actual authentication API)
+    const response = await fetch("https://example.com/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+        chrome.storage.sync.set({ loggedIn: true, username }, () => {
+            document.getElementById("message").innerText = "Login successful!";
+        });
+    } else {
+        document.getElementById("message").innerText = "Invalid credentials";
+    }
+});
