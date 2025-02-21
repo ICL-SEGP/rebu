@@ -66,13 +66,14 @@ export default function OrdersPage() {
       }))
 
 
-      setOrders(fetchedOrders.slice(0, 3));
+      setOrders(fetchedOrders);
 
 
     } catch (error) {
       console.error("Error fetching orders:", error);
     }
   };
+
 
   // Fetch orders on mount and refresh every 5 seconds
   useEffect(() => {
