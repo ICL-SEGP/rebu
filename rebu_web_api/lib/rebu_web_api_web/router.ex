@@ -44,6 +44,7 @@ defmodule RebuWebApiWeb.Router do
   scope "/api", RebuWebApiWeb do
     get "/", DefaultController, :default
     resources "/orders", OrderController, except: [:new, :edit]
+    post "/orders/complete", OrderController, :create_complete
     resources "/offers", OfferController, except: [:new, :edit]
     delete "/logout", AuthController, :sign_out
     get "/balance", AuthController, :get_balance

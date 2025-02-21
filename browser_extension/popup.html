@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tracker Settings</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 10px; }
+    button { margin: 5px; padding: 5px 10px; }
+    #log { margin-top: 10px; max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; }
+  </style>
+</head>
+<body>
+  <h2>Tracking Permission</h2>
+  <div id="permissionStatus"></div>
+  <button id="enableTracking">Enable Tracking</button>
+  <button id="disableTracking">Disable Tracking</button>
+  
+  <h2>Tracked Events</h2>
+  <div id="log"></div>
+  <button id="clearLog">Clear Log</button>
+
+  <script src="popup.js"></script>
+</body>
+</html>
