@@ -33,7 +33,7 @@ IO.puts("Admin created: #{admin.email}")
 
 offers =
   Enum.map(
-    1..10,
+    1..2,
     fn _x ->
       {:ok, offer} = Sales.create_offer(Factory.offer(%{admin: admin}))
       offer
@@ -43,25 +43,45 @@ offers =
 IO.puts("Created #{length(offers)} offers for admin.")
 
 # Step 3: Create Multiple Users
-# users = Factory.insert_list(50, :user)
-users =
-  Enum.map(
-    1..50,
-    fn _x ->
-      {:ok, user} = Accounts.register_user(Factory.user())
-      user
-    end
-  )
+users = Factory.insert_list(1, :user)
 
 IO.puts("Created #{length(users)} users.")
 
 # Step 4: Each User Creates Orders Linked to Admin's Offers
 
 Enum.each(users, fn user ->
-  Enum.map(1..3, fn _x ->
-    order_params = Factory.order(%{user: user, offers: [Enum.random(offers)]})
-    Sales.create_order(order_params)
+  Enum.map(1..1, fn _x ->
+    order_params =
+      Factory.order(%{
+        user: user,
+        offers: offers
+      })
+
+    case Sales.create_order(order_params) do
+      {:ok, order} -> IO.puts("Order #{order.id} created for user #{user.id}.")
+      {:error, changeset} -> IO.inspect(changeset.errors, label: "Order creation failed")
+    end
   end)
 end)
 
 IO.puts("Orders created for all users, each linked to an offer by the admin.")
+
+# offers =
+#   Enum.map(
+#     1..10,
+#     fn _x ->
+#       {:ok, offer} = Sales.create_offer(Factory.offer(%{admin: admin, status: :scheduled}))
+#       offer
+#     end
+#   )
+
+IO.puts("Scheduled Future Admin Orders.")
+
+Enum.each(users, fn user ->
+  balances = Accounts.calculate_balances!(user)
+  Accounts.update_user_balance(user, balances)
+end)
+
+IO.puts("Calculated user balances.")
+
+IO.puts("Seeding completed successfully!")
