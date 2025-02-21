@@ -41,8 +41,20 @@ defmodule RebuWebApi.Accounts do
   """
   def get_user!(id), do: Repo.get!(User, id)
 
-  def get_user_by_email!(email), do: Repo.get_by!(User, email: email)
+  def get_user_by_email!(email) do
+    case Repo.get_by(User, email: email) do
+      nil ->
+        Repo.get_by(Admin, email: email)
 
+      user ->
+        user
+    end
+  end
+
+  @spec register_user(
+          :invalid
+          | %{optional(:__struct__) => none(), optional(atom() | binary()) => any()}
+        ) :: any()
   @doc """
   Creates a user.
 
@@ -133,6 +145,16 @@ defmodule RebuWebApi.Accounts do
     token
   end
 
+  def update_user_balance(user, %{tokens: tokens, locked: locked, rescinded: rescinded}) do
+    user
+    |> Ecto.Changeset.change(%{
+      token_balance: tokens,
+      locked_tokens: locked,
+      rescinded_tokens: rescinded
+    })
+    |> Repo.update()
+  end
+
   def update_user_balance(user, amount, :debit) do
     if user.balance - amount < 0 do
       {:error, :insufficient_funds}
@@ -162,6 +184,26 @@ defmodule RebuWebApi.Accounts do
   def calculate_balances!(user) do
     orders = Sales.get_orders_by_user(user)
 
+    aggregate_orders(orders)
+  end
+
+  def set_admin(%User{id: _id} = user, role) do
+    # TODO: add authorization checking of super admin later
+    case role do
+      :super_admin -> {:error, :unauthorized}
+      :admin -> User.role_changeset(user, %{role: role})
+      :user -> User.role_changeset(user, %{role: role})
+      _ -> {:error, :invalid_role_passed}
+    end
+  end
+
+  def admin_balances!() do
+    orders = Sales.list_orders()
+
+    aggregate_orders(orders)
+  end
+
+  def aggregate_orders(orders) do
     Enum.reduce(orders, %{tokens: 0, locked: 0, rescinded: 0}, fn order, acc ->
       case order.status do
         :in_progress ->
@@ -176,20 +218,12 @@ defmodule RebuWebApi.Accounts do
     end)
   end
 
-  def set_admin(%User{id: _id} = user, role) do
-    # TODO: add authorization checking of super admin later
-    case role do
-      :super_admin -> {:error, :unauthorized}
-      :admin -> User.role_changeset(user, %{role: role})
-      :user -> User.role_changeset(user, %{role: role})
-      _ -> {:error, :invalid_role_passed}
-    end
+  def is_admin(%Admin{}) do
+    true
   end
 
-  def is_admin(%User{id: id}) do
-    result = get_user!(id)
-
-    result.role == :admin || result.role == :super_admin
+  def is_admin(param) do
+    false
   end
 
   def get_users_by_role(role) do
@@ -207,5 +241,25 @@ defmodule RebuWebApi.Accounts do
 
   def process_order_for_offer(%User{id: user_id}, %Offer{id: offer_id}, order_attrs) do
     Sales.create_order(Map.merge(order_attrs, %{user_id: user_id, offer_id: offer_id}))
+  end
+
+  def users_joined_per_month do
+    query =
+      from u in User,
+        # Convert the date to "YYYY-MM" for grouping
+        group_by: fragment("TO_CHAR(?, 'Month')", u.date_joined),
+        order_by: fragment("TO_CHAR(?, 'Month')", u.date_joined),
+        select: {
+          fragment("TO_CHAR(?, 'Month')", u.date_joined),
+          count(u.id)
+        }
+
+    Enum.map(Repo.all(query), fn {month, count} ->
+      %{
+        # Remove trailing spaces if needed
+        month: String.trim(month),
+        count: count
+      }
+    end)
   end
 end
