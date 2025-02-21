@@ -77,7 +77,8 @@ defmodule RebuWebApi.MixProject do
       {:cors_plug, "~> 3.0"},
       {:sops_config_provider, "~> 0.2.1"},
       {:faker, "~> 0.18.0"},
-      {:ex_machina, "~> 2.7.0"}
+      {:ex_machina, "~> 2.7.0"},
+      {:timex, "~> 3.7"}
     ]
   end
 
