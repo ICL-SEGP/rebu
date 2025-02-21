@@ -14,6 +14,7 @@ defmodule RebuWebApi.Accounts.User do
     field :rescinded_tokens, :decimal, default: 0.0
     field :password, :string, redact: true, virtual: true
     field :hashed_password, :string, redact: true
+    field :date_joined, :date
 
     field :role, Ecto.Enum, values: [:user, :admin, :super_admin], default: :user
 
@@ -23,23 +24,10 @@ defmodule RebuWebApi.Accounts.User do
     timestamps(type: :utc_datetime)
   end
 
-  @spec registration_changeset(
-          {map(),
-           %{
-             optional(atom()) =>
-               atom()
-               | {:array | :assoc | :embed | :in | :map | :parameterized | :supertype | :try,
-                  any()}
-           }}
-          | %{
-              :__struct__ => atom() | %{:__changeset__ => any(), optional(any()) => any()},
-              optional(atom()) => any()
-            },
-          :invalid | %{optional(:__struct__) => none(), optional(atom() | binary()) => any()}
-        ) :: any()
+
   def registration_changeset(user, attrs) do
     user
-    |> cast(attrs, [:first_name, :last_name, :email, :token_balance, :locked_tokens, :rescinded_tokens, :password, :role])
+    |> cast(attrs, [:first_name, :last_name, :email, :token_balance, :locked_tokens, :rescinded_tokens, :password, :role, :date_joined])
     |> validate_required([:first_name, :last_name, :token_balance, :locked_tokens, :rescinded_tokens])
     |> validate_inclusion(:role, [:user])
     |> AccountChangesetHelpers.validate_email()
