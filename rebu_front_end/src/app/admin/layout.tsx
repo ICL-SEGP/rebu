@@ -32,8 +32,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pageName = getPageName(pathname);
   const { data: session, status } = useSession();
 
-  console.log(session)
-
   if (status === "loading") {
     return <p>Loading...</p>;
   }
