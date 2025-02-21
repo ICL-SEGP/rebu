@@ -29,6 +29,30 @@ defmodule RebuWebApiWeb.OrderController do
     end
   end
 
+  # def create_complete(conn, %{"affiliate_link" => affiliate_link, "order" => order_params}) do
+  #   user = Guardian.Plug.current_resource(conn)
+
+  #   offer = Repo.get_by(RebuWebApi.Sales.Offer, affiliate_link: affiliate_link)
+
+  #   if offer do
+  #     case Sales.create_complete_order(user, offer, order_params) do
+  #       {:ok, %Order{} = order} ->
+  #         conn
+  #         |> put_status(:created)
+  #         |> put_resp_header("location", ~p"/api/orders/#{order.id}")
+  #         |> render(:show, order: order)
+
+  #       {:error, changeset} ->
+  #         conn
+  #         |> put_status(:unprocessable_entity)
+  #         |> render(RebuWebApiWeb.ChangesetView, "error.json", changeset: changeset)
+  #     end
+  #   else
+  #     |> put_status(:not_found)
+  #     |> json(%{errors: "Offer not found with the provided affiliate link"})
+  #   end
+  # end
+
   def show(conn, %{"id" => id}) do
     order = Sales.get_order!(id)
     render(conn, :show, order: order)

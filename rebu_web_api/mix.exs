@@ -78,7 +78,8 @@ defmodule RebuWebApi.MixProject do
       {:sops_config_provider, "~> 0.2.1"},
       {:faker, "~> 0.18.0"},
       {:ex_machina, "~> 2.7.0"},
-      {:rustler, "~> 0.36.1"}
+      {:rustler, "~> 0.36.1"},
+      {:timex, "~> 3.7"}
     ]
   end
 
