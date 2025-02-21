@@ -20,6 +20,20 @@ defmodule RebuWebApi.Accounts.Admin do
   #   { month: "June", revenue: 7000 },
   # ];
 
+  @derive {Jason.Encoder,
+           only: [
+             :id,
+             :first_name,
+             :last_name,
+             :email,
+             :revenue,
+             :token_balance,
+             :locked_tokens,
+             :role,
+             :inserted_at,
+             :updated_at
+           ]}
+
   schema "admin_users" do
     field :first_name, :string
     field :last_name, :string
@@ -37,23 +51,18 @@ defmodule RebuWebApi.Accounts.Admin do
     timestamps(type: :utc_datetime)
   end
 
-  @spec registration_changeset(
-          {map(),
-           %{
-             optional(atom()) =>
-               atom()
-               | {:array | :assoc | :embed | :in | :map | :parameterized | :supertype | :try,
-                  any()}
-           }}
-          | %{
-              :__struct__ => atom() | %{:__changeset__ => any(), optional(any()) => any()},
-              optional(atom()) => any()
-            },
-          :invalid | %{optional(:__struct__) => none(), optional(atom() | binary()) => any()}
-        ) :: any()
   def registration_changeset(user, attrs) do
     user
-    |> cast(attrs, [:first_name, :last_name, :email, :token_balance, :locked_tokens, :rescinded_tokens, :password, :role])
+    |> cast(attrs, [
+      :first_name,
+      :last_name,
+      :email,
+      :token_balance,
+      :locked_tokens,
+      :rescinded_tokens,
+      :password,
+      :role
+    ])
     |> validate_required([:first_name, :last_name])
     |> validate_inclusion(:role, [:user])
     |> AccountChangesetHelpers.validate_email()
