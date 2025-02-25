@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   
     disableTracking.addEventListener('click', function() {
-      chrome.storage.local.set({ trackingEnabled: false }, function() {
+      chrome.storage.local.set({ trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing", trackLog: []}, function() {
         updatePermissionStatus(false);
       });
     });

@@ -4,6 +4,7 @@
     "version": "1.0",
     "description": "Tracks user purchases and link clicks—after obtaining permission.",
     "permissions": [
+      "webNavigation",
       "storage",
       "tabs",
       "webRequest"
