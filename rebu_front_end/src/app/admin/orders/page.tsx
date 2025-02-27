@@ -145,7 +145,7 @@ export default function OrdersPage() {
   }, [filteredOrders]);
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6l">
       <h1 className="text-2xl font-bold">Manage Orders</h1>
 
       {/* Search & Filter */}
@@ -225,6 +225,7 @@ function OrderSection({ title, orders, borderColor, editingId, setEditingId, set
   const handleEdit = (order: Order) => {
     setEditingId(order.id);
     setTempOrder({ ...order }); // Store a temporary copy
+    // TODO: 
   };
 
   // Cancel Edit
