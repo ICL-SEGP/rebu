@@ -33,9 +33,9 @@ IO.puts("Admin created: #{admin.email}")
 
 offers =
   Enum.map(
-    1..2,
+    1..10,
     fn _x ->
-      {:ok, offer} = Sales.create_offer(Factory.offer(%{admin: admin}))
+      {:ok, offer} = Repo.insert(Offer.changeset(%Offer{},Factory.offer(%{admin: admin})))
       offer
     end
   )
@@ -43,14 +43,14 @@ offers =
 IO.puts("Created #{length(offers)} offers for admin.")
 
 # Step 3: Create Multiple Users
-users = Factory.insert_list(1, :user)
+users = Factory.insert_list(20, :user)
 
 IO.puts("Created #{length(users)} users.")
 
 # Step 4: Each User Creates Orders Linked to Admin's Offers
 
 Enum.each(users, fn user ->
-  Enum.map(1..1, fn _x ->
+  Enum.map(1..8, fn _x ->
     order_params =
       Factory.order(%{
         user: user,
@@ -66,14 +66,14 @@ end)
 
 IO.puts("Orders created for all users, each linked to an offer by the admin.")
 
-# offers =
-#   Enum.map(
-#     1..10,
-#     fn _x ->
-#       {:ok, offer} = Sales.create_offer(Factory.offer(%{admin: admin, status: :scheduled}))
-#       offer
-#     end
-#   )
+offers =
+  Enum.map(
+    1..10,
+    fn _x ->
+      {:ok, offer} = Repo.insert(Offer.changeset(%Offer{},Factory.offer(%{admin: admin, status: :scheduled})))
+      offer
+    end
+  )
 
 IO.puts("Scheduled Future Admin Orders.")
 
