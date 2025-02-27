@@ -201,6 +201,8 @@ defmodule RebuWebApi.Sales do
 
   """
   def create_order(attrs \\ %{}) do
+    check_completed_and_mint(attrs)
+
     %Order{}
     |> Order.changeset(attrs)
     |> Ecto.Changeset.put_assoc(:offers, attrs.offers)
@@ -246,6 +248,8 @@ defmodule RebuWebApi.Sales do
 
   """
   def update_order(%Order{} = order, attrs) do
+    check_completed_and_mint(attrs)
+
     offer_ids = Map.get(attrs, :offers, [])
     # Fetch Offer structs
     offers = Repo.all(from(o in Offer, where: o.id in ^offer_ids))
@@ -256,6 +260,12 @@ defmodule RebuWebApi.Sales do
     |> Order.changeset(attrs)
     |> Ecto.Changeset.put_assoc(:offers, offers)
     |> Repo.update()
+  end
+
+  def check_completed_and_mint(attrs) do
+    # case Map.get(:status) do
+    #   # :complete -> call rust an mint tokens
+    # end
   end
 
   @doc """
