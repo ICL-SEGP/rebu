@@ -47,11 +47,13 @@ defmodule RebuWebApiWeb.Router do
     post "/orders/create", AdminController, :create_order
     delete "/orders/:id", AdminController, :delete_order
 
-  delete "/offers/:id", AdminController, :delete_order
+    delete "/offers/:id", AdminController, :delete_order
     resources "/offers", OfferController, except: [:new, :edit]
   end
 
   scope "/api", RebuWebApiWeb do
+    pipe_through [:api, :auth]
+
     get "/", DefaultController, :default
     resources "/orders", OrderController, except: [:new, :edit]
     post "/orders/complete", OrderController, :create_complete
@@ -60,7 +62,6 @@ defmodule RebuWebApiWeb.Router do
     get "/balance", AuthController, :get_balance
 
     scope "/solana" do
-      pipe_through [:api, :auth]
       post "/publickey", SolanaController, :update_key
     end
   end

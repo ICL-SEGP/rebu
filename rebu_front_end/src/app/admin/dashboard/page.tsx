@@ -22,7 +22,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { Coins } from "lucide-react";
-import MonthlyOrdersBar from "@/components/ui/monthlyOrdersBar";
 import TokensPie from "@/components/ui/tokensPie";
 import SalesDashboard from "@/components/ui/monthlyBreakdown";
 import { stat } from "fs";
@@ -38,6 +37,7 @@ import {
   Legend,
 } from "chart.js"
 import { Bar, Pie, Line } from "react-chartjs-2"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 
 ChartJS.register(
@@ -240,14 +240,6 @@ export default function DashboardPage() {
     <div className="space-y-8 p-6">
       <h1 className="text-2xl font-bold">Admin Dashboard</h1>
 
-      {/* Error Alert */}
-      {error && (
-        <Alert variant="destructive">
-          <ExclamationTriangleIcon className="h-5 w-5" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
 
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
