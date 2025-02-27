@@ -38,7 +38,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <SidebarProvider>
-      <div className="flex">
+      <div className="flex w-screen mx-36">
         {/* Sidebar */}
         <AppSidebarAdmin />
 
