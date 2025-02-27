@@ -204,7 +204,7 @@ export default function SalesDashboard({ monthlyBreakdown }) {
       </CardHeader>
       <CardContent>
         {/* Top: Full-width line chart */}
-        <div className="mb-8 w-full h-[500px] bg-white p-4 border rounded-md shadow">
+        <div className="mb-8 w-full h-[650px] justify-center bg-white p-4 border rounded-md shadow">
           <h2 className="mb-4 text-xl font-semibold">Tokens Over Time (Full Width)</h2>
           <Line data={lineData} />
         </div>
@@ -212,9 +212,10 @@ export default function SalesDashboard({ monthlyBreakdown }) {
         {/* Bottom: Two columns for Bar & Pie side by side */}
         <div
           style={{
-            display: "flex",       // side-by-side
-            flexWrap: "wrap",      // wrap on small screens
-            gap: "1rem",           // spacing between charts
+            display: "flex",          // side-by-side
+            flexWrap: "wrap",
+            width: "auto",            // wrap on small screens
+            gap: "1rem",              // spacing between charts
             justifyContent: "center" // center horizontally
           }}
         >
