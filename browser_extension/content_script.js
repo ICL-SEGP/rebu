@@ -70,16 +70,14 @@
   function checkForPurchaseConfirmation() {
     // Convert the entire body text to lowercase for a case-insensitive search.
     const bodyText = document.body.innerText.toLowerCase();
-    
+    const purchasePattern = /thank[-_]?you|order[-_]?confirmation|purchase[-_]?success/i;
+    if (purchasePattern.test(window.locaation.href)) {
+      console.log("Confirmation page detected via URL check");
+      return true;
+    }
     for (let keyword of confirmationKeywords) {
       if (bodyText.includes(keyword)) {
-        console.log("Purchase detected via DOM check. Keyword found:", keyword);
-        chrome.runtime.sendMessage({
-          type: "purchase_detected_dom",
-          data: { url: window.location.href, keyword: keyword }
-        });
-
-        
+        console.log("Confirmation page detected via DOM check. Keyword found:", keyword);
         return true; // Found at least one keyword, so exit.
       }
     }
