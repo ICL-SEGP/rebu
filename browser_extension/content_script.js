@@ -1,10 +1,23 @@
 (function() {
-  chrome.storage.local.get({trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing"}, (result) => {
+  chrome.storage.local.get({redirected: false, trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing", flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "payment_confirmed": false}}, (result) => {
     if (!result.trackingEnabled) return;
-    if (result.url === "Nothing" && check_for_offer(window.location.href)) {
-      chrome.storage.local.set({redirectUrl: window.location.href, url: window.location.href})
-      chrome.storage.local.set({ trackLog: [{url: "Affiliate link clicked " + window.location.href, type:"start", timestamp: new Date().toISOString()}] })
+    if (!result.flags["affiliate_link_detected"] && check_for_offer(window.location.href)) {
+      chrome.storage.local.set({redirectUrl: window.location.href, url: window.location.href});
+      chrome.storage.local.set({trackLog: [{url: "Affiliate link clicked " + window.location.href, type:"start", timestamp: new Date().toISOString()}] });
+      chrome.storage.local.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": false, "payment_confirmed": false}});
+      chrome.storage.local.set({affiliate_product: document.body.innerText})
       console.log(window.location.href);
+    }
+    if (result.redirected) {
+      chrome.storage.local.set({affiliate_product: document.body.innerText, redirected: false});
+    }
+  });
+
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === "onBeforeRedirectComplete") {
+      console.log("Received redirect completion message in content script:", message.details);
+      // Now run the code that should execute after onBeforeRedirect is done.
+      // For example, update the page, process data, etc.
     }
   });
 
@@ -71,13 +84,17 @@
     // Convert the entire body text to lowercase for a case-insensitive search.
     const bodyText = document.body.innerText.toLowerCase();
     const purchasePattern = /thank[-_]?you|order[-_]?confirmation|purchase[-_]?success/i;
-    if (purchasePattern.test(window.locaation.href)) {
+    if (purchasePattern.test(window.location.href)) {
       console.log("Confirmation page detected via URL check");
+      chrome.storage.local.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": true, "payment_confirmed": false}})
+      // reset_variables();
       return true;
     }
     for (let keyword of confirmationKeywords) {
       if (bodyText.includes(keyword)) {
         console.log("Confirmation page detected via DOM check. Keyword found:", keyword);
+        chrome.local.storage.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": true, "payment_confirmed": false}})
+        // reset_variables();
         return true; // Found at least one keyword, so exit.
       }
     }
@@ -86,10 +103,10 @@
 
 
   // Runs a check to find out whether page loaded is a confirmation page.
-  chrome.storage.local.get({trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing"}, (result) => {
+  chrome.storage.local.get({trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing", flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "payment_confirmed": false}}, (result) => {
     if (!result.trackingEnabled) return;
-    if (result.url === "Nothing") {
-      console.log("Affiliate link not recognised, click again")
+    if (!result.flags["affiliate_link_detected"]) {
+      console.log("Affiliate link not yet detected, click again")
       return;
     } else {
       console.log("Tracking pages")
@@ -113,23 +130,23 @@ function check_for_offer(url) {
   return true;
 }
 
-async function sendDynamicPrompt(xyz, abc) {
+async function check_correct_product(product1, product2) {
   const apiKey = "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"; 
 
   const prompt = `
-    You are an AI assistant that analyzes HTML webpages to verify if any product on a purchase confirmation page matches the product on an initial affiliate link page. Follow these steps:
+    You are an AI assistant that analyzes inner text webpages to verify if any product on a purchase confirmation page matches any product on an initial affiliate link page. Follow these steps:
 
     1. **Extract Product Details from the Affiliate Link Page:**
-      - Analyze the HTML and identify the product name, brand, model, and any unique identifiers (e.g., SKU, ASIN).
+      - Analyze the inner text and identify all product's product name, brand, model, and any unique identifiers (e.g., SKU, ASIN).
       - Ignore irrelevant content like ads, navigation, or unrelated text.
 
     2. **Extract Product Details from the Confirmation Page:**
-      - Analyze the HTML and identify all products listed on the confirmation page.
+      - Analyze the inner text and identify all products listed on the confirmation page.
       - For each product, extract the product name, brand, model, and unique identifiers.
 
     3. **Compare the Products:**
-      - Compare the product from the affiliate link page with each product on the confirmation page.
-      - If **any product** on the confirmation page matches the affiliate link product exactly (based on name, brand, model, and unique identifiers), respond with 'YES'.
+      - Compare each product from the affiliate link page with each product on the confirmation page.
+      - If **any product** on the confirmation page matches any product on the affiliate link exactly (based on name, brand, model, and unique identifiers), respond with 'YES'.
       - If no products match, respond with 'NO'.
 
     4. **Output Format:**
@@ -137,8 +154,8 @@ async function sendDynamicPrompt(xyz, abc) {
       - Only respond with 'YES' or 'NO'.
 
     **Input:**
-    - Affiliate Link Page HTML: ${affiliateLinkHTML}
-    - Confirmation Page HTML: ${confirmationPageHTML}
+    - Affiliate Link Page inner text: ${product1}
+    - Confirmation Page inner text: ${product2}
     `;
   try {
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -162,3 +179,8 @@ async function sendDynamicPrompt(xyz, abc) {
       return null;
   }
 }
+
+function reset_variables() {
+  chrome.storage.local.set({redirected: false, redirectUrl: "Nothing", url: "Nothing", trackLog: [], flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "payment_confirmed": false}});
+}
+  
