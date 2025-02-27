@@ -6,6 +6,9 @@
     body { font-family: Arial, sans-serif; padding: 10px; min-width: 200px;}
     button { margin: 5px; padding: 5px 10px; }
     #log { margin-top: 10px; max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; }
+    #status { margin-top: 10px;  padding: 5px; display: flex; flex-direction: column; gap: 10px;}
+    .covering { display: flex; flex-direction: row; align-items: center; gap: 10px;}
+    .conf { height: 30px; width: 30px; background-color: gray; margin-right: 10px;}
   </style>
 </head>
 <body>
@@ -15,6 +18,21 @@
     <button id="login">Login</button>
     <p id="message"></p>
     <script src="popup.js"></script>
+  <h2>Status</h2>
+  <div id="status">
+    <div class="covering">
+      <h3>Affiliate Link Clicked</h3>
+      <div class="conf" id="affiliate_link_pressed"></div>
+    </div>
+    <div class="covering">
+      <h3>Confirmation Reached</h3>
+      <div class="conf" id="confirmation_page"></div>
+    </div>
+    <div class="covering">
+      <h3>Purchase Confirmed</h3>
+      <div class="conf" id="purchase_detected"></div>
+    </div>
+  </div>
   <h2>Tracking Permission</h2>
   <div id="permissionStatus"></div>
   <div>

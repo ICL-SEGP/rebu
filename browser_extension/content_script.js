@@ -13,14 +13,6 @@
     }
   });
 
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.type === "onBeforeRedirectComplete") {
-      console.log("Received redirect completion message in content script:", message.details);
-      // Now run the code that should execute after onBeforeRedirect is done.
-      // For example, update the page, process data, etc.
-    }
-  });
-
   // Probably useless code
   chrome.storage.local.get({ trackingEnabled: false }, (result) => {
     if (!result.trackingEnabled) return;

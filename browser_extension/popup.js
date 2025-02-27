@@ -4,10 +4,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const disableTracking = document.getElementById('disableTracking');
     const logDiv = document.getElementById('log');
     const clearLog = document.getElementById('clearLog');
+    const affiliatelinkstatus = document.getElementById("affiliate_link_pressed");
+    const confirmationstatus = document.getElementById("confirmation_page");
+    const purchasestatus = document.getElementById("purchase_detected");
   
     // Check and display the current tracking permission status
     chrome.storage.local.get({ trackingEnabled: false }, function(result) {
       updatePermissionStatus(result.trackingEnabled);
+    });
+
+    chrome.storage.local.get({flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "payment_confirmed": false}}, function(result) {
+      if (result.flags["affiliate_link_detected"]) {
+        affiliatelinkstatus.style.backgroundColor = "green";
+      }
+      if (result.flags["confirmation_page_reached"]) {
+        confirmationstatus.style.backgroundColor = "green";
+      }
+      if (result.flags["payment_confirmed"]) {
+        purchasestatus.style.backgroundColor = "green";
+      }
     });
   
     enableTracking.addEventListener('click', function() {
@@ -78,4 +93,22 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         document.getElementById("message").innerText = "Invalid credentials";
     }
+});
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  const affiliatelinkstatus = document.getElementById("affiliate_link_pressed");
+  const purchasestatus = document.getElementById("purchase_detected");
+  const confirmationstatus = document.getElementById("confirmation_page");
+  if (areaName === "local" && changes.flags) {
+    const newFlags = changes.flags.newValue;
+    if (newFlags["affiliate_link_detected"]) {
+      affiliatelinkstatus.style.backgroundColor = "green";
+    }
+    if (newFlags["confirmation_page_reached"]) {
+      confirmationstatus.style.backgroundColor = "green";
+    }
+    if (newFlags["payment_confirmed"]) {
+      purchasestatus.style.backgroundColor = "green";
+    }
+  }
 });
