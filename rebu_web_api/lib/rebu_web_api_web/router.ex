@@ -39,6 +39,7 @@ defmodule RebuWebApiWeb.Router do
     pipe_through [:api, :auth, :admin]
 
     get "/users", AdminController, :get_users
+    put "/users/:id", AdminController, :update_user
     get "/stats", AdminController, :stats
 
     get "/orders", AdminController, :get_orders
@@ -46,7 +47,7 @@ defmodule RebuWebApiWeb.Router do
     post "/orders/create", AdminController, :create_order
     delete "/orders/:id", AdminController, :delete_order
 
-    delete "/offers/:id", AdminController, :delete_order
+  delete "/offers/:id", AdminController, :delete_order
     resources "/offers", OfferController, except: [:new, :edit]
   end
 

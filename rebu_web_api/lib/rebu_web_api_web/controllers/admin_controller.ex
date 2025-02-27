@@ -23,6 +23,10 @@ defmodule RebuWebApiWeb.AdminController do
     |> render(:get_orders, orders: orders)
   end
 
+  def update_user(conn, params) do
+    dbg(params)
+  end
+
   def stats(conn, _params) do
     balances = Accounts.admin_balances!()
     offer_counts = Sales.get_offer_counts_by_status()
