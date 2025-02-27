@@ -11,6 +11,7 @@ defmodule RebuWebApi.Accounts do
   alias RebuWebApi.Auth.Guardian
   alias RebuWebApi.Sales
   alias RebuWebApi.Sales.Offer
+  alias RebWebApi.Accounts.AccountChangesetHelpers
 
   @doc """
   Returns the list of users.
@@ -51,10 +52,6 @@ defmodule RebuWebApi.Accounts do
     end
   end
 
-  @spec register_user(
-          :invalid
-          | %{optional(:__struct__) => none(), optional(atom() | binary()) => any()}
-        ) :: any()
   @doc """
   Creates a user.
 
@@ -94,6 +91,14 @@ defmodule RebuWebApi.Accounts do
   def update_name(%User{} = user, attrs) do
     user
     |> User.name_changeset(attrs)
+    |> Repo.update()
+  end
+
+  def update_user(id, attrs) do
+    get_user!(id)
+    |> AccountChangesetHelpers.name_changeset(attrs)
+    |> AccountChangesetHelpers.email_changeset(attrs)
+    |> User.role_changeset(attrs)
     |> Repo.update()
   end
 
