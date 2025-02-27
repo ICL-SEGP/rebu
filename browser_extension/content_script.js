@@ -1,5 +1,5 @@
 (function() {
-  chrome.storage.local.get({redirected: false, trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing", flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "payment_confirmed": false}}, (result) => {
+  chrome.storage.local.get({affiliate_product: "Nothing", redirected: false, trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing", flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "payment_confirmed": false}}, (result) => {
     if (!result.trackingEnabled) return;
     if (!result.flags["affiliate_link_detected"] && check_for_offer(window.location.href)) {
       chrome.storage.local.set({redirectUrl: window.location.href, url: window.location.href});
@@ -11,6 +11,18 @@
     if (result.redirected) {
       chrome.storage.local.set({affiliate_product: document.body.innerText, redirected: false});
     }
+
+
+    checkForPurchaseConfirmation(result.affiliate_product);
+    
+    // Set up a MutationObserver to catch dynamic changes in the page.
+    const observer = new MutationObserver((mutations) => {
+      // If a mutation adds new content, check again.
+      checkForPurchaseConfirmation(result.affiliate_product);
+    });
+    
+    // Observe the body for changes in its subtree.
+    observer.observe(document.body, { childList: true, subtree: true });
   });
 
   // Probably useless code
@@ -72,7 +84,7 @@
   ];
 
   // Function to search the DOM for confirmation keywords.
-  function checkForPurchaseConfirmation() {
+  function checkForPurchaseConfirmation(affiliate_product) {
     // Convert the entire body text to lowercase for a case-insensitive search.
     const bodyText = document.body.innerText.toLowerCase();
     const purchasePattern = /thank[-_]?you|order[-_]?confirmation|purchase[-_]?success/i;
@@ -80,6 +92,7 @@
       console.log("Confirmation page detected via URL check");
       chrome.storage.local.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": true, "payment_confirmed": false}})
       // reset_variables();
+      check_correct_product(affiliate_product, document.body.innerText)
       return true;
     }
     for (let keyword of confirmationKeywords) {
@@ -87,35 +100,12 @@
         console.log("Confirmation page detected via DOM check. Keyword found:", keyword);
         chrome.local.storage.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": true, "payment_confirmed": false}})
         // reset_variables();
+        check_correct_product(affiliate_product, document.body.innerText)
         return true; // Found at least one keyword, so exit.
       }
     }
     return false;
   }
-
-
-  // Runs a check to find out whether page loaded is a confirmation page.
-  chrome.storage.local.get({trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing", flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "payment_confirmed": false}}, (result) => {
-    if (!result.trackingEnabled) return;
-    if (!result.flags["affiliate_link_detected"]) {
-      console.log("Affiliate link not yet detected, click again")
-      return;
-    } else {
-      console.log("Tracking pages")
-    }
-
-    checkForPurchaseConfirmation();
-    
-    // Set up a MutationObserver to catch dynamic changes in the page.
-    const observer = new MutationObserver((mutations) => {
-      // If a mutation adds new content, check again.
-      checkForPurchaseConfirmation();
-    });
-    
-    // Observe the body for changes in its subtree.
-    observer.observe(document.body, { childList: true, subtree: true });
-  });
-
 })();
 
 function check_for_offer(url) {
@@ -124,7 +114,7 @@ function check_for_offer(url) {
 
 async function check_correct_product(product1, product2) {
   const apiKey = "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"; 
-
+  console.log("Check called");
   const prompt = `
     You are an AI assistant that analyzes inner text webpages to verify if any product on a purchase confirmation page matches any product on an initial affiliate link page. Follow these steps:
 
@@ -161,11 +151,17 @@ async function check_correct_product(product1, product2) {
               messages: [{ role: "user", content: prompt }]
           })
       });
-
+      console.log("Waiting for response");
       const data = await response.json();
       console.log(data);
-      console.log("DeepSeek Response:", data.choices[0].message.content);
-      return data.choices[0].message.content;
+      const reply = data.choices[0].message.content;
+      console.log("DeepSeek Response:", reply);
+      if (reply === "YES") {
+        chrome.storage.local.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": true, "payment_confirmed": true}});
+      } else {
+        console.log("Cannot confirm purchase");
+      }
+      return reply;
   } catch (error) {
       console.error("Error sending request:", error);
       return null;
