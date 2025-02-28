@@ -1,74 +1,64 @@
-use anchor_lang::prelude::*;
+#![allow(clippy::result_large_err)]
 
-use anchor_spl::{
-    token::Token,
+use anchor_lang::prelude::*; 
+use anchor_spl::{ 
+    token_interface::{ Mint, TokenAccount, TokenInterface }, 
     associated_token::AssociatedToken,
-    token_interface::{Mint, TokenAccount, TokenInterface},
 };
 
-use crate::Escrow;
+use crate::{ ANCHOR_DISCRIMINATOR, ProductListing };
 
 #[derive(Accounts)]
-pub struct MakePurchase<'info> {
+#[instruction(id: u64)]
+pub struct AddListing<'info> {
 
-    /// `seller`, who is willing to sell his token_x for token_y
+    /// Affiliate
     #[account(mut)]
-    user: Signer<'info>,
+    signer: Signer<'info>,
 
-    /// Token x mint for ex. USDC
-    mint: Account<'info, Mint>,
+    /// Rebu mint
+    #[account(mut)]
+    mint: InterfaceAccount<'info, Mint>,
 
-    /// ATA of x_mint 
-    #[account(mut, constraint = user_token.mint == mint.key() && user_token.owner == seller.key())] 
-    user_token: Account<'info, TokenAccount>,
+    pub seller: SystemAccount<'info>,
+
+    /// ATA of seller 
+    #[account(
+        mut,
+        associated_token::mint = mint,
+        associated_token::authority = seller,
+    )] 
+    seller_ata: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
         init, 
-        payer = user,
-        space=Escrow::LEN,
-        seeds = ["escrow6".as_bytes(), user.key().as_ref()],
+        payer = signer,
+        space = ANCHOR_DISCRIMINATOR + ProductListing::INIT_SPACE,
+        seeds = [
+            b"product".as_ref(), b"listing".as_ref(), 
+            seller.key().as_ref(), 
+            id.to_le_bytes().as_ref()
+        ],
         bump,
     )]
-    pub escrow: Account<'info, Escrow>,
+    pub product_listing: Account<'info, ProductListing>,
 
-    #[account(
-        init,
-        payer = user,
-        token::mint = mint,
-        token::authority = escrow,
-    )]
-    escrowed_tokens: Account<'info, TokenAccount>,
-
-    token_program: Program<'info, Token>,
-    rent: Sysvar<'info, Rent>,
+    associated_token_program: Program<'info, AssociatedToken>,
+    token_program: Interface<'info, TokenInterface>,
     system_program: Program<'info, System>,
 }
 
+pub fn save_listing(ctx: Context<AddListing>, id: u64, stock: u64, price: u64) -> Result<()> {
+    assert!(stock > 0 && price > 0);
 
-pub fn send_tokens_to_escrow(ctx: &Context<Initialize>, x_amount: u64, y_amount: u64) -> Result<()> {
-    Ok(())
-}
-
-pub fn save_purchase(ctx: Context<Initialize>, x_amount: u64, y_amount: u64) -> Result<()> {
-    // let escrow = &mut ctx.accounts.escrow;
-    // escrow.bump = ctx.bumps.escrow;
-    // escrow.authority = ctx.accounts.seller.key();
-    // escrow.escrowed_x_tokens = ctx.accounts.escrowed_x_tokens.key();
-    // escrow.y_amount = y_amount; // number of token sellers wants in exchange
-    // escrow.y_mint = ctx.accounts.y_mint.key(); // token seller wants in exchange
-
-    // // Transfer seller's x_token in program owned escrow token account
-    // anchor_spl::token::transfer(
-    //     CpiContext::new(
-    //         ctx.accounts.token_program.to_account_info(),
-    //         anchor_spl::token::Transfer {
-    //             from: ctx.accounts.seller_x_token.to_account_info(),
-    //             to: ctx.accounts.escrowed_x_tokens.to_account_info(),
-    //             authority: ctx.accounts.seller.to_account_info(),
-    //         },
-    //     ),
-    //     x_amount,
-    // )?;
-
+    ctx.accounts.product_listing.set_inner(
+        ProductListing {
+            seller: ctx.accounts.seller.key(),
+            mint: ctx.accounts.mint.key(),
+            id,
+            stock,
+            price,
+            bump: ctx.bumps.product_listing,
+        });
     Ok(())
 }

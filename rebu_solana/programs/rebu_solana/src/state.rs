@@ -1,14 +1,20 @@
 use anchor_lang::prelude::*;
 
 #[account]
-pub struct Offer {
+#[derive(InitSpace)]
+pub struct ProductListing {
+    pub seller: Pubkey,
+    pub mint: Pubkey,
     pub id: u64,
-    pub authority: Pubkey,
-    pub escrowed_tokens: Pubkey,
-    pub product_id: u64,
+    pub stock: u64,
+    pub price: u64,
     pub bump: u8,
 }
 
-impl Escrow {
-    pub const LEN: usize = 8 + 1 + 32 + 32 + 32 + 8;
+#[account]
+#[derive(InitSpace)]
+pub struct ProductPurchase {
+    pub seller: Pubkey,
+    pub user: Pubkey,
+    pub product_id: u64,
 }

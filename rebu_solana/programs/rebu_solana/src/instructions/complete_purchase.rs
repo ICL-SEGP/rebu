@@ -1,36 +1,38 @@
+#![allow(clippy::result_large_err)]
+
 use anchor_lang::prelude::*;
 
-use anchor_spl::{
-    associated_token::AssociatedToken,
-    token_interface::{Mint, TokenAccount, TokenInterface},
-};
+// use anchor_spl::{
+//     associated_token::AssociatedToken,
+//     token_interface::{Mint, TokenAccount, TokenInterface},
+// };
 
 #[derive(Accounts)]
-pub struct CompletePurchase<'info> {
+pub struct CompletePurchase {
 
-    pub affiliate: Signer<'info>,
+    // pub affiliate: Signer<'info>,
 
-    #[account(
-        mut,
-        seeds = ["escrow6".as_bytes(), escrow.authority.as_ref()],
-        bump = escrow.bump,
-    )]
-    pub escrow: Account<'info, Escrow>,
+    // #[account(
+    //     mut,
+    //     seeds = ["escrow6".as_bytes(), escrow.authority.as_ref()],
+    //     bump = escrow.bump,
+    // )]
+    // pub escrow: Account<'info, Escrow>,
 
-    #[account(mut, constraint = escrowed_tokens.key() == escrow.escrowed_tokens)]
-    pub escrowed_tokens: Account<'info, TokenAccount>,
+    // #[account(mut, constraint = escrowed_tokens.key() == escrow.escrowed_tokens)]
+    // pub escrowed_tokens: Account<'info, TokenAccount>,
 
-    #[account(mut, constraint = affiliate_tokens.mint == escrowed_tokens.mint)]
-    pub affiliate_tokens: Account<'info, TokenAccount>,
+    // #[account(mut, constraint = affiliate_tokens.mint == escrowed_tokens.mint)]
+    // pub affiliate_tokens: Account<'info, TokenAccount>,
 
-    pub token_program: Program<'info, Token>,
+    // pub token_program: Program<'info, Token>,
 }
 
 pub fn withdraw_tokens(_ctx: &Context<CompletePurchase>) -> Result<()> {
     Ok(())
 }
 
-pub fn finalize_purchase(ctx: Context<CompletePurchase>) -> Result<()>{
+pub fn finalize_purchase(_ctx: Context<CompletePurchase>) -> Result<()>{
     // // transfer escrowd_x_token to buyer
     // anchor_spl::token::transfer(
     //     CpiContext::new_with_signer(
