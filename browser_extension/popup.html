@@ -1,47 +1,178 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Tracker Settings</title>
+  <title>Affiliate Tracker</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 10px; min-width: 200px;}
-    button { margin: 5px; padding: 5px 10px; }
-    #log { margin-top: 10px; max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; }
-    #status { margin-top: 10px;  padding: 5px; display: flex; flex-direction: column; gap: 10px;}
-    .covering { display: flex; flex-direction: row; align-items: center; gap: 10px;}
-    .conf { height: 30px; width: 30px; background-color: gray; margin-right: 10px;}
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      min-width: 350px;
+      margin: 0; 
+      padding: 20px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+      max-width: 350px;
+      margin: 0 auto;
+    }
+    .card-header h2 {
+      margin: 0 0 4px;
+    }
+    .card-header p {
+      margin: 0;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      margin: 16px 0;
+    }
+    .tabs button {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: #e0e0e0;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .tabs button.active {
+      background: #4f46e5;
+      color: #fff;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Inputs & Buttons */
+    input, button {
+      width: 100%;
+      margin-bottom: 8px;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    button {
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #4338ca;
+    }
+    #logout {
+      background: #ef4444; /* Red button for logout */
+    }
+
+    /* Status & Logs */
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+      background-color: gray;
+      display: inline-block;
+    }
+    #log {
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 8px;
+      background: #fafafa;
+      font-size: 0.8rem;
+    }
+    #conversionBadge {
+      display: none;
+      background: #22c55e;
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      margin-top: 8px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
-    <h2>Login</h2>
-    <input type="text" id="username" placeholder="Username">
-    <input type="password" id="password" placeholder="Password">
-    <button id="login">Login</button>
-    <p id="message"></p>
-    <script src="popup.js"></script>
-  <h2>Status</h2>
-  <div id="status">
-    <div class="covering">
-      <h3>Affiliate Link Clicked</h3>
-      <div class="conf" id="affiliate_link_pressed"></div>
+  <div class="card">
+    <div class="card-header">
+      <h2>Affiliate Tracker</h2>
+      <p>Monitor and track affiliate purchases</p>
     </div>
-    <div class="covering">
-      <h3>Confirmation Reached</h3>
-      <div class="conf" id="confirmation_page"></div>
-    </div>
-    <div class="covering">
-      <h3>Purchase Confirmed</h3>
-      <div class="conf" id="purchase_detected"></div>
-    </div>
-  </div>
-  <h2>Tracking Permission</h2>
-  <div id="permissionStatus"></div>
-  <div>
-    <button id="enableTracking">Enable Tracking</button>
-    <button id="disableTracking">Disable Tracking</button>
-  </div>
-  <h2>Tracked Events</h2>
-  <div id="log"></div>
-  <button id="clearLog">Clear Log</button>
 
+    <!-- Tabs -->
+    <div class="tabs">
+      <button id="tab-login" class="active">Login</button>
+      <button id="tab-status">Status</button>
+      <button id="tab-logs">Logs</button>
+    </div>
+
+    <!-- LOGIN TAB -->
+    <div id="content-login" class="tab-content active">
+      <input type="text" id="username" placeholder="Username">
+      <input type="password" id="password" placeholder="Password">
+      <button id="login">Login</button>
+      <p id="message"></p>
+    </div>
+
+    <!-- STATUS TAB -->
+    <div id="content-status" class="tab-content">
+      <div style="margin-bottom: 8px;">
+        <span class="status-indicator" id="affiliate_link_pressed"></span>
+        Affiliate Link Clicked
+      </div>
+      <div style="margin-bottom: 8px;">
+        <span class="status-indicator" id="confirmation_page"></span>
+        Confirmation Reached
+      </div>
+      <div style="margin-bottom: 8px;">
+        <span class="status-indicator" id="purchase_detected"></span>
+        Purchase Confirmed
+      </div>
+      <div id="permissionStatus" style="margin: 8px 0; font-size: 0.9rem;"></div>
+      <button id="enableTracking">Enable Tracking</button>
+      <button id="disableTracking" style="background: #d32f2f;">Disable Tracking</button>
+      <button id="logout">Logout</button>
+      <div id="conversionBadge">Conversion Complete!</div>
+    </div>
+
+    <!-- LOGS TAB -->
+    <div id="content-logs" class="tab-content">
+      <div id="log">No events tracked.</div>
+      <button id="clearLog" style="background: #ef4444;">Clear Log</button>
+    </div>
+  </div>
+
+  <!-- Tabs Switching Script -->
+  <script>
+    const tabButtons = document.querySelectorAll('.tabs button');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // Remove 'active' from all buttons & contents
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        tabContents.forEach(content => content.classList.remove('active'));
+
+        // Add 'active' to this button & its matching content
+        button.classList.add('active');
+        const contentId = 'content-' + button.id.split('-')[1];
+        document.getElementById(contentId).classList.add('active');
+      });
+    });
+  </script>
+
+  <!-- Your extension logic -->
+  <script src="popup.js"></script>
 </body>
 </html>

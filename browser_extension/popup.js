@@ -1,114 +1,185 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const permissionStatus = document.getElementById('permissionStatus');
-    const enableTracking = document.getElementById('enableTracking');
-    const disableTracking = document.getElementById('disableTracking');
-    const logDiv = document.getElementById('log');
-    const clearLog = document.getElementById('clearLog');
-    const affiliatelinkstatus = document.getElementById("affiliate_link_pressed");
-    const confirmationstatus = document.getElementById("confirmation_page");
-    const purchasestatus = document.getElementById("purchase_detected");
-  
-    // Check and display the current tracking permission status
-    chrome.storage.local.get({ trackingEnabled: false }, function(result) {
-      updatePermissionStatus(result.trackingEnabled);
-    });
+document.addEventListener('DOMContentLoaded', function () {
+  // ========== Cache UI elements ==========
+  const permissionStatus = document.getElementById('permissionStatus');
+  const enableTracking = document.getElementById('enableTracking');
+  const disableTracking = document.getElementById('disableTracking');
+  const logDiv = document.getElementById('log');
+  const clearLog = document.getElementById('clearLog');
+  const affiliateLinkStatus = document.getElementById("affiliate_link_pressed");
+  const confirmationStatus = document.getElementById("confirmation_page");
+  const purchaseStatus = document.getElementById("purchase_detected");
+  const conversionBadge = document.getElementById("conversionBadge");
 
-    chrome.storage.local.get({flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "payment_confirmed": false}}, function(result) {
-      if (result.flags["affiliate_link_detected"]) {
-        affiliatelinkstatus.style.backgroundColor = "green";
-      }
-      if (result.flags["confirmation_page_reached"]) {
-        confirmationstatus.style.backgroundColor = "green";
-      }
-      if (result.flags["payment_confirmed"]) {
-        purchasestatus.style.backgroundColor = "green";
-      }
+  // Login elements
+  const usernameInput = document.getElementById("username");
+  const passwordInput = document.getElementById("password");
+  const loginButton = document.getElementById("login");
+  const messageDisplay = document.getElementById("message");
+  const logoutButton = document.getElementById("logout");
+
+  // Tab elements
+  const tabLoginBtn = document.getElementById('tab-login');
+  const tabStatusBtn = document.getElementById('tab-status');
+  const tabLogsBtn = document.getElementById('tab-logs');
+
+  const contentLogin = document.getElementById('content-login');
+  const contentStatus = document.getElementById('content-status');
+  const contentLogs = document.getElementById('content-logs');
+
+  // ========== Utility Functions ==========
+  // Switches the visible tab by ID
+  function switchTab(tabName) {
+    // Remove active classes
+    [tabLoginBtn, tabStatusBtn, tabLogsBtn].forEach(btn => btn.classList.remove('active'));
+    [contentLogin, contentStatus, contentLogs].forEach(div => div.classList.remove('active'));
+
+    // Add active classes to the chosen tab
+    document.getElementById('tab-' + tabName).classList.add('active');
+    document.getElementById('content-' + tabName).classList.add('active');
+  }
+
+  // Update permission status text + refresh logs
+  function updatePermissionStatus(enabled) {
+    permissionStatus.textContent = enabled ? "Tracking Enabled" : "Tracking Disabled";
+    fetchLog();
+  }
+
+  // Fetch & display logs
+  function fetchLog() {
+    chrome.storage.local.get({ trackLog: [] }, function (result) {
+      displayLog(result.trackLog);
     });
-  
-    enableTracking.addEventListener('click', function() {
-      chrome.storage.local.set({ trackingEnabled: true }, function() {
-        updatePermissionStatus(true);
+  }
+
+  function displayLog(log) {
+    logDiv.innerHTML = "";
+    if (log.length === 0) {
+      logDiv.textContent = "No events tracked.";
+    } else {
+      log.forEach(event => {
+        let p = document.createElement('p');
+        p.textContent = `[${event.timestamp}] ${event.type}: ${event.url}`;
+        logDiv.appendChild(p);
       });
-    });
-  
-    disableTracking.addEventListener('click', function() {
-      chrome.storage.local.set({ trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing", trackLog: []}, function() {
-        updatePermissionStatus(false);
-      });
-    });
-  
-    clearLog.addEventListener('click', function() {
-      chrome.storage.local.set({ trackLog: [] }, function() {
-        displayLog([]);
-      });
-    });
-  
-    function updatePermissionStatus(enabled) {
-      permissionStatus.textContent = enabled ? "Tracking Enabled" : "Tracking Disabled";
-      fetchLog();
     }
-  
-    function fetchLog() {
-      chrome.storage.local.get({ trackLog: [] }, function(result) {
-        displayLog(result.trackLog);
-      });
+  }
+
+  // ========== INITIAL LOAD ==========
+  // 1) Check if user is already logged in
+  chrome.storage.sync.get({ loggedIn: false, username: "" }, function (syncResult) {
+    if (syncResult.loggedIn) {
+      // Switch to status tab immediately
+      messageDisplay.innerText = `Welcome back, ${syncResult.username}!`;
+      switchTab("status");
+    } else {
+      // Show login tab
+      switchTab("login");
     }
-  
-    function displayLog(log) {
-      logDiv.innerHTML = "";
-      if (log.length === 0) {
-        logDiv.textContent = "No events tracked.";
-      } else {
-        log.forEach(event => {
-          let p = document.createElement('p');
-          p.textContent = `[${event.timestamp}] ${event.type}: ${event.url}`;
-          logDiv.appendChild(p);
+  });
+
+  // 2) Display tracking status
+  chrome.storage.local.get({ trackingEnabled: false }, function (result) {
+    updatePermissionStatus(result.trackingEnabled);
+  });
+
+  // 3) Display tracking flags
+  chrome.storage.local.get({
+    flags: {
+      affiliate_link_detected: false,
+      confirmation_page_reached: false,
+      payment_confirmed: false
+    }
+  }, function (result) {
+    const flags = result.flags;
+    affiliateLinkStatus.style.backgroundColor = flags.affiliate_link_detected ? "green" : "gray";
+    confirmationStatus.style.backgroundColor = flags.confirmation_page_reached ? "green" : "gray";
+    purchaseStatus.style.backgroundColor = flags.payment_confirmed ? "green" : "gray";
+    conversionBadge.style.display = flags.payment_confirmed ? "block" : "none";
+  });
+
+  // ========== EVENT LISTENERS ==========
+  // Enable tracking
+  enableTracking.addEventListener('click', function () {
+    chrome.storage.local.set({ trackingEnabled: true }, function () {
+      updatePermissionStatus(true);
+    });
+  });
+
+  // Disable tracking
+  disableTracking.addEventListener('click', function () {
+    chrome.storage.local.set({
+      trackingEnabled: false,
+      redirectUrl: "Nothing",
+      url: "Nothing",
+      trackLog: []
+    }, function () {
+      updatePermissionStatus(false);
+    });
+  });
+
+  // Clear log
+  clearLog.addEventListener('click', function () {
+    chrome.storage.local.set({ trackLog: [] }, function () {
+      displayLog([]);
+    });
+  });
+
+  // Login
+  loginButton.addEventListener("click", async () => {
+    const username = usernameInput.value;
+    const password = passwordInput.value;
+
+    if (!username || !password) {
+      messageDisplay.innerText = "Please enter credentials";
+      return;
+    }
+
+    // Simulate an API call (replace with your real login logic)
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500)); // Fake network delay
+      const data = { success: true }; // Simulated response
+
+      if (data.success) {
+        chrome.storage.sync.set({ loggedIn: true, username }, function () {
+          messageDisplay.innerText = "Login successful!";
+          // Switch to "Status" tab
+          switchTab("status");
         });
+      } else {
+        messageDisplay.innerText = "Invalid credentials";
+      }
+    } catch (error) {
+      messageDisplay.innerText = "Login failed";
+      console.error("Login error:", error);
+    }
+  });
+
+  // Logout
+  logoutButton.addEventListener("click", async () => {
+    // Clear loggedIn state
+    chrome.storage.sync.set({ loggedIn: false, username: "" }, function () {
+      messageDisplay.innerText = "You have been logged out.";
+      // Switch back to login tab
+      switchTab("login");
+    });
+  });
+
+  // Listen for storage changes (update flags/logs in real time)
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === "local") {
+      if (changes.flags) {
+        const newFlags = changes.flags.newValue;
+        affiliateLinkStatus.style.backgroundColor = newFlags.affiliate_link_detected ? "green" : "gray";
+        confirmationStatus.style.backgroundColor = newFlags.confirmation_page_reached ? "green" : "gray";
+        purchaseStatus.style.backgroundColor = newFlags.payment_confirmed ? "green" : "gray";
+        conversionBadge.style.display = newFlags.payment_confirmed ? "block" : "none";
+      }
+      if (changes.trackingEnabled) {
+        updatePermissionStatus(changes.trackingEnabled.newValue);
+      }
+      if (changes.trackLog) {
+        displayLog(changes.trackLog.newValue || []);
       }
     }
   });
-  
-  document.getElementById("login").addEventListener("click", async () => {
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
-    console.log(username)
-    if (!username || !password) {
-        document.getElementById("message").innerText = "Please enter credentials";
-        return;
-    }
-
-    // Mock API call (replace with actual authentication API)
-    const response = await fetch("https://example.com/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-        chrome.storage.sync.set({ loggedIn: true, username }, () => {
-            document.getElementById("message").innerText = "Login successful!";
-        });
-    } else {
-        document.getElementById("message").innerText = "Invalid credentials";
-    }
-});
-
-chrome.storage.onChanged.addListener((changes, areaName) => {
-  const affiliatelinkstatus = document.getElementById("affiliate_link_pressed");
-  const purchasestatus = document.getElementById("purchase_detected");
-  const confirmationstatus = document.getElementById("confirmation_page");
-  if (areaName === "local" && changes.flags) {
-    const newFlags = changes.flags.newValue;
-    if (newFlags["affiliate_link_detected"]) {
-      affiliatelinkstatus.style.backgroundColor = "green";
-    }
-    if (newFlags["confirmation_page_reached"]) {
-      confirmationstatus.style.backgroundColor = "green";
-    }
-    if (newFlags["payment_confirmed"]) {
-      purchasestatus.style.backgroundColor = "green";
-    }
-  }
 });
