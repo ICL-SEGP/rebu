@@ -71,6 +71,27 @@ chrome.webNavigation.onCommitted.addListener((details) => {
   });
 });
 
+chrome.webRequest.onCompleted.addListener((details) => {
+  chrome.storage.local.get({
+    flags: {
+      "affiliate_link_detected": false,
+      "confirmation_page_reached": false,
+      "payment_confirmed": false
+    }
+  }, (result) => {
+    if (details.url.includes("stripe.com/v1/charges") && details.statusCode === 200) {
+      console.log("Stripe payment likely completed", details);
+      // Create a new flags object merging the current flags with our update
+      const updatedFlags = {
+        ...result.flags,
+        payment_made: true  // add/update the payment_made flag
+      };
+      chrome.storage.local.set({ flags: updatedFlags });
+      // Process further logic here (e.g., updating UI or sending a message)
+    }
+  });
+}, { urls: ["*://api.stripe.com/v1/charges*"] });
+
 
 
 function reset_variables() {
