@@ -1,0 +1,9 @@
+[[bin]]
+name = "rebu_solana_tests"
+path = "./rebu_solana.rs"
+
+[dev-dependencies]
+solana-sdk = "2.1.7"
+solana-client = "2.1.7"
+spl-associated-token-account = "6.0.0"
+spl-token-2022 = { version = "7.0.0", features = ["no-entrypoint"] }

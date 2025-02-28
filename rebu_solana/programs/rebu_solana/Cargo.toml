@@ -4,6 +4,10 @@ version = "0.1.0"
 description = "Created with Anchor"
 edition = "2021"
 
+[[bin]]
+name = "solana_api"
+path = "tests/rebu_solana.rs"
+
 [lib]
 crate-type = ["cdylib", "lib"]
 name = "rebu_solana"
