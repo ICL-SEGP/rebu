@@ -112,7 +112,7 @@ function check_for_offer(url) {
   return true;
 }
 
-async function check_correct_product(product1, product2) {
+async function check_correct_product_deepseek(product1, product2) {
   const apiKey = "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"; 
   console.log("Check called");
   const prompt = `
@@ -165,6 +165,71 @@ async function check_correct_product(product1, product2) {
   } catch (error) {
       console.error("Error sending request:", error);
       return null;
+  }
+}
+
+async function check_correct_product(product1, product2) {
+  const apiKey = "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"; // Replace with your actual API key
+  console.log("Check called");
+  const prompt = `
+    You are an AI assistant that analyzes inner text webpages to verify if any product on a purchase confirmation page matches any product on an initial affiliate link page. Follow these steps:
+
+    1. **Extract Product Details from the Affiliate Link Page:**
+      - Analyze the inner text and identify all product's product name, brand, model, and any unique identifiers (e.g., SKU, ASIN).
+      - Ignore irrelevant content like ads, navigation, or unrelated text.
+
+    2. **Extract Product Details from the Confirmation Page:**
+      - Analyze the inner text and identify all products listed on the confirmation page.
+      - For each product, extract the product name, brand, model, and unique identifiers.
+
+    3. **Compare the Products:**
+      - Compare each product from the affiliate link page with each product on the confirmation page.
+      - If **any product** on the confirmation page matches any product on the affiliate link exactly (based on name, brand, model, and unique identifiers), respond with 'YES'.
+      - If no products match, respond with 'NO'.
+
+    4. **Output Format:**
+      - Do not provide any additional explanation, details, or steps.
+      - Only respond with 'YES' or 'NO'.
+
+    **Input:**
+    - Affiliate Link Page inner text: ${product1}
+    - Confirmation Page inner text: ${product2}
+  `;
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.0,
+        max_tokens: 10
+      })
+    });
+    console.log("Waiting for response");
+    const data = await response.json();
+    console.log(data);
+    const reply = data.choices[0].message.content.trim();
+    console.log("OpenAI Response:", reply);
+    if (reply === "YES") {
+      chrome.storage.local.set({
+        flags: {
+          "affiliate_link_detected": true,
+          "confirmation_page_reached": true,
+          "payment_confirmed": true
+        }
+      });
+    } else {
+      console.log("Cannot confirm purchase");
+    }
+    return reply;
+  } catch (error) {
+    console.error("Error sending request:", error);
+    return null;
   }
 }
 
