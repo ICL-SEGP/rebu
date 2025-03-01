@@ -23,9 +23,13 @@ pub mod rebu_solana {
         instructions::make_purchase::save_listing(ctx, id, stock, price)
     }
 
-    pub fn complete_purchase(mut ctx: Context<CompletePurchase>) -> Result<()> {
-        instructions::complete_purchase::decrement_stock(&mut ctx)?;
-        instructions::complete_purchase::transfer_tokens(&ctx)?;
-        instructions::complete_purchase::save_purchase(&ctx)
+    pub fn complete_purchase(mut ctx: Context<CompletePurchase>, id: u64) -> Result<()> {
+        instructions::complete_purchase::decrement_stock(&mut ctx, id)?;
+        instructions::complete_purchase::transfer_tokens(&ctx, id)?;
+        instructions::complete_purchase::save_purchase(ctx, id)
+    }
+
+    pub fn verify_purchase(ctx: Context<VerifyPurchase>, id: u64) -> Result<()> {
+        instructions::verify_purchase::verify_and_close(ctx, id)
     }
 }

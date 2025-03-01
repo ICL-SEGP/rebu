@@ -2,9 +2,9 @@
 
 use anchor_lang::prelude::*;
 
-use anchor_spl::{
-    associated_token::AssociatedToken,
-    token_interface::{Mint, TokenAccount, TokenInterface},
+use anchor_spl::token_interface::{ 
+    self, Mint, TokenAccount, 
+    TokenInterface, TransferChecked
 };
 
 use crate::{ ProductListing, ProductPurchase, ANCHOR_DISCRIMINATOR, RebuError };
@@ -13,7 +13,7 @@ use crate::{ ProductListing, ProductPurchase, ANCHOR_DISCRIMINATOR, RebuError };
 #[instruction(id: u64)]
 pub struct CompletePurchase<'info> {
 
-    /// Affiliate
+    /// Customer
     #[account(mut)]
     signer: Signer<'info>,
 
@@ -21,6 +21,7 @@ pub struct CompletePurchase<'info> {
     #[account(mut)]
     mint: InterfaceAccount<'info, Mint>,
 
+    #[account(mut)]
     seller: SystemAccount<'info>,
 
     /// ATA of seller 
@@ -49,7 +50,6 @@ pub struct CompletePurchase<'info> {
             id.to_le_bytes().as_ref()
         ],
         bump = product_listing.bump,
-        close = seller,
     )]
     product_listing: Account<'info, ProductListing>,
 
@@ -71,50 +71,44 @@ pub struct CompletePurchase<'info> {
     system_program: Program<'info, System>,
 }
 
-pub fn decrement_stock(ctx: &mut Context<CompletePurchase>) -> Result<()> {
+pub fn decrement_stock(ctx: &mut Context<CompletePurchase>, _id: u64) -> Result<()> {
     require!(ctx.accounts.product_listing.stock > 0, RebuError::OutOfStock);
 
     let product_listing = &mut ctx.accounts.product_listing;
     product_listing.stock -= 1;
 
     if product_listing.stock == 0 {
-        todo!("create cancel cpi");
+        product_listing.close(ctx.accounts.seller.to_account_info())?;
     }
-
-
+    msg!("Stock decreased");
     Ok(())
 }
 
-pub fn transfer_tokens(_ctx: &Context<CompletePurchase>) -> Result<()> {
-    // anchor_spl::token::transfer(
-    //     CpiContext::new_with_signer(
-    //         ctx.accounts.token_program.to_account_info(),
-    //         anchor_spl::token::Transfer {
-    //             from: ctx.accounts.escrowed_x_tokens.to_account_info(),
-    //             to: ctx.accounts.buyer_x_tokens.to_account_info(),
-    //             authority: ctx.accounts.escrow.to_account_info(),
-    //         },
-    //         &[&["escrow6".as_bytes(), ctx.accounts.escrow.authority.as_ref(), &[ctx.accounts.escrow.bump]]],
-    //     ),
-    //     ctx.accounts.escrowed_x_tokens.amount,
-    // )?;
+pub fn transfer_tokens(ctx: &Context<CompletePurchase>, _id: u64) -> Result<()> {
+    let cpi_accounts = TransferChecked {
+        from: ctx.accounts.customer_ata.to_account_info().clone(),
+        mint: ctx.accounts.mint.to_account_info().clone(),
+        to: ctx.accounts.seller_ata.to_account_info().clone(),
+        authority: ctx.accounts.signer.to_account_info(),
+    };
+
+    let cpi_program = ctx.accounts.token_program.to_account_info();
+    let cpi_context = CpiContext::new(cpi_program, cpi_accounts);
+    let amount = ctx.accounts.product_listing.price;
+    token_interface::transfer_checked(cpi_context, amount, ctx.accounts.mint.decimals)?;
+    msg!("Tokens transfered");
     Ok(())
 }
 
-pub fn save_purchase(_ctx: &Context<CompletePurchase>) -> Result<()> {
+pub fn save_purchase(ctx: Context<CompletePurchase>, _id: u64) -> Result<()> {
+    ctx.accounts.product_purchase.set_inner(
+        ProductPurchase {
+            seller: ctx.accounts.seller.key(),
+            customer: ctx.accounts.customer.key(),
+            product_id: ctx.accounts.product_listing.id,
+            bump: ctx.bumps.product_purchase,
+        });
+
+    msg!("Purchase saved");
     Ok(())
 }
-
-
-    // // transfer buyer's y_token to seller
-    // anchor_spl::token::transfer(
-    //     CpiContext::new(
-    //         ctx.accounts.token_program.to_account_info(),
-    //         anchor_spl::token::Transfer {
-    //             from: ctx.accounts.buyer_y_tokens.to_account_info(),
-    //             to: ctx.accounts.sellers_y_tokens.to_account_info(),
-    //             authority: ctx.accounts.buyer.to_account_info(),
-    //         },
-    //     ),
-    //     ctx.accounts.escrow.y_amount,
-    // )?;
