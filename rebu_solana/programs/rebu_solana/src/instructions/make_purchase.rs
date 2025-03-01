@@ -6,7 +6,7 @@ use anchor_spl::{
     associated_token::AssociatedToken,
 };
 
-use crate::{ ANCHOR_DISCRIMINATOR, ProductListing };
+use crate::{ ANCHOR_DISCRIMINATOR, ProductListing, RebuError };
 
 #[derive(Accounts)]
 #[instruction(id: u64)]
@@ -20,7 +20,7 @@ pub struct AddListing<'info> {
     #[account(mut)]
     mint: InterfaceAccount<'info, Mint>,
 
-    pub seller: SystemAccount<'info>,
+    seller: SystemAccount<'info>,
 
     /// ATA of seller 
     #[account(
@@ -41,7 +41,7 @@ pub struct AddListing<'info> {
         ],
         bump,
     )]
-    pub product_listing: Account<'info, ProductListing>,
+    product_listing: Account<'info, ProductListing>,
 
     associated_token_program: Program<'info, AssociatedToken>,
     token_program: Interface<'info, TokenInterface>,
@@ -49,7 +49,7 @@ pub struct AddListing<'info> {
 }
 
 pub fn save_listing(ctx: Context<AddListing>, id: u64, stock: u64, price: u64) -> Result<()> {
-    assert!(stock > 0 && price > 0);
+    require!(stock > 0 && price > 0, RebuError::InvalidListing);
 
     ctx.accounts.product_listing.set_inner(
         ProductListing {

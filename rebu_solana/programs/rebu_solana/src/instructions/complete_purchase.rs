@@ -2,38 +2,90 @@
 
 use anchor_lang::prelude::*;
 
-// use anchor_spl::{
-//     associated_token::AssociatedToken,
-//     token_interface::{Mint, TokenAccount, TokenInterface},
-// };
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token_interface::{Mint, TokenAccount, TokenInterface},
+};
+
+use crate::{ ProductListing, ProductPurchase, ANCHOR_DISCRIMINATOR, RebuError };
 
 #[derive(Accounts)]
-pub struct CompletePurchase {
+#[instruction(id: u64)]
+pub struct CompletePurchase<'info> {
 
-    // pub affiliate: Signer<'info>,
+    /// Affiliate
+    #[account(mut)]
+    signer: Signer<'info>,
 
-    // #[account(
-    //     mut,
-    //     seeds = ["escrow6".as_bytes(), escrow.authority.as_ref()],
-    //     bump = escrow.bump,
-    // )]
-    // pub escrow: Account<'info, Escrow>,
+    /// Rebu mint
+    #[account(mut)]
+    mint: InterfaceAccount<'info, Mint>,
 
-    // #[account(mut, constraint = escrowed_tokens.key() == escrow.escrowed_tokens)]
-    // pub escrowed_tokens: Account<'info, TokenAccount>,
+    seller: SystemAccount<'info>,
 
-    // #[account(mut, constraint = affiliate_tokens.mint == escrowed_tokens.mint)]
-    // pub affiliate_tokens: Account<'info, TokenAccount>,
+    /// ATA of seller 
+    #[account(
+        mut,
+        associated_token::mint = mint,
+        associated_token::authority = seller,
+    )] 
+    seller_ata: InterfaceAccount<'info, TokenAccount>,
 
-    // pub token_program: Program<'info, Token>,
+    customer: SystemAccount<'info>,
+
+    /// ATA of customer 
+    #[account(
+        mut,
+        constraint = customer_ata.owner == customer.key(),
+        constraint = customer_ata.mint == mint.key()
+    )] 
+    customer_ata: InterfaceAccount<'info, TokenAccount>,
+
+    #[account(
+        mut,
+        seeds = [
+            b"product".as_ref(), b"listing".as_ref(), 
+            seller.key().as_ref(), 
+            id.to_le_bytes().as_ref()
+        ],
+        bump = product_listing.bump,
+        close = seller,
+    )]
+    product_listing: Account<'info, ProductListing>,
+
+    #[account(
+        init, 
+        payer = signer,
+        space = ANCHOR_DISCRIMINATOR + ProductPurchase::INIT_SPACE,
+        seeds = [
+            b"product".as_ref(), b"purchase".as_ref(), 
+            seller.key().as_ref(), 
+            id.to_le_bytes().as_ref(),
+            customer.key().as_ref()
+        ],
+        bump,
+    )]
+    product_purchase: Account<'info, ProductPurchase>,
+
+    token_program: Interface<'info, TokenInterface>,
+    system_program: Program<'info, System>,
 }
 
-pub fn withdraw_tokens(_ctx: &Context<CompletePurchase>) -> Result<()> {
+pub fn decrement_stock(ctx: &mut Context<CompletePurchase>) -> Result<()> {
+    require!(ctx.accounts.product_listing.stock > 0, RebuError::OutOfStock);
+
+    let product_listing = &mut ctx.accounts.product_listing;
+    product_listing.stock -= 1;
+
+    if product_listing.stock == 0 {
+        todo!("create cancel cpi");
+    }
+
+
     Ok(())
 }
 
-pub fn finalize_purchase(_ctx: Context<CompletePurchase>) -> Result<()>{
-    // // transfer escrowd_x_token to buyer
+pub fn transfer_tokens(_ctx: &Context<CompletePurchase>) -> Result<()> {
     // anchor_spl::token::transfer(
     //     CpiContext::new_with_signer(
     //         ctx.accounts.token_program.to_account_info(),
@@ -46,6 +98,13 @@ pub fn finalize_purchase(_ctx: Context<CompletePurchase>) -> Result<()>{
     //     ),
     //     ctx.accounts.escrowed_x_tokens.amount,
     // )?;
+    Ok(())
+}
+
+pub fn save_purchase(_ctx: &Context<CompletePurchase>) -> Result<()> {
+    Ok(())
+}
+
 
     // // transfer buyer's y_token to seller
     // anchor_spl::token::transfer(
@@ -59,6 +118,3 @@ pub fn finalize_purchase(_ctx: Context<CompletePurchase>) -> Result<()>{
     //     ),
     //     ctx.accounts.escrow.y_amount,
     // )?;
-
-    Ok(())
-}

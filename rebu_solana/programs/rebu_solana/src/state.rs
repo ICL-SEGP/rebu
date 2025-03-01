@@ -15,6 +15,7 @@ pub struct ProductListing {
 #[derive(InitSpace)]
 pub struct ProductPurchase {
     pub seller: Pubkey,
-    pub user: Pubkey,
+    pub customer: Pubkey,
     pub product_id: u64,
+    pub bump: u8,
 }

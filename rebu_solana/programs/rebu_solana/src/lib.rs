@@ -5,10 +5,12 @@ use anchor_lang::prelude::*;
 pub mod instructions;
 pub mod state;
 pub mod constants;
+pub mod error;
 
 pub use instructions::*;
 pub use state::*;
 pub use constants::*;
+pub use error::*;
 
 
 declare_id!("BhitfXGo3bXsyF5AXQhvnSM28u2tqUkbGabtFPBdoYJc");
@@ -21,9 +23,9 @@ pub mod rebu_solana {
         instructions::make_purchase::save_listing(ctx, id, stock, price)
     }
 
-    pub fn complete_purchase(_ctx: Context<CompletePurchase>) -> Result<()> {
-        // instructions::complete_purchase::withdraw_tokens(&ctx);
-        // instructions::complete_purchase::finalize_purchase(ctx)
-        Ok(())
+    pub fn complete_purchase(mut ctx: Context<CompletePurchase>) -> Result<()> {
+        instructions::complete_purchase::decrement_stock(&mut ctx)?;
+        instructions::complete_purchase::transfer_tokens(&ctx)?;
+        instructions::complete_purchase::save_purchase(&ctx)
     }
 }
