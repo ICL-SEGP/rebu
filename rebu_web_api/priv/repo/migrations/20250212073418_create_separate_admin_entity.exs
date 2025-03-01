@@ -11,7 +11,6 @@ defmodule RebuWebApi.Repo.Migrations.CreateSeparateAffiliateEntity do
       add :role, :string
       add :revenue, :numeric, default: 0.0, null: false
       add :token_balance, :numeric, default: 0.0, null: false
-      add :locked_tokens, :numeric, default: 0.0, null: false
       add :solana_pub_key, :string
       timestamps(type: :utc_datetime)
     end

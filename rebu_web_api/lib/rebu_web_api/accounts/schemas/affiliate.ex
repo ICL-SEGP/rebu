@@ -26,7 +26,6 @@ defmodule RebuWebApi.Accounts.Affiliate do
     field :hashed_password, :string, redact: true
     field :revenue, :decimal, default: 0.0
     field :token_balance, :decimal, default: 0.0
-    field :locked_tokens, :decimal, default: 0.0
     field :solana_pub_key, :string
 
     field :role, Ecto.Enum, values: [:affiliate, :admin], default: :affiliate

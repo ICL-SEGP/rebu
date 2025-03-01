@@ -21,9 +21,10 @@ export interface User {
   firstName: string;
   LastName: string;
   email: string;
-  balance: UserBalance;
+  token_balance: number;
   role: Role;
   orderIds: number;
+  solanaPubKey: string;
 }
 
 export type UserBalance = {
@@ -35,7 +36,6 @@ export type UserBalance = {
 
 export interface Affiliate extends User {
   revenue: number;
-  role: Role;
   offerIds: number[];
 }
 
@@ -57,10 +57,10 @@ export interface Offer {
   id: number;
   affiliateId: number;
   itemCost: number;
-  description: string;
-  offerStatus: OfferStatus;
+  desc: string;
+  status: OfferStatus;
   offer_start: Date;
-  Offer_end: Date;
+  offer_end: Date;
   affiliate_link: string;
   orderIds: number[];
 }
@@ -95,11 +95,6 @@ export interface AdminMonthlyStat {
   rebatesMinted: number;
   tokensCancelled: number;
 }
-
-export type AdminBalance = {
-  token_balance: number;
-  last_updated: Date;
-};
 
 export type Credentials = {
   firstName: string;

@@ -22,8 +22,6 @@ defmodule RebuWebApi.Factory do
         last_name: Faker.Person.last_name(),
         email: Faker.Internet.free_email(),
         token_balance: Decimal.new("0.0"),
-        rescinded_tokens: Decimal.new("0.0"),
-        locked_tokens: Decimal.new("0.0"),
         password: @password,
         hashed_password: Bcrypt.hash_pwd_salt(@password),
         role: :user,
@@ -45,7 +43,6 @@ defmodule RebuWebApi.Factory do
         email: Faker.Internet.free_email(),
         revenue: Decimal.new("0.0"),
         token_balance: Decimal.new("0.0"),
-        locked_tokens: Decimal.new("0.0"),
         password: @password,
         hashed_password: Bcrypt.hash_pwd_salt(@password),
         role: :affiliate
@@ -172,7 +169,7 @@ defmodule RebuWebApi.Factory do
       if Timex.diff(now, order_date, :days) > 14 do
         Enum.random([:completed, :refunded])
       else
-        Enum.random([:in_progress, :completed, :refunded])
+        Enum.random([:pending, :completed, :refunded])
       end
 
     attrs = Map.drop(attrs, [:offers])

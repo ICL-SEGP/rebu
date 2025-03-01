@@ -10,8 +10,6 @@ defmodule RebuWebApi.Accounts.User do
     field :last_name, :string
     field :email, :string
     field :token_balance, :decimal, default: 0.0
-    field :locked_tokens, :decimal, default: 0.0
-    field :rescinded_tokens, :decimal, default: 0.0
     field :password, :string, redact: true, virtual: true
     field :hashed_password, :string, redact: true
     field :solana_pub_key, :string
@@ -20,7 +18,6 @@ defmodule RebuWebApi.Accounts.User do
     field :role, Ecto.Enum, values: [:user], default: :user
 
     has_many :orders, RebuWebApi.Sales.Order
-    has_many :offers, RebuWebApi.Sales.Offer
 
     timestamps(type: :utc_datetime)
   end
@@ -32,8 +29,6 @@ defmodule RebuWebApi.Accounts.User do
       :last_name,
       :email,
       :token_balance,
-      :locked_tokens,
-      :rescinded_tokens,
       :password,
       :role,
       :date_joined,

@@ -3,7 +3,7 @@ defmodule RebuWebApi.Sales.Order do
   import Ecto.Changeset
 
   schema "orders" do
-    field :status, Ecto.Enum, values: [:in_progress, :refunded, :completed], default: :in_progress
+    field :status, Ecto.Enum, values: [:pending, :refunded, :completed], default: :pending
     field :total_rebate_amount, :decimal
     field :order_date, :date
 
