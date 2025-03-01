@@ -3,8 +3,12 @@
 import { SessionProvider } from "next-auth/react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { DashboardProvider } from "@/context/DashboardContext";
-import { SolanaProvider } from "@/components/ui/solana-provider"
+import { SolanaProvider } from "@/components/ui/crypto/solana-provider"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { Toaster } from "react-hot-toast";
+
+const queryClient = new QueryClient();
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +32,11 @@ export default function RootLayout({
       >
         <SessionProvider>
           <SolanaProvider>
-            <DashboardProvider>{children}</DashboardProvider>
+            <QueryClientProvider client={queryClient}>
+              <Toaster />
+              {children}
+              <ReactQueryDevtools />
+            </QueryClientProvider>
           </SolanaProvider>
         </SessionProvider>
       </body>

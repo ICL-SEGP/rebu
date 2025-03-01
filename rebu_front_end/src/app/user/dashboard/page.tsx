@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/helpers/card";
+import { Button } from "@/components/ui/helpers/button";
+import { Input } from "@/components/ui/forms/input";
+import { Label } from "@/components/ui/forms/label";
+import { Separator } from "@/components/ui/helpers/separator";
 import { toast } from "@/hooks/use-toast";
 import { Coins, Link, Lock, Trash, Wallet } from "lucide-react";
 import {
@@ -16,11 +16,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui/tables/table";
 import { API_BASE_URL } from "@/lib/constants";
 import { useSession } from "next-auth/react";
-import OrderTable from "@/components/ui/orders_table";
-import { useRouter } from "next/navigation";
+import OrderTable from "@/components/ui/main/orders_table";
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast as tot} from "react-hot-toast";
+
 
 
 interface TokenBalance {
@@ -46,6 +48,16 @@ export default function DashboardPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const router = useRouter();
   const { data: session } = useSession();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (sessionStorage.getItem("fromSignIn")) {
+      tot.success("Welcome! Successfully signed in.");
+
+      // Remove the flag so the toast does not show on refresh
+      sessionStorage.removeItem("fromSignIn");
+    }
+  }, []);
 
   if (!session) {
     throw new Error("No user logged in.");

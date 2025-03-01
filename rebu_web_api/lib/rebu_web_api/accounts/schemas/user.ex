@@ -17,10 +17,10 @@ defmodule RebuWebApi.Accounts.User do
     field :solana_pub_key, :string
     field :date_joined, :date
 
-    field :role, Ecto.Enum, values: [:user, :admin, :super_admin], default: :user
+    field :role, Ecto.Enum, values: [:user], default: :user
 
     has_many :orders, RebuWebApi.Sales.Order
-    has_many :offers, RebuWebApi.Sales.Offer, where: [role: :admin]
+    has_many :offers, RebuWebApi.Sales.Offer
 
     timestamps(type: :utc_datetime)
   end
@@ -36,29 +36,27 @@ defmodule RebuWebApi.Accounts.User do
       :rescinded_tokens,
       :password,
       :role,
-      :date_joined
+      :date_joined,
+      :solana_pub_key
     ])
     |> validate_required([
       :first_name,
       :last_name,
-      :token_balance,
-      :locked_tokens,
-      :rescinded_tokens
     ])
     |> validate_inclusion(:role, [:user])
     |> AccountChangesetHelpers.validate_email()
     |> AccountChangesetHelpers.validate_password()
   end
 
-  def role_changeset(user, attrs) do
-    user
-    |> cast(attrs, [:role])
-    # Fix incorrect field
-    |> validate_inclusion(:role, [:user, :admin, :super_admin])
-    |> case do
-      %{changes: %{role: _}} = changeset -> changeset
-      # Fix incorrect key
-      %{} = changeset -> add_error(changeset, :role, "invalid option")
-    end
-  end
+  # def role_changeset(user, attrs) do
+  #   user
+  #   |> cast(attrs, [:role])
+  #   # Fix incorrect field
+  #   |> validate_inclusion(:role, [:user])
+  #   |> case do
+  #     %{changes: %{role: _}} = changeset -> changeset
+  #     # Fix incorrect key
+  #     %{} = changeset -> add_error(changeset, :role, "invalid option")
+  #   end
+  # end
 end

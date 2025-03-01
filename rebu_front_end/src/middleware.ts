@@ -3,45 +3,43 @@ import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 export async function middleware(req: NextRequest) {
-  const token = await getToken({ req, secret: "83e9b797df942c9769653bee15485beca10a6d2a8ec296b420a36841a3cf9462" });
+  const token = await getToken({ req });
+
   const { pathname } = req.nextUrl;
 
-  console.log(pathname)
-
-  console.log(pathname.startsWith("/api"))
-
-
-  // // Allow users to access these public pages without authentication
-  // const publicRoutes = ["/auth", "/public", "/api"];
-
-  // // ✅ Allow access to public routes without a token
-  // if (publicRoutes.some(route => pathname.startsWith(route))) {
-  //   return NextResponse.next();
-  // }
-
-  // 🔹 If no token (user is not authenticated), redirect them to login
-  // if (!token) {
-  //   return NextResponse.redirect(new URL("/auth/login", req.url));
-  // }
-
-  if (pathname.startsWith("/user") && !token) {
-    return NextResponse.redirect(new URL("/", req.url));
+  if (
+    pathname.startsWith("/_next/") || // Static assets (CSS, JS, etc.)
+    pathname.startsWith("/api/") || // API routes (e.g., /api/auth/session)
+    pathname === "/favicon.ico"
+  ) {
+    return NextResponse.next();
   }
 
-  if (pathname.startsWith("/admin") && !token) {
-    return NextResponse.redirect(new URL("/", req.url));
+  if (pathname.startsWith("/login") && !token) {
+    console.log("✅ Allowing access to /login");
+    return NextResponse.next();
+  }
+
+  if (!token) {
+    console.log(
+      "🔄 Redirecting to /login because user is not authenticated"
+    );
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
   if (pathname.startsWith("/user") && token?.role !== "user") {
+    console.log("✅ User is authenticated, allowing request");
     return NextResponse.redirect(new URL("/", req.url));
   }
 
-  // 🔹 If the user is NOT an admin & tries to access `/admin/*`, redirect them to home
-  if (pathname.startsWith("/admin") && token.role !== "admin") {
+  // 🔹 If the user is NOT an affiliate & tries to access `/affiliate/*`, redirect them to home
+  if (pathname.startsWith("/affiliate") && token.role !== "affiliate") {
+    console.log("🛂 affiliate is authenticated");
     return NextResponse.redirect(new URL("/", req.url));
   }
 
   // ✅ Allow authenticated users to proceed
+  console.log("✅ User is authenticated, but no specific match in middleware");
   return NextResponse.next();
 }
 

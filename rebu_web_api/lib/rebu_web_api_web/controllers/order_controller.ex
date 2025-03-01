@@ -11,7 +11,7 @@ defmodule RebuWebApiWeb.OrderController do
     user = Guardian.Plug.current_resource(conn)
 
     orders =
-      if Accounts.is_admin(user) do
+      if Accounts.is_affiliate(user) do
         Sales.list_orders()
       else
         Sales.get_orders_by_user(user)

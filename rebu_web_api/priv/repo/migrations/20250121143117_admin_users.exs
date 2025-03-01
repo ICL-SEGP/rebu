@@ -1,4 +1,4 @@
-defmodule RebuWebApi.Repo.Migrations.AdminUsers do
+defmodule RebuWebApi.Repo.Migrations.AffiliateUsers do
   @moduledoc false
   use Ecto.Migration
 

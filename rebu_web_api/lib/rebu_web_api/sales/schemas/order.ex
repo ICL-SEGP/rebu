@@ -5,7 +5,7 @@ defmodule RebuWebApi.Sales.Order do
   schema "orders" do
     field :status, Ecto.Enum, values: [:in_progress, :refunded, :completed], default: :in_progress
     field :total_rebate_amount, :decimal
-    field :date, :date
+    field :order_date, :date
 
     belongs_to :user, RebuWebApi.Accounts.User
 
@@ -20,7 +20,7 @@ defmodule RebuWebApi.Sales.Order do
   @doc false
   def changeset(order, attrs) do
     order
-    |> cast(attrs, [:status, :total_rebate_amount, :date])
+    |> cast(attrs, [:status, :total_rebate_amount, :order_date])
     |> validate_inclusion(:status, [:in_progress, :refunded, :completed])
     |> validate_required([:status, :total_rebate_amount])
   end

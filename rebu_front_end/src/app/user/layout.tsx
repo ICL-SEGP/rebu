@@ -1,6 +1,6 @@
 "use client";
 
-import { AppSidebarUser } from "@/components/ui/app-sidebar-user";
+import { AppSidebarUser } from "@/components/ui/sidebar/app-sidebar-user";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,13 +8,13 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
+} from "@/components/ui/helpers/breadcrumb";
+import { Separator } from "@/components/ui/helpers/separator";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar";
+} from "@/components/ui/sidebar/sidebar";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 

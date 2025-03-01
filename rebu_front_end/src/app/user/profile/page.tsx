@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { toast } from "@/hooks/use-toast"; 
+import { Input } from "@/components/ui/forms/input";
+import { Button } from "@/components/ui/helpers/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/helpers/card";
+import { Label } from "@/components/ui/forms/label";
+import { toast } from "@/hooks/use-toast";
 
 interface UserProfile {
   firstName: string;
@@ -57,7 +57,7 @@ export default function ProfilePage() {
           firstName: profile.firstName,
           lastName: profile.lastName,
           email: profile.email,
-          password: profile.password, 
+          password: profile.password,
         }),
       });
 

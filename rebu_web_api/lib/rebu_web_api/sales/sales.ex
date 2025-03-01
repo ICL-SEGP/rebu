@@ -10,6 +10,7 @@ defmodule RebuWebApi.Sales do
   alias RebuWebApi.Sales.Order
   alias RebuWebApi.Accounts
   alias RebuWebApi.Accounts.User
+  alias RebuWebApi.Accounts.Affiliate
 
   @doc """
   Returns the list of offers.
@@ -74,10 +75,10 @@ defmodule RebuWebApi.Sales do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_offer(admin, attrs \\ %{}) do
+  def create_offer(affiliate, attrs \\ %{}) do
     %Offer{}
     |> Offer.changeset(attrs)
-    |> Ecto.Changeset.put_assoc(:admin, admin)
+    |> Ecto.Changeset.put_assoc(:affiliate, affiliate)
     |> Repo.insert()
   end
 
@@ -297,7 +298,7 @@ defmodule RebuWebApi.Sales do
     Order.changeset(order, attrs)
   end
 
-  def create_rebate_offer(%Accounts.Admin{id: id} = user, offer_attrs) do
+  def create_rebate_offer(%Affiliate{id: id} = user, offer_attrs) do
     create_offer(Map.put(offer_attrs, :user_id, id))
   end
 

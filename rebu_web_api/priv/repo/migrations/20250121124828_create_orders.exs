@@ -7,7 +7,7 @@ defmodule RebuWebApi.Repo.Migrations.CreateOrders do
       add :status, :string
       add :total_rebate_amount, :decimal
       add :user_id, references(:users, on_delete: :nilify_all)
-      add :date, :date, null: false
+      add :order_date, :date, null: false
 
       timestamps(type: :utc_datetime)
     end

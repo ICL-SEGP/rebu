@@ -10,11 +10,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+} from "@/components/ui/tables/table";
+import { Badge } from "@/components/ui/helpers/badge";
 import { useSession } from "next-auth/react";
 import { API_BASE_URL } from "@/lib/constants";
-import OrderTable from "@/components/ui/orders_table";
+import OrderTable from "@/components/ui/main/orders_table";
 
 // Define the structure of an order (TypeScript type safety)
 interface Invoice {

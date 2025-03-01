@@ -12,7 +12,7 @@ defmodule RebuWebApi.Sales.Offer do
              :status,
              :offer_start,
              :offer_end,
-             :admin_id,
+             :affiliate_id,
              :inserted_at,
              :updated_at
            ]}
@@ -26,7 +26,7 @@ defmodule RebuWebApi.Sales.Offer do
     field :offer_start, :naive_datetime
     field :offer_end, :naive_datetime
 
-    belongs_to :admin, RebuWebApi.Accounts.Admin
+    belongs_to :affiliate, RebuWebApi.Accounts.Affiliate
 
     many_to_many :order, RebuWebApi.Sales.Order,
       join_through: "offers_orders",

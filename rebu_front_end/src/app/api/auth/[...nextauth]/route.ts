@@ -13,7 +13,7 @@ const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         // 1️⃣ Send login request to Phoenix
-        const res = await fetch(`${API_BASE_URL}/api/login`, {
+        const response = await fetch(`${API_BASE_URL}/api/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -22,11 +22,11 @@ const authOptions: NextAuthOptions = {
           }),
         });
 
-        if (!res.ok) throw new Error("Invalid credentials");
+        if (!response.ok) throw new Error("Invalid credentials");
 
 
         // 2️⃣ Phoenix responds with a JWT
-        const user = (await res.json()).data; // Expecting { id, name, email, token }
+        const user = (await response.json()).data; // Expecting { id, name, email, token }
 
 
         // 3️⃣ NextAuth stores the JWT

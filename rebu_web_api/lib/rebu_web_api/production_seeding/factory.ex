@@ -4,7 +4,7 @@ defmodule RebuWebApi.Factory do
   alias RebuWebApi.Factory
   alias RebuWebApi.Sales.{Offer, Order}
   alias RebuWebApi.Accounts.User
-  alias RebuWebApi.Accounts.Admin
+  alias RebuWebApi.Accounts.Affiliate
 
   @password "Password"
 
@@ -33,11 +33,11 @@ defmodule RebuWebApi.Factory do
     )
   end
 
-  def admin_factory do
-    Map.merge(%Admin{}, admin())
+  def affiliate_factory do
+    Map.merge(%Affiliate{}, affiliate())
   end
 
-  def admin(attrs \\ %{}) do
+  def affiliate(attrs \\ %{}) do
     Map.merge(
       %{
         first_name: Faker.Person.first_name(),
@@ -48,7 +48,7 @@ defmodule RebuWebApi.Factory do
         locked_tokens: Decimal.new("0.0"),
         password: @password,
         hashed_password: Bcrypt.hash_pwd_salt(@password),
-        role: :admin
+        role: :affiliate
       },
       attrs
     )
@@ -61,23 +61,6 @@ defmodule RebuWebApi.Factory do
   defp days_ahead(n), do: Timex.shift(Timex.now(), days: n)
 
   # Offer Factory
-  @spec offer_factory() :: %{
-          :__meta__ => any(),
-          :__struct__ => any(),
-          :admin => any(),
-          :admin_id => any(),
-          :affiliate_link => any(),
-          :desc => any(),
-          :id => any(),
-          :inserted_at => any(),
-          :offer_end => any(),
-          :offer_start => any(),
-          :order => any(),
-          :rebate_percentage => any(),
-          :status => any(),
-          :updated_at => any(),
-          optional(any()) => any()
-        }
   def offer_factory do
     Map.merge(%Offer{}, offer())
   end
@@ -117,7 +100,7 @@ defmodule RebuWebApi.Factory do
         item_cost: Decimal.new(:rand.uniform(250)),
         # Explicitly set the correct status
         status: status,
-        admin: build(:admin)
+        affiliate: build(:affiliate)
       },
       attrs
     )
@@ -201,7 +184,7 @@ defmodule RebuWebApi.Factory do
         total_rebate_amount: Decimal.mult(Decimal.new("8.129325432509786"), Decimal.new("157")),
         user: user,
         offers: [selected_offer],
-        date: order_date
+        order_date: order_date
       },
       attrs
     )

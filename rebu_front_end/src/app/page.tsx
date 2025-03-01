@@ -10,13 +10,11 @@ export default function HomePage() {
 
   useEffect(() => {
     if (session) {
-      if (session.user.role == "admin") {
-        router.push("/admin/dashboard");
+      if (session.user.role == "affiliate") {
+        router.push("/affiliate/dashboard");
       } else {
         router.push("/user/dashboard");
       }
-    } else {
-      router.push("/auth/login");
     }
   }, [session, router]);
 

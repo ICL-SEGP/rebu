@@ -4,7 +4,7 @@ defmodule RebuWebApi.Auth.AccountPlugs do
   alias RebuWebApi.Accounts
 
   plug :fetch_account
-  plug :check_admin
+  plug :is_affiliate
 
   def fetch_account(conn, _opts) do
     # if Map.has_key?(conn.assigns, :user) do
@@ -29,10 +29,10 @@ defmodule RebuWebApi.Auth.AccountPlugs do
     conn
   end
 
-  def check_admin(conn, _opts) do
+  def is_affiliate(conn, _opts) do
     user = Guardian.Plug.current_resource(conn)
 
-    if not Accounts.is_admin(user) do
+    if not Accounts.is_affiliate(user) do
       raise(RebuWebApi.Auth.ErrorResponse.Unauthorized)
     end
 

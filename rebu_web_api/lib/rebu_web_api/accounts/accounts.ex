@@ -7,7 +7,7 @@ defmodule RebuWebApi.Accounts do
   alias RebuWebApi.Repo
 
   alias RebuWebApi.Accounts.User
-  alias RebuWebApi.Accounts.Admin
+  alias RebuWebApi.Accounts.Affiliate
   alias RebuWebApi.Auth.Guardian
   alias RebuWebApi.Sales
   alias RebuWebApi.Sales.Offer
@@ -45,7 +45,7 @@ defmodule RebuWebApi.Accounts do
   def get_user_by_email!(email) do
     case Repo.get_by(User, email: email) do
       nil ->
-        Repo.get_by(Admin, email: email)
+        Repo.get_by(Affiliate, email: email)
 
       user ->
         user
@@ -123,13 +123,13 @@ defmodule RebuWebApi.Accounts do
 
     case Repo.one(query_results) do
       nil ->
-        case Repo.one(from u in Admin, where: u.email == ^email) do
+        case Repo.one(from u in Affiliate, where: u.email == ^email) do
           nil ->
             Bcrypt.no_user_verify()
             {:error, :invalid_credentials}
 
-          admin ->
-            verify_pass(password, admin)
+          affiliate ->
+            verify_pass(password, affiliate)
         end
 
       user ->
@@ -192,17 +192,17 @@ defmodule RebuWebApi.Accounts do
     aggregate_orders(orders)
   end
 
-  def set_admin(%User{id: _id} = user, role) do
-    # TODO: add authorization checking of super admin later
+  def set_affiliate(%User{id: _id} = user, role) do
+    # TODO: add authorization checking of super Admin later
     case role do
-      :super_admin -> {:error, :unauthorized}
-      :admin -> User.role_changeset(user, %{role: role})
+      :admin -> {:error, :unauthorized}
+      :Affiliate -> User.role_changeset(user, %{role: role})
       :user -> User.role_changeset(user, %{role: role})
       _ -> {:error, :invalid_role_passed}
     end
   end
 
-  def admin_balances!() do
+  def affiliate_balances!() do
     orders = Sales.list_orders()
 
     aggregate_orders(orders)
@@ -223,11 +223,11 @@ defmodule RebuWebApi.Accounts do
     end)
   end
 
-  def is_admin(%Admin{}) do
+  def is_affiliate(%Affiliate{}) do
     true
   end
 
-  def is_admin(param) do
+  def is_affiliate(param) do
     false
   end
 
@@ -237,7 +237,7 @@ defmodule RebuWebApi.Accounts do
   end
 
   def create_rebate_offer(%User{id: id} = user, offer_attrs) do
-    if !is_admin(user) do
+    if !is_affiliate(user) do
       {:error, :unauthorized}
     else
       Sales.create_offer(Map.put(offer_attrs, :user_id, id))

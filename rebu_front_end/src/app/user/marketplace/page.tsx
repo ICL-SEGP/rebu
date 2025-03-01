@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/forms/input";
+import { Button } from "@/components/ui/helpers/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/helpers/card";
+import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/modals/dialog";
 
 interface Product {
   id: string;

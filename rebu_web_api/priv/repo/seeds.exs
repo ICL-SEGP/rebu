@@ -18,36 +18,37 @@ alias RebuWebApi.Sales
 
 IO.puts("Seeding database...")
 
-# Step 1: Create an Admin User
-admin =
-  Factory.insert(:admin,
-    email: "admin@example.com",
-    role: :admin,
+# Step 1: Create an Affiliate User
+affiliate =
+  Factory.insert(:affiliate,
+    email: "affiliate@test.com",
+    role: :affiliate,
     revenue: Decimal.new("10000.00")
   )
 
-IO.puts("Admin created: #{admin.email}")
+IO.puts("affiliate created: #{affiliate.email}")
 
-# Step 2: Create Offers owned by the Admin
-# offers = Factory.insert_list(10, :offer, user: admin)
+# Step 2: Create Offers owned by the affiliate
 
 offers =
   Enum.map(
     1..10,
     fn _x ->
-      {:ok, offer} = Repo.insert(Offer.changeset(%Offer{},Factory.offer(%{admin: admin})))
+      {:ok, offer} = Repo.insert(Offer.changeset(%Offer{},Factory.offer(%{affiliate: affiliate})))
       offer
     end
   )
 
-IO.puts("Created #{length(offers)} offers for admin.")
+IO.puts("Created #{length(offers)} offers for affiliate.")
 
 # Step 3: Create Multiple Users
 users = Factory.insert_list(20, :user)
 
+users = [ Factory.insert(:user, email: "test@test.com") | users]
+
 IO.puts("Created #{length(users)} users.")
 
-# Step 4: Each User Creates Orders Linked to Admin's Offers
+# Step 4: Each User Creates Orders Linked to affiliate's Offers
 
 Enum.each(users, fn user ->
   Enum.map(1..8, fn _x ->
@@ -64,18 +65,18 @@ Enum.each(users, fn user ->
   end)
 end)
 
-IO.puts("Orders created for all users, each linked to an offer by the admin.")
+IO.puts("Orders created for all users, each linked to an offer by the affiliate.")
 
 offers =
   Enum.map(
     1..10,
     fn _x ->
-      {:ok, offer} = Repo.insert(Offer.changeset(%Offer{},Factory.offer(%{admin: admin, status: :scheduled})))
+      {:ok, offer} = Repo.insert(Offer.changeset(%Offer{},Factory.offer(%{affiliate: affiliate, status: :scheduled})))
       offer
     end
   )
 
-IO.puts("Scheduled Future Admin Orders.")
+IO.puts("Scheduled Future affiliate Orders.")
 
 Enum.each(users, fn user ->
   balances = Accounts.calculate_balances!(user)
