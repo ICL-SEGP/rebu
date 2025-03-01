@@ -136,8 +136,8 @@
         Confirmation Reached
       </div>
       <div style="margin-bottom: 8px;">
-        <span class="status-indicator" id="purchase_detected"></span>
-        Purchase Confirmed
+        <span class="status-indicator" id="item_detected"></span>
+        Item Confirmed
       </div>
       <div id="permissionStatus" style="margin: 8px 0; font-size: 0.9rem;"></div>
       <button id="enableTracking">Enable Tracking</button>
@@ -155,21 +155,7 @@
 
   <!-- Tabs Switching Script -->
   <script>
-    const tabButtons = document.querySelectorAll('.tabs button');
-    const tabContents = document.querySelectorAll('.tab-content');
 
-    tabButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        // Remove 'active' from all buttons & contents
-        tabButtons.forEach(btn => btn.classList.remove('active'));
-        tabContents.forEach(content => content.classList.remove('active'));
-
-        // Add 'active' to this button & its matching content
-        button.classList.add('active');
-        const contentId = 'content-' + button.id.split('-')[1];
-        document.getElementById(contentId).classList.add('active');
-      });
-    });
   </script>
 
   <!-- Your extension logic -->

@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const clearLog = document.getElementById('clearLog');
   const affiliateLinkStatus = document.getElementById("affiliate_link_pressed");
   const confirmationStatus = document.getElementById("confirmation_page");
-  const purchaseStatus = document.getElementById("purchase_detected");
+  const purchaseStatus = document.getElementById("item_detected");
   const conversionBadge = document.getElementById("conversionBadge");
 
   // Login elements
@@ -181,5 +181,21 @@ document.addEventListener('DOMContentLoaded', function () {
         displayLog(changes.trackLog.newValue || []);
       }
     }
+  });
+
+  const tabButtons = document.querySelectorAll('.tabs button');
+  const tabContents = document.querySelectorAll('.tab-content');
+
+  tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      // Remove 'active' from all buttons & contents
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      tabContents.forEach(content => content.classList.remove('active'));
+
+      // Add 'active' to this button & its matching content
+      button.classList.add('active');
+      const contentId = 'content-' + button.id.split('-')[1];
+      document.getElementById(contentId).classList.add('active');
+    });
   });
 });
