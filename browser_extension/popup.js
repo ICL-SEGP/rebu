@@ -87,14 +87,14 @@ document.addEventListener('DOMContentLoaded', function () {
     flags: {
       affiliate_link_detected: false,
       confirmation_page_reached: false,
-      payment_confirmed: false
+      item_confirmed: false
     }
   }, function (result) {
     const flags = result.flags;
     affiliateLinkStatus.style.backgroundColor = flags.affiliate_link_detected ? "green" : "gray";
     confirmationStatus.style.backgroundColor = flags.confirmation_page_reached ? "green" : "gray";
-    purchaseStatus.style.backgroundColor = flags.payment_confirmed ? "green" : "gray";
-    conversionBadge.style.display = flags.payment_confirmed ? "block" : "none";
+    purchaseStatus.style.backgroundColor = flags.item_confirmed ? "green" : "gray";
+    conversionBadge.style.display = flags.item_confirmed ? "block" : "none";
   });
 
   // ========== EVENT LISTENERS ==========
@@ -171,8 +171,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const newFlags = changes.flags.newValue;
         affiliateLinkStatus.style.backgroundColor = newFlags.affiliate_link_detected ? "green" : "gray";
         confirmationStatus.style.backgroundColor = newFlags.confirmation_page_reached ? "green" : "gray";
-        purchaseStatus.style.backgroundColor = newFlags.payment_confirmed ? "green" : "gray";
-        conversionBadge.style.display = newFlags.payment_confirmed ? "block" : "none";
+        purchaseStatus.style.backgroundColor = newFlags.item_confirmed ? "green" : "gray";
+        conversionBadge.style.display = newFlags.item_confirmed ? "block" : "none";
       }
       if (changes.trackingEnabled) {
         updatePermissionStatus(changes.trackingEnabled.newValue);

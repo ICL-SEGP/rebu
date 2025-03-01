@@ -1,10 +1,10 @@
 (function() {
-  chrome.storage.local.get({affiliate_product: "Nothing", redirected: false, trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing", flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "payment_confirmed": false}}, (result) => {
+  chrome.storage.local.get({affiliate_product: "Nothing", redirected: false, trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing", flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}}, (result) => {
     if (!result.trackingEnabled) return;
     if (!result.flags["affiliate_link_detected"] && check_for_offer(window.location.href)) {
-      chrome.storage.local.set({redirectUrl: window.location.href, url: window.location.href});
+      chrome.storage.local.set({url: window.location.href});
       chrome.storage.local.set({trackLog: [{url: "Affiliate link clicked " + window.location.href, type:"start", timestamp: new Date().toISOString()}] });
-      chrome.storage.local.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": false, "payment_confirmed": false}});
+      chrome.storage.local.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": false, "item_confirmed": false}});
       chrome.storage.local.set({affiliate_product: document.body.innerText})
       console.log(window.location.href);
     }
@@ -25,33 +25,6 @@
     observer.observe(document.body, { childList: true, subtree: true });
   });
 
-  // Probably useless code
-  chrome.storage.local.get({ trackingEnabled: false }, (result) => {
-    if (!result.trackingEnabled) return;
-
-    document.addEventListener('click', function(event) {
-      let target = event.target;
-      // Traverse up the DOM tree to find an <a> element
-      while (target && target.tagName !== 'A') {
-        target = target.parentElement;
-      }
-      if (target && target.href) {
-        const linkUrl = target.href;
-        let eventType = "link_click";
-        // Mark as a purchase event if URL contains purchase-related keywords
-        if (linkUrl.match(/(checkout|purchase|buy)/i)) {
-          eventType = "purchase_click";
-        }
-        chrome.runtime.sendMessage({
-          type: "track",
-          data: {
-            url: linkUrl,
-            type: eventType
-          }
-        });
-      }
-    });
-  });
 
   const confirmationKeywords = [
     "thank you for your purchase",
@@ -90,7 +63,7 @@
     const purchasePattern = /thank[-_]?you|order[-_]?confirmation|purchase[-_]?success/i;
     if (purchasePattern.test(window.location.href)) {
       console.log("Confirmation page detected via URL check");
-      chrome.storage.local.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": true, "payment_confirmed": false}})
+      chrome.storage.local.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": true, "item_confirmed": false}})
       // reset_variables();
       check_correct_product(affiliate_product, document.body.innerText)
       return true;
@@ -98,7 +71,7 @@
     for (let keyword of confirmationKeywords) {
       if (bodyText.includes(keyword)) {
         console.log("Confirmation page detected via DOM check. Keyword found:", keyword);
-        chrome.local.storage.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": true, "payment_confirmed": false}})
+        chrome.local.storage.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": true, "item_confirmed": false}})
         // reset_variables();
         check_correct_product(affiliate_product, document.body.innerText)
         return true; // Found at least one keyword, so exit.
@@ -157,7 +130,7 @@ async function check_correct_product_deepseek(product1, product2) {
       const reply = data.choices[0].message.content;
       console.log("DeepSeek Response:", reply);
       if (reply === "YES") {
-        chrome.storage.local.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": true, "payment_confirmed": true}});
+        chrome.storage.local.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": true, "item_confirmed": true}});
       } else {
         console.log("Cannot confirm purchase");
       }
@@ -220,7 +193,7 @@ async function check_correct_product(product1, product2) {
         flags: {
           "affiliate_link_detected": true,
           "confirmation_page_reached": true,
-          "payment_confirmed": true
+          "item_confirmed": true
         }
       });
     } else {
@@ -234,6 +207,6 @@ async function check_correct_product(product1, product2) {
 }
 
 function reset_variables() {
-  chrome.storage.local.set({redirected: false, redirectUrl: "Nothing", url: "Nothing", trackLog: [], flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "payment_confirmed": false}});
+  chrome.storage.local.set({redirected: false, redirectUrl: "Nothing", url: "Nothing", trackLog: [], flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}});
 }
   

@@ -1,22 +1,7 @@
-// Probably useless code
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.type === "track") {
-    chrome.storage.local.get({ trackLog: [] }, (result) => {
-      const log = result.trackLog;
-      log.push({
-        url: message.data.url,
-        type: message.data.type,
-        timestamp: new Date().toISOString()
-      });
-      chrome.storage.local.set({ trackLog: log });
-    });
-  }
-});
-
 // If affiliate link is a redirect line, stores affiliate link and the link to which a redirection is done
 chrome.webRequest.onBeforeRedirect.addListener(
   (details) => {
-    chrome.storage.local.get({trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing", flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "payment_confirmed": false}}, (result) => {
+    chrome.storage.local.get({trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing", flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}}, (result) => {
       if (!result.trackingEnabled) return;
       if (!result.flags["affiliate_false_detected"]) {
         console.log("Redirect detected:", details);
@@ -25,7 +10,7 @@ chrome.webRequest.onBeforeRedirect.addListener(
         let url = details["url"]
         let offer = {redirectUrl: url}
         if (check_for_offer(url)) {
-          chrome.storage.local.set({redirected: true, redirectUrl: redirectUrl, url: url, flags: {"affiliate_link_detected": true, "confirmation_page_reached": false, "payment_confirmed": false}})
+          chrome.storage.local.set({redirected: true, redirectUrl: redirectUrl, url: url, flags: {"affiliate_link_detected": true, "confirmation_page_reached": false, "item_confirmed": false}})
           chrome.storage.local.set({ trackLog: [{url: "Affiliate link clicked " + redirectUrl, type:"start", timestamp: new Date().toISOString()}] })
         }
       }
@@ -76,26 +61,45 @@ chrome.webRequest.onCompleted.addListener((details) => {
     flags: {
       "affiliate_link_detected": false,
       "confirmation_page_reached": false,
-      "payment_confirmed": false
+      "item_confirmed": false
     }
   }, (result) => {
     if (details.url.includes("stripe.com/v1/charges") && details.statusCode === 200) {
       console.log("Stripe payment likely completed", details);
-      // Create a new flags object merging the current flags with our update
       const updatedFlags = {
         ...result.flags,
         payment_made: true  // add/update the payment_made flag
       };
       chrome.storage.local.set({ flags: updatedFlags });
-      // Process further logic here (e.g., updating UI or sending a message)
     }
   });
 }, { urls: ["*://api.stripe.com/v1/charges*"] });
 
 
+chrome.webRequest.onCompleted.addListener((details) => {
+  chrome.storage.local.get({
+    flags: {
+      "affiliate_link_detected": false,
+      "confirmation_page_reached": false,
+      "item_confirmed": false
+    }
+  }, (result) => {
+    // Check if the request URL indicates a PayPal payment and status is successful
+    if (details.url.includes("paypal.com/cgi-bin/webscr") && details.statusCode === 200) {
+      console.log("PayPal payment likely completed", details);
+      const updatedFlags = {
+        ...result.flags,
+        payment_made: true
+      };
+      chrome.storage.local.set({ flags: updatedFlags });
+      // Further processing logic can go here.
+    }
+  });
+}, { urls: ["*://*.paypal.com/cgi-bin/webscr*"] });
+
 
 function reset_variables() {
-  chrome.storage.local.set({redirected: false, redirectUrl: "Nothing", url: "Nothing", trackLog: [], flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "payment_confirmed": false}});
+  chrome.storage.local.set({redirected: false, redirectUrl: "Nothing", url: "Nothing", trackLog: [], flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}});
 }
   
 
