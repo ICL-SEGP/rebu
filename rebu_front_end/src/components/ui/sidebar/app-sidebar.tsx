@@ -27,7 +27,7 @@ const navItems = [
   { title: "Users", url: "/affiliate/users" },
   { title: "Offers", url: "/affiliate/offers" },
   { title: "Orders", url: "/affiliate/orders" },
-  { title: "Marketplace", url: "/affiliate/marketplace"}
+  { title: "Marketplace", url: "/affiliate/marketplace/select"}
 ];
 
 export function AppSidebarAffiliate({ ...props }: React.ComponentProps<typeof Sidebar>) {
