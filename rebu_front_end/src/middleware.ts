@@ -15,16 +15,16 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  if (pathname.startsWith("/login") && !token) {
-    console.log("✅ Allowing access to /login");
+  if (pathname.startsWith("/sign-in") && !token) {
+    console.log("✅ Allowing access to /sign-in");
     return NextResponse.next();
   }
 
   if (!token) {
     console.log(
-      "🔄 Redirecting to /login because user is not authenticated"
+      "🔄 Redirecting to /sign-in because user is not authenticated"
     );
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(new URL("/sign-in", req.url));
   }
 
   if (pathname.startsWith("/user") && token?.role !== "user") {

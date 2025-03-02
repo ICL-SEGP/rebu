@@ -18,7 +18,7 @@ import { useEffect } from "react";
 
 
 
-const Login = () => {
+const signInPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -97,4 +97,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default signInPage;

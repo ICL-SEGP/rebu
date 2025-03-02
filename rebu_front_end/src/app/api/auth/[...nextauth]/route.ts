@@ -12,8 +12,8 @@ const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        // 1️⃣ Send login request to Phoenix
-        const response = await fetch(`${API_BASE_URL}/api/login`, {
+        // 1️⃣ Send sign-in request to Phoenix
+        const response = await fetch(`${API_BASE_URL}/sign-in`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
