@@ -34,7 +34,9 @@ offers =
   Enum.map(
     1..10,
     fn _x ->
-      {:ok, offer} = Repo.insert(Offer.changeset(%Offer{},Factory.offer(%{affiliate: affiliate})))
+      {:ok, offer} =
+        Repo.insert(Offer.changeset(%Offer{}, Factory.offer(%{affiliate: affiliate})))
+
       offer
     end
   )
@@ -44,7 +46,7 @@ IO.puts("Created #{length(offers)} offers for affiliate.")
 # Step 3: Create Multiple Users
 users = Factory.insert_list(2, :user)
 
-users = [ Factory.insert(:user, email: "test@test.com") | users]
+users = [Factory.insert(:user, email: "test@test.com") | users]
 
 IO.puts("Created #{length(users)} users.")
 
@@ -71,7 +73,11 @@ offers =
   Enum.map(
     1..10,
     fn _x ->
-      {:ok, offer} = Repo.insert(Offer.changeset(%Offer{},Factory.offer(%{affiliate: affiliate, status: :scheduled})))
+      {:ok, offer} =
+        Repo.insert(
+          Offer.changeset(%Offer{}, Factory.offer(%{affiliate: affiliate, status: :scheduled}))
+        )
+
       offer
     end
   )

@@ -3,7 +3,6 @@ defmodule RebuWebApi.Accounts.Affiliate do
   import Ecto.Changeset
   alias RebuWebApi.Accounts.AccountChangesetHelpers
 
-
   @derive {Jason.Encoder,
            only: [
              :id,
@@ -61,7 +60,7 @@ defmodule RebuWebApi.Accounts.Affiliate do
       :role,
       :solana_pub_key
     ])
-    |> validate_required([:first_name, :last_name,:role])
+    |> validate_required([:first_name, :last_name, :role])
     |> validate_inclusion(:role, [:user])
     |> AccountChangesetHelpers.validate_email()
     |> AccountChangesetHelpers.validate_password()

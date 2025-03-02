@@ -79,8 +79,6 @@ defmodule RebuWebApiWeb.AffiliateController do
   #   dbg(params)
   # end
 
-
-
   # def update_order(conn, %{
   #       "id" => id,
   #       "amount" => amount,

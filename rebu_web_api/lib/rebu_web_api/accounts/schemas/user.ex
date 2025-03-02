@@ -37,7 +37,7 @@ defmodule RebuWebApi.Accounts.User do
     ])
     |> validate_required([
       :first_name,
-      :last_name,
+      :last_name
     ])
     |> validate_inclusion(:role, [:user])
     |> AccountChangesetHelpers.validate_email()

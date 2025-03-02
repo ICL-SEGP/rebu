@@ -24,14 +24,12 @@ defmodule RebuWebApiWeb.UserController do
     |> json(user)
   end
 
-   def get_balance(conn, _params) do
+  def get_balance(conn, _params) do
     user = Guardian.Plug.current_resource(conn)
 
     conn
     |> json(%{balance: user.token_balance})
   end
-
-
 
   # Affiliate functions
 
