@@ -42,7 +42,7 @@ offers =
 IO.puts("Created #{length(offers)} offers for affiliate.")
 
 # Step 3: Create Multiple Users
-users = Factory.insert_list(20, :user)
+users = Factory.insert_list(2, :user)
 
 users = [ Factory.insert(:user, email: "test@test.com") | users]
 

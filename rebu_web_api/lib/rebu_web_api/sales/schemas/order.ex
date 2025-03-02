@@ -21,14 +21,14 @@ defmodule RebuWebApi.Sales.Order do
   def changeset(order, attrs) do
     order
     |> cast(attrs, [:status, :total_rebate_amount, :order_date])
-    |> validate_inclusion(:status, [:in_progress, :refunded, :completed])
+    |> validate_inclusion(:status, [:pending, :refunded, :completed])
     |> validate_required([:status, :total_rebate_amount])
   end
 
   def status_changeset(user, attrs) do
     user
     |> cast(attrs, [:status])
-    |> validate_inclusion(:status, [:in_progress, :refunded, :completed])
+    |> validate_inclusion(:status, [:pending, :refunded, :completed])
     |> case do
       %{changes: %{status: _}} = changeset -> changeset
       %{} = changeset -> add_error(changeset, :name, "invalid option")

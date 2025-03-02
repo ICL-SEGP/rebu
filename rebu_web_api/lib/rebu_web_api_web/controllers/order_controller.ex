@@ -4,29 +4,49 @@ defmodule RebuWebApiWeb.OrderController do
   alias RebuWebApi.Accounts
   alias RebuWebApi.Sales
   alias RebuWebApi.Sales.Order
+  alias RebuWebApiWeb.ErrorResponse
 
   action_fallback RebuWebApiWeb.FallbackController
 
-  def index(conn, _params) do
+  def get_orders(conn, _params) do
     user = Guardian.Plug.current_resource(conn)
+    orders = Sales.get_orders_by_user(user)
 
-    orders =
-      if Accounts.is_affiliate(user) do
-        Sales.list_orders()
-      else
-        Sales.get_orders_by_user(user)
-      end
-
-    render(conn, :index, orders: orders)
+    render(orders)
   end
 
   def create(conn, %{"order" => order_params}) do
     with {:ok, %Order{} = order} <- Sales.create_order(order_params) do
       conn
       |> put_status(:created)
-      |> put_resp_header("location", ~p"/api/orders/#{order}")
-      |> render(:show, order: order)
+      |> json(order)
     end
+  end
+
+  def get(conn, %{"id" => id}) do
+    user = Guardian.Plug.current_resource(conn)
+    order = Sales.get_order!(id)
+
+    if not (order.user_id == user.id) do
+      raise ErrorResponse.Unauthorized
+    end
+
+    conn
+    |> json(order)
+  end
+
+  def update(conn, %{"order" => order_params, "id" => id}) do
+    user = Guardian.Plug.current_resource(conn)
+    order = Sales.get_order!(id)
+
+    if not (order.user_id == user.id) do
+      raise ErrorResponse.Unauthorized
+    end
+
+    {:ok, order} = Sales.update_order(order, order_params)
+
+    conn
+    |> json(order)
   end
 
   # def create_complete(conn, %{"affiliate_link" => affiliate_link, "order" => order_params}) do
@@ -53,24 +73,98 @@ defmodule RebuWebApiWeb.OrderController do
   #   end
   # end
 
-  def show(conn, %{"id" => id}) do
-    order = Sales.get_order!(id)
-    render(conn, :show, order: order)
+  # def show(conn, %{"id" => id}) do
+  #   order = Sales.get_order!(id)
+  #   render(conn, :show, order: order)
+  # end
+
+  # def update(conn, %{"id" => id, "order" => order_params}) do
+  #   order = Sales.get_order!(id)
+
+  #   with {:ok, %Order{} = order} <- Sales.update_order(order, order_params) do
+  #     render(conn, :show, order: order)
+  #   end
+  # end
+
+  # def delete(conn, %{"id" => id}) do
+  #   order = Sales.get_order!(id)
+
+  #   with {:ok, %Order{}} <- Sales.delete_order(order) do
+  #     send_resp(conn, :no_content, "")
+  #   end
+  # end
+
+  # new
+
+  def affiliate_get_orders(conn, _params) do
+    affiliate = Guardian.Plug.current_resource(conn)
+
+    {:ok, orders} = Sales.get_all_orders_for_affiliate(affiliate.id)
+
+    conn
+    |> json(orders)
   end
 
-  def update(conn, %{"id" => id, "order" => order_params}) do
+  def affiliate_get(conn, %{"id" => id}) do
+    affiliate = Guardian.Plug.current_resource(conn)
     order = Sales.get_order!(id)
 
-    with {:ok, %Order{} = order} <- Sales.update_order(order, order_params) do
-      render(conn, :show, order: order)
+    if not (order.offer.affiliate_id == affiliate.id) do
+      raise ErrorResponse.Unauthorized
     end
+
+    conn
+    |> json(order)
   end
 
-  def delete(conn, %{"id" => id}) do
+  def affiliate_update(conn, %{"order" => order_params, "id" => id}) do
+    affiliate = Guardian.Plug.current_resource(conn)
     order = Sales.get_order!(id)
 
-    with {:ok, %Order{}} <- Sales.delete_order(order) do
-      send_resp(conn, :no_content, "")
+    if not (order.offer.affiliate_id == affiliate.id) do
+      raise ErrorResponse.Unauthorized
     end
+
+    {:ok, order} = Sales.update_order(order, order_params)
+
+    conn
+    |> json(order)
+  end
+
+  def affiliate_cancel(conn, %{"id" => id}) do
+    affiliate = Guardian.Plug.current_resource(conn)
+    order = Sales.get_order!(id)
+
+    if not (order.offer.affiliate_id == affiliate.id) do
+      raise ErrorResponse.Unauthorized
+    end
+
+    {:ok, order} = Sales.update_order(order, %{status: :cancelled})
+
+    conn
+    |> json(order)
+  end
+
+  def affiliate_create(conn, %{"order" => order_params, "user_id" => user_id}) do
+    affiliate = Guardian.Plug.current_resource(conn)
+    user = Accounts.get_user!(user_id)
+
+    if not (user.affiliate_id == affiliate.id) do
+      raise ErrorResponse.Unauthorized
+    end
+
+    {:ok, order} = Sales.create_order(Map.put(order_params, :user, user))
+
+    conn
+    |> json(order)
+  end
+
+  def affiliate_get_orders_for_user(conn, %{"user_id" => user_id}) do
+    affiliate = Guardian.Plug.current_resource(conn)
+
+    {:ok, orders} = Sales.get_all_orders_for_user_for_affiliate(affiliate.id, user_id)
+
+    conn
+    |> json(orders)
   end
 end

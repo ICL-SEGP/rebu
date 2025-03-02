@@ -4,8 +4,8 @@ defmodule RebuWebApiWeb.OfferJSON do
   @doc """
   Renders a list of offers.
   """
-  def index(%{offers: offers}) do
-    %{data: Enum.map(offers, &JSONHelpers.serialize_schema/1)}
+  def offers(%{offers: offers}) do
+    Enum.map(offers, &JSONHelpers.serialize_schema/1)
   end
 
   @doc """

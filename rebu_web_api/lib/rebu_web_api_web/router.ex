@@ -1,5 +1,4 @@
 defmodule RebuWebApiWeb.Router do
-  alias Hex.API.User
   use RebuWebApiWeb, :router
 
   import RebuWebApi.Auth.AccountPlugs
@@ -12,14 +11,6 @@ defmodule RebuWebApiWeb.Router do
   #   plug :protect_from_forgery
   #   plug :put_secure_browser_headers
   # end
-
-  def handle_errors(conn, %{reason: %Phoenix.Router.NoRouteError{message: message}}) do
-    conn |> json(%{errors: message}) |> halt()
-  end
-
-  def handle_errors(conn, %{reason: %{message: message}}) do
-    conn |> json(%{errors: message}) |> halt()
-  end
 
   pipeline :api do
     plug :accepts, ["json"]
@@ -40,46 +31,51 @@ defmodule RebuWebApiWeb.Router do
     pipe_through [:api, :auth, :affiliate]
 
     # Affiliate
-    get "", AffiliateController, :get
-    patch "", AffiliateController, :update
-    delete "", AffiliateController, :archive
+    get "/", AffiliateController, :get
+    patch "/", AffiliateController, :update
+    # TODO implement this && add oban to do this periodically
+    delete "/", AffiliateController, :archive
+
     get "/balance", AffiliateController, :get_balance
     get "/stats", AffiliateController, :stats
 
     # Offers
-    get "/offers", OrderController, :get_offers
-    post "/offers", OrderController, :create
-    get "/offers/:id", OrderController, :get
-    patch "/offers/:id", OrderController, :update
-    delete "/offers/:id", OrderController, :mark_expired
+    get "/offers", OfferController, :get_offers
+    post "/offers", OfferController, :create
+    get "/offers/:id", OfferController, :get
+    patch "/offers/:id", OfferController, :update
+    delete "/offers/:id", OfferController, :mark_expired
 
-    #users
-    get "/users", UserController, :get_users
+    # users
+    get "/users", UserController, :get_linked_users
     post "/users", UserController, :manual_create_user
     get "/users/:id", UserController, :get
     patch "/users/:id", UserController, :update
+    # TODO implement this && add oban to do this periodically
     delete "/users/:id", UserController, :archive
 
-    #(User) Orders
+    # (User) Orders
     get "/orders", OrderController, :affiliate_get_orders
-    post "/orders", OrderController, :affiliate_create
     get "/orders/:id", OrderController, :affiliate_get
     patch "/orders/:id", OrderController, :affiliate_update
     delete "/order/:id", OrderController, :affiliate_cancel
+    post "/orders/user/:id", OrderController, :affiliate_create
     get "/orders/user/:id", OrderController, :affiliate_get_for_user
   end
 
-  scope "", RebuWebApiWeb do
+  scope "/", RebuWebApiWeb do
     pipe_through [:api, :auth]
 
     # User Profile
     get "/user", UserController, :get_profile
     patch "/user", UserController, :update_profile
+    # TODO implement this && add oban to do this periodically
     delete "/user", UserController, :archive_profile
     get "/user/balance", UserController, :get_balance
+    # TODO decide what stats are relevant for the user
     get "/stats", UserController, :stats
 
-    delete "/logout", AuthController, :sign_out
+    delete "/sign-out", AuthController, :sign_out
 
     # Orders
     get "/orders", OrderController, :get_orders
@@ -91,22 +87,24 @@ defmodule RebuWebApiWeb.Router do
     get "/offers", OfferController, :get_offers_for_user
   end
 
-  scope "/solana" do
+  scope "/solana", RebuWebApiWeb do
     pipe_through [:api, :auth]
     post "/key", SolanaController, :update_key
   end
 
-  scope "", RebuWebApiWeb do
+  scope "/", RebuWebApiWeb do
     pipe_through :api
 
     # Auth
     post "/register", AuthController, :register
     post "/affiliate/register", AuthController, :register
-    post "/login", AuthController, :sign_in
+    post "/sign-in", AuthController, :sign_in
 
     # testing
     get "/", TestController, :default
   end
+
+  match :*, "/*path", RebuWebApiWeb.FallbackController, :not_found
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   # if Application.compile_env(:rebu_web_api, :dev_routes) do

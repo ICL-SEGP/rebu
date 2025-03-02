@@ -29,7 +29,7 @@ defmodule RebuWebApi.SalesFixtures do
     {:ok, order} =
       attrs
       |> Enum.into(%{
-        status: :in_progress,
+        status: :pending,
         total_rebate_amount: "120.5"
       })
       |> RebuWebApi.Sales.create_order()

@@ -2,6 +2,8 @@ defmodule RebuWebApi.Auth.AccountPlugs do
   use Plug.Builder
 
   alias RebuWebApi.Accounts
+  alias RebuWebApiWeb.ErrorResponse
+  alias RebuWebApiWeb.FallbackController
 
   plug :fetch_account
   plug :is_affiliate
@@ -33,9 +35,11 @@ defmodule RebuWebApi.Auth.AccountPlugs do
     user = Guardian.Plug.current_resource(conn)
 
     if not Accounts.is_affiliate(user) do
-      raise(RebuWebApi.Auth.ErrorResponse.Unauthorized)
+      conn
+      |> FallbackController.call({:error, ErrorResponse.Unauthorized})
+      |> halt
+    else
+      conn
     end
-
-    conn
   end
 end

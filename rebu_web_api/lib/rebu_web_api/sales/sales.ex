@@ -41,8 +41,8 @@ defmodule RebuWebApi.Sales do
     |> Enum.into(%{})
   end
 
-  def list_offers_by_user(%User{} = user) do
-    from(o in "offers", where: o.user_id == ^user.id)
+  def list_offers_by_affiliate_id(id) do
+    from(o in "offers", where: o.user_id == ^id)
     |> Repo.all()
   end
 
@@ -232,9 +232,9 @@ defmodule RebuWebApi.Sales do
   end
 
   # Utility function to convert string keys to atoms
-  defp atomize_keys(params) when is_map(params) do
-    Enum.into(params, %{}, fn {k, v} -> {String.to_atom(k), v} end)
-  end
+  # defp atomize_keys(params) when is_map(params) do
+  #   Enum.into(params, %{}, fn {k, v} -> {String.to_atom(k), v} end)
+  # end
 
   @doc """
   Updates a order.
@@ -263,7 +263,8 @@ defmodule RebuWebApi.Sales do
     |> Repo.update()
   end
 
-  def check_completed_and_mint(attrs) do
+  # TODO sort token minting
+  def check_completed_and_mint(_attrs) do
     # case Map.get(:status) do
     #   # :complete -> call rust an mint tokens
     # end
@@ -298,7 +299,7 @@ defmodule RebuWebApi.Sales do
     Order.changeset(order, attrs)
   end
 
-  def create_rebate_offer(%Affiliate{id: id} = user, offer_attrs) do
+  def create_rebate_offer(%Affiliate{id: id} = _user, offer_attrs) do
     create_offer(Map.put(offer_attrs, :user_id, id))
   end
 
@@ -384,5 +385,32 @@ defmodule RebuWebApi.Sales do
       {:error, changeset} ->
         {:error, changeset}
     end
+  end
+
+  # new
+
+  def get_all_orders_for_affiliate(affiliate_id) do
+    from(order in Order,
+      join: order_offer in "offer_orders",
+      on: order_offer.order_id == order.id,
+      join: offer in Offer,
+      on: offer.id == order_offer.offer_id,
+      where: offer.affiliate_id == ^affiliate_id,
+      select: order
+    )
+    |> Repo.all()
+  end
+
+  def get_all_orders_for_user_for_affiliate(affiliate_id, user_id) do
+    from(order in Order,
+      where: order.user_id == ^user_id,
+      join: order_offer in "offer_orders",
+      on: order_offer.order_id == order.id,
+      join: offer in Offer,
+      on: offer.id == order_offer.offer_id,
+      where: offer.affiliate_id == ^affiliate_id,
+      select: order
+    )
+    |> Repo.all()
   end
 end
