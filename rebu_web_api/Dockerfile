@@ -18,7 +18,7 @@ ARG DEBIAN_VERSION=bullseye-20250113-slim
 ARG BUILDER_IMAGE="hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}"
 ARG RUNNER_IMAGE="debian:${DEBIAN_VERSION}"
 
-FROM rust:1.68.0 as rust_builder
+FROM rust:1.85.0 as rust_builder
 # install build dependencies
 RUN apt-get update -y && apt-get install -y build-essential git \
   && apt-get clean && rm -f /var/lib/apt/lists/*_*
@@ -68,7 +68,7 @@ COPY assets assets
 RUN mix assets.deploy
 
 # copy rust binaries
-COPY --from=rust /app/target/release/libsolana_api.so priv/native/libsolana_api.so
+COPY --from=rust_builder /app/target/release/libsolana_api.so priv/native/libsolana_api.so
 
 # Compile the release
 RUN mix compile
@@ -101,7 +101,7 @@ RUN chown nobody /app
 ENV MIX_ENV="prod"
 
 # Only copy the final release from the build stage
-COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/rebu_web_api ./
+COPY --from=elixir_builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/rebu_web_api ./
 
 USER nobody
 
