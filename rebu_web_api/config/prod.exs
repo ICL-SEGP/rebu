@@ -17,5 +17,10 @@ config :swoosh, local: false
 # Do not print debug messages in production
 config :logger, level: :info
 
+config :rebu_web_api, RebuWebApi.SolanaApi,
+  crate: :solana_api,
+  skip_compilation?: true,
+  load_from: {:rebu_api_web, "priv/native/libsolana_api.so"}
+
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.

@@ -10,11 +10,10 @@ defmodule RebuWebApiWeb.FallbackController do
   def call(conn, {:error, %Ecto.Changeset{} = changeset}) do
     conn
     |> put_status(:unprocessable_entity)
-    |> put_view(json: RebuWebApiWeb.ChangesetJSON)
+    |> put_view(json: RebuWebApiWeb.ErrorJSON)
     |> render(:error, changeset: changeset)
   end
 
-  # This clause is an example of how to handle resources that cannot be found.
   def call(conn, {:error, :not_found}) do
     conn
     |> put_status(:not_found)
@@ -24,7 +23,7 @@ defmodule RebuWebApiWeb.FallbackController do
 
   def call(conn, {:error, error}) do
     conn
-    |> put_status(:unauthorized)
+    |> put_status(error.plug_status)
     |> render(:error, error: error)
   end
 end

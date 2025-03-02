@@ -8,7 +8,7 @@ defmodule RebuWebApiWeb.JSONHelpers do
   @doc """
   Converts order status atoms into human-readable strings.
   """
-  def transform_status(:in_progress), do: "in_progress"
+  def transform_status(:pending), do: "pending"
   def transform_status(:refunded), do: "refunded"
   def transform_status(:completed), do: "completed"
   def transform_status(status), do: to_string(status)

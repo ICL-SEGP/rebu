@@ -5,7 +5,7 @@ defmodule RebuWebApiWeb.AuthJSON do
   Returns auth success response with token.
   """
   def auth_success(%{user: user, token: token}) do
-    %{data: Map.put(JSONHelpers.serialize_schema(user), :token, token)}
+    Map.put(JSONHelpers.serialize_schema(user), :token, token)
   end
 
   @doc """

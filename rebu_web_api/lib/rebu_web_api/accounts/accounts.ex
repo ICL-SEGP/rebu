@@ -11,7 +11,7 @@ defmodule RebuWebApi.Accounts do
   alias RebuWebApi.Auth.Guardian
   alias RebuWebApi.Sales
   alias RebuWebApi.Sales.Offer
-  alias RebWebApi.Accounts.AccountChangesetHelpers
+  alias RebuWebApi.Accounts.AccountChangesetHelpers
 
   @doc """
   Returns the list of users.
@@ -84,23 +84,29 @@ defmodule RebuWebApi.Accounts do
   """
   def update_email(%User{} = user, attrs) do
     user
-    |> User.email_changeset(attrs)
+    |> AccountChangesetHelpers.email_changeset(attrs)
     |> Repo.update()
   end
 
   def update_name(%User{} = user, attrs) do
     user
-    |> User.name_changeset(attrs)
+    |> AccountChangesetHelpers.name_changeset(attrs)
     |> Repo.update()
   end
 
-  def update_user(id, attrs) do
-    get_user!(id)
-    |> AccountChangesetHelpers.name_changeset(attrs)
-    |> AccountChangesetHelpers.email_changeset(attrs)
-    |> User.role_changeset(attrs)
+  def update_user(%User{} = user, attrs) do
+    user
+    |> User.registration_changeset(attrs)
     |> Repo.update()
   end
+
+  # def update_user(id, attrs) do
+  #   get_user!(id)
+  #   |> AccountChangesetHelpers.name_changeset(attrs)
+  #   |> AccountChangesetHelpers.email_changeset(attrs)
+  #   |> User.role_changeset(attrs)
+  #   |> Repo.update()
+  # end
 
   @doc """
   Deletes a user.
@@ -150,12 +156,10 @@ defmodule RebuWebApi.Accounts do
     token
   end
 
-  def update_user_balance(user, %{tokens: tokens, locked: locked, rescinded: rescinded}) do
+  def update_user_balance(user, %{tokens: tokens, locked: _locked, rescinded: _rescinded}) do
     user
     |> Ecto.Changeset.change(%{
-      token_balance: tokens,
-      locked_tokens: locked,
-      rescinded_tokens: rescinded
+      token_balance: tokens
     })
     |> Repo.update()
   end
@@ -192,15 +196,15 @@ defmodule RebuWebApi.Accounts do
     aggregate_orders(orders)
   end
 
-  def set_affiliate(%User{id: _id} = user, role) do
-    # TODO: add authorization checking of super Admin later
-    case role do
-      :admin -> {:error, :unauthorized}
-      :Affiliate -> User.role_changeset(user, %{role: role})
-      :user -> User.role_changeset(user, %{role: role})
-      _ -> {:error, :invalid_role_passed}
-    end
-  end
+  # def set_affiliate(%User{id: _id} = user, role) do
+  #   # TODO: add authorization checking of super Admin later
+  #   case role do
+  #     :admin -> {:error, :unauthorized}
+  #     :Affiliate -> User.role_changeset(user, %{role: role})
+  #     :user -> User.role_changeset(user, %{role: role})
+  #     _ -> {:error, :invalid_role_passed}
+  #   end
+  # end
 
   def affiliate_balances!() do
     orders = Sales.list_orders()
@@ -211,7 +215,7 @@ defmodule RebuWebApi.Accounts do
   def aggregate_orders(orders) do
     Enum.reduce(orders, %{tokens: 0, locked: 0, rescinded: 0}, fn order, acc ->
       case order.status do
-        :in_progress ->
+        :pending ->
           %{acc | locked: acc.locked + Decimal.to_float(order.total_rebate_amount)}
 
         :completed ->
@@ -227,7 +231,7 @@ defmodule RebuWebApi.Accounts do
     true
   end
 
-  def is_affiliate(param) do
+  def is_affiliate(_param) do
     false
   end
 
@@ -266,5 +270,26 @@ defmodule RebuWebApi.Accounts do
         count: count
       }
     end)
+  end
+
+  # Affiliate stuff
+
+  def register_affiliate(attrs \\ %{}) do
+    %Affiliate{}
+    |> Affiliate.registration_changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def get_affiliate!(id), do: Repo.get!(Affiliate, id)
+
+  def update_affiliate(%Affiliate{} = affiliate, attrs) do
+    affiliate
+    |> Affiliate.registration_changeset(attrs)
+    |> Repo.update()
+  end
+
+  def get_affiliate_linked_users(affiliate_id) do
+    query = from u in User, where: u.affiliate_id == ^affiliate_id
+    Repo.all(query)
   end
 end

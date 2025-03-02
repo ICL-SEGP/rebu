@@ -360,16 +360,20 @@ export async function getAllLinkedOrders(token: string): Promise<Order[]> {
 
 export async function affiliateCreateOrder(
   token: string,
+  userId: number,
   newOrder: Order
 ): Promise<Order> {
-  const response = await fetch(`${API_BASE_URL}/affiliate/orders`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(humps.decamelizeKeys(newOrder)),
-  });
+  const response = await fetch(
+    `${API_BASE_URL}/affiliate/orders/user/${userId}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(humps.decamelizeKeys(newOrder)),
+    }
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to create order: ${response.statusText}`);

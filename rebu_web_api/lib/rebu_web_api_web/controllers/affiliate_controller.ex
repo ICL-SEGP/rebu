@@ -3,30 +3,42 @@ defmodule RebuWebApiWeb.AffiliateController do
 
   alias RebuWebApi.Accounts
   alias RebuWebApi.Sales
-  alias RebuWebApi.Sales.Order
+  alias RebuWebApiWeb.ErrorResponse
 
   action_fallback RebuWebApiWeb.FallbackController
 
-  def get_users(conn, _params) do
-    users = Accounts.get_users_by_role(:user)
+  # new
+
+  def get(conn, _params) do
+    affiliate = Guardian.Plug.current_resource(conn)
 
     conn
-    |> put_status(200)
-    |> render(:get_users, users: users)
+    |> json(affiliate)
   end
 
-  def get_orders(conn, _params) do
-    orders = Sales.list_orders_with_offers()
+  def update(conn, %{"affiliate" => affiliate_params}) do
+    affiliate = Guardian.Plug.current_resource(conn)
+
+    if not (affiliate.email == affiliate_params["email"] &&
+              affiliate.id == affiliate_params["id"]) do
+      raise ErrorResponse.Unauthorized
+    end
+
+    {:ok, affiliate} = Accounts.update_affiliate(affiliate, affiliate_params)
 
     conn
-    |> put_status(200)
-    |> render(:get_orders, orders: orders)
+    |> json(affiliate)
   end
 
-  def update_user(conn, params) do
-    dbg(params)
+  # TODO decide actually what balances you want to return
+  def balance(conn, _params) do
+    affiliate = Guardian.Plug.current_resource(conn)
+
+    conn
+    |> json(%{balance: affiliate.token_balance})
   end
 
+  # TODO make this meaningful
   def stats(conn, _params) do
     balances = Accounts.affiliate_balances!()
     offer_counts = Sales.get_offer_counts_by_status()
@@ -45,61 +57,83 @@ defmodule RebuWebApiWeb.AffiliateController do
     })
   end
 
-  def update_order(conn, %{
-        "id" => id,
-        "amount" => amount,
-        "date" => date,
-        "offers" => offers,
-        "status" => status,
-        "user" => user
-      }) do
-    order = Sales.get_order!(id)
+  # old
 
-    {:ok, order} =
-      Sales.update_order(order, %{
-        id: id,
-        amount: amount,
-        date: date,
-        offers: offers,
-        status: normalize_status(status),
-        user: user
-      })
+  # def get_users(conn, _params) do
+  #   users = Accounts.get_users_by_role(:user)
 
-    conn
-    |> put_status(200)
-    |> render(:order, order: order)
-  end
+  #   conn
+  #   |> put_status(200)
+  #   |> render(:get_users, users: users)
+  # end
 
-  def create_order(conn, %{
-        "amount" => amount,
-        "date" => date,
-        "offers" => offers,
-        "status" => status,
-        "user" => user
-      }) do
-    with {:ok, %Order{} = order} <-
-           Sales.new_order(%{
-             total_rebate_amount: amount,
-             date: date,
-             offers: offers,
-             status: normalize_status(status),
-             user: user
-           }) do
-      conn
-      |> put_status(:created)
-      |> render(:order, order: order)
-    end
-  end
+  # def get_orders(conn, _params) do
+  #   orders = Sales.list_orders_with_offers()
 
-  def delete_order(conn, %{"id" => id}) do
-    Sales.delete_order(Sales.get_order!(id))
+  #   conn
+  #   |> put_status(200)
+  #   |> render(:get_orders, orders: orders)
+  # end
 
-    conn
-    |> put_status(:created)
-    |> json(%{message: "Order deleted successfully."})
-  end
+  # def update_user(conn, params) do
+  #   dbg(params)
+  # end
 
-  def normalize_status("in_progress"), do: :in_progress
-  def normalize_status("completed"), do: :completed
-  def normalize_status("refunded"), do: :refunded
+  # def update_order(conn, %{
+  #       "id" => id,
+  #       "amount" => amount,
+  #       "date" => date,
+  #       "offers" => offers,
+  #       "status" => status,
+  #       "user" => user
+  #     }) do
+  #   order = Sales.get_order!(id)
+
+  #   {:ok, order} =
+  #     Sales.update_order(order, %{
+  #       id: id,
+  #       amount: amount,
+  #       date: date,
+  #       offers: offers,
+  #       status: normalize_status(status),
+  #       user: user
+  #     })
+
+  #   conn
+  #   |> put_status(200)
+  #   |> render(:order, order: order)
+  # end
+
+  # def create_order(conn, %{
+  #       "amount" => amount,
+  #       "date" => date,
+  #       "offers" => offers,
+  #       "status" => status,
+  #       "user" => user
+  #     }) do
+  #   with {:ok, %Order{} = order} <-
+  #          Sales.new_order(%{
+  #            total_rebate_amount: amount,
+  #            date: date,
+  #            offers: offers,
+  #            status: normalize_status(status),
+  #            user: user
+  #          }) do
+  #     conn
+  #     |> put_status(:created)
+  #     |> render(:order, order: order)
+  #   end
+  # end
+
+  # def delete_order(conn, %{"id" => id}) do
+  #   Sales.delete_order(Sales.get_order!(id))
+
+  #   conn
+  #   |> put_status(:created)
+  #   |> json(%{message: "Order deleted successfully."})
+  # end
+
+  # def normalize_status("pending"), do: :pending
+  # def normalize_status("completed"), do: :completed
+  # def normalize_status("refunded"), do: :refunded
 end

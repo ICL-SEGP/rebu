@@ -18,7 +18,17 @@ ARG DEBIAN_VERSION=bullseye-20250113-slim
 ARG BUILDER_IMAGE="hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}"
 ARG RUNNER_IMAGE="debian:${DEBIAN_VERSION}"
 
-FROM ${BUILDER_IMAGE} AS builder
+FROM rust:1.68.0 as rust_builder
+# install build dependencies
+RUN apt-get update -y && apt-get install -y build-essential git \
+  && apt-get clean && rm -f /var/lib/apt/lists/*_*
+
+WORKDIR /app
+COPY native/solana_api ./
+RUN cargo build --release
+
+
+FROM ${BUILDER_IMAGE} AS elixir_builder
 
 ENV ERL_FLAGS="+JPperf true"
 
@@ -45,6 +55,7 @@ RUN mkdir config
 # to ensure any relevant config change will trigger the dependencies
 # to be re-compiled.
 COPY config/config.exs config/${MIX_ENV}.exs config/sops_config.exs config/
+
 RUN mix deps.compile
 
 COPY priv priv
@@ -55,6 +66,9 @@ COPY assets assets
 
 # compile assets
 RUN mix assets.deploy
+
+# copy rust binaries
+COPY --from=rust /app/target/release/libsolana_api.so priv/native/libsolana_api.so
 
 # Compile the release
 RUN mix compile
@@ -67,7 +81,7 @@ RUN mix release
 
 # start a new build stage so that the final image will only contain
 # the compiled release and other runtime necessities
-FROM ${RUNNER_IMAGE}
+FROM ${RUNNER_IMAGE} AS runner
 
 RUN apt-get update -y && \
   apt-get install -y libstdc++6 openssl libncurses5 locales ca-certificates \

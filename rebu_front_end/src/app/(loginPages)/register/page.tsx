@@ -42,7 +42,7 @@ const Register = () => {
       }
 
 
-      // Optional: Auto-login after registration
+      // Optional: Auto-sign-in after registration
       const result = await signIn("credentials", {
         email: email,
         password: password,
@@ -105,10 +105,10 @@ const Register = () => {
                 Already have an account?{" "}
                 <button
                   type="button"
-                  onClick={() => router.push("/login")}
+                  onClick={() => router.push("/sign-in")}
                   className="text-blue-500 hover:underline"
                 >
-                  Login here
+                  Sign-in here
                 </button>
               </p>
             </div>

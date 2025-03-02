@@ -18,6 +18,7 @@ defmodule RebuWebApi.Accounts.User do
     field :role, Ecto.Enum, values: [:user], default: :user
 
     has_many :orders, RebuWebApi.Sales.Order
+    belongs_to :affiliate, RebuWebApi.Accounts.Affiliate
 
     timestamps(type: :utc_datetime)
   end
@@ -36,7 +37,7 @@ defmodule RebuWebApi.Accounts.User do
     ])
     |> validate_required([
       :first_name,
-      :last_name,
+      :last_name
     ])
     |> validate_inclusion(:role, [:user])
     |> AccountChangesetHelpers.validate_email()

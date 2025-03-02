@@ -44,7 +44,7 @@ defmodule RebuWebApi.Accounts.AccountChangesetHelpers do
     |> cast(attrs, [:name])
     |> case do
       %{changes: %{name: _}} = changeset -> changeset
-      %{} = changeset -> add_error(changeset, :name, "no change to email")
+      %{} = changeset -> add_error(changeset, :name, "no change name")
     end
   end
 end
