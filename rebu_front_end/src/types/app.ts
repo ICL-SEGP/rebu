@@ -102,6 +102,58 @@ export type Credentials = {
   password: string;
 }
 
+export enum MarketplaceRole {
+  SELLER = "seller",
+  BUYER = "buyer",
+}
+
+export enum ProductStatus {
+  ACTIVE = "active",
+  SOLD_OUT = "sold_out",
+  ARCHIVED = "archived",
+}
+
+export interface MarketplaceUser {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  token_balance: number; // Buyers use rebated tokens
+  role: Role; // AFFILIATE or USER
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+  category: string;
+  status: "ACTIVE" | "INACTIVE";
+  createdAt: Date;
+  sellerId: number; // Affiliates are sellers
+  reviews: Review[];
+}
+
+export interface Review {
+  id: string;
+  userId: number;
+  productId: string;
+  rating: number;
+  comment: string;
+  createdAt: Date;
+}
+
+export interface MarketplaceOrder {
+  id: string;
+  buyerId: number; // Buyers can be Users or Affiliates
+  productId: string;
+  totalAmount: number;
+  orderDate: Date;
+  status: OrderStatus;
+}
+
+
 // Parsing functions
 // TODO: remember to use humps to cammelize keys
 

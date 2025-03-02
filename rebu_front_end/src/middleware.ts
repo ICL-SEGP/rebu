@@ -7,6 +7,7 @@ export async function middleware(req: NextRequest) {
 
   const { pathname } = req.nextUrl;
 
+
   if (
     pathname.startsWith("/_next/") || // Static assets (CSS, JS, etc.)
     pathname.startsWith("/api/") || // API routes (e.g., /api/auth/session)
@@ -37,6 +38,7 @@ export async function middleware(req: NextRequest) {
     console.log("🛂 affiliate is authenticated");
     return NextResponse.redirect(new URL("/", req.url));
   }
+
 
   // ✅ Allow authenticated users to proceed
   console.log("✅ User is authenticated, but no specific match in middleware");
