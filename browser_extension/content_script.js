@@ -81,8 +81,53 @@
   }
 })();
 
+const sampleOffers = [
+  {
+    id: 1,
+    affiliate: 101,
+    desc: "Offer #1",
+    itemCost: 29.99,
+    status: "active",
+    start: new Date("2025-01-01"),
+    end: new Date("2025-12-31"),
+    affiliate_link: "https://example.com/product1",
+    orderIds: []
+  },
+  {
+    id: 2,
+    affiliate: 102,
+    desc: "Offer #2",
+    itemCost: 39.99,
+    status: "active",
+    start: new Date("2025-01-01"),
+    end: new Date("2025-12-31"),
+    affiliate_link: "https://example.com/product2",
+    orderIds: []
+  },
+  {
+    id: 3,
+    affiliate: 103,
+    desc: "Offer #3",
+    itemCost: 19.99,
+    status: "active",
+    start: new Date("2025-01-01"),
+    end: new Date("2025-12-31"),
+    affiliate_link: "https://example.com/product3",
+    orderIds: []
+  },
+  // ... add as many sample offers as you like ...
+];
+
+
 function check_for_offer(url) {
-  return true;
+  // Check if the current URL contains any affiliate_link from our sample offers.
+  const found = sampleOffers.find((offer) => url.includes(offer.affiliate_link));
+  
+  if (found) {
+    console.log("Matched offer:", found);
+    return true;
+  }
+  return false;
 }
 
 async function check_correct_product_deepseek(product1, product2) {
