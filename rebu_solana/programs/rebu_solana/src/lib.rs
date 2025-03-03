@@ -19,7 +19,7 @@ declare_id!("BhitfXGo3bXsyF5AXQhvnSM28u2tqUkbGabtFPBdoYJc");
 pub mod rebu_solana {
     use super::*;
 
-    pub fn make_purchase(ctx: Context<AddListing>, id: u64, stock: u64, price: u64) -> Result<()> {
+    pub fn add_listing(ctx: Context<AddListing>, id: u64, stock: u64, price: u64) -> Result<()> {
         instructions::make_purchase::save_listing(ctx, id, stock, price)
     }
 

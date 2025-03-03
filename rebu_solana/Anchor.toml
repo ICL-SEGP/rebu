@@ -11,8 +11,5 @@ rebu_solana = "BhitfXGo3bXsyF5AXQhvnSM28u2tqUkbGabtFPBdoYJc"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "Localnet"
 wallet = "~/.config/solana/id.json"
-
-[scripts]
-test = "cargo run tests/rebu_solana.rs"

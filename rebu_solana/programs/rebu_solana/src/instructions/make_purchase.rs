@@ -20,14 +20,11 @@ pub struct AddListing<'info> {
     #[account(mut)]
     mint: InterfaceAccount<'info, Mint>,
 
-    #[account(mut)]
-    seller: SystemAccount<'info>,
-
     /// ATA of seller 
     #[account(
         mut,
         associated_token::mint = mint,
-        associated_token::authority = seller,
+        associated_token::authority = signer,
     )] 
     seller_ata: InterfaceAccount<'info, TokenAccount>,
 
@@ -37,7 +34,7 @@ pub struct AddListing<'info> {
         space = ANCHOR_DISCRIMINATOR + ProductListing::INIT_SPACE,
         seeds = [
             b"product".as_ref(), b"listing".as_ref(), 
-            seller.key().as_ref(), 
+            signer.key().as_ref(), 
             id.to_le_bytes().as_ref()
         ],
         bump,
@@ -54,7 +51,7 @@ pub fn save_listing(ctx: Context<AddListing>, id: u64, stock: u64, price: u64) -
 
     ctx.accounts.product_listing.set_inner(
         ProductListing {
-            seller: ctx.accounts.seller.key(),
+            seller: ctx.accounts.signer.key(),
             mint: ctx.accounts.mint.key(),
             id,
             stock,
