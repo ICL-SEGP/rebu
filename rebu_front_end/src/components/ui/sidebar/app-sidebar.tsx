@@ -21,16 +21,43 @@ import {
 } from "@/components/ui/sidebar/helpers/dropdown-menu";
 import { User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/helpers/button";
+import WalletSolana from "../crypto/solana-wallet-management";
 
-const navItems = [
+const affiliateNavItems = [
   { title: "Dashboard", url: "/affiliate/dashboard" },
   { title: "Users", url: "/affiliate/users" },
   { title: "Offers", url: "/affiliate/offers" },
   { title: "Orders", url: "/affiliate/orders" },
-  { title: "Marketplace", url: "/affiliate/marketplace/select"}
+  { title: "Marketplace", url: "/affiliate/marketplace/select" },
 ];
 
-export function AppSidebarAffiliate({ ...props }: React.ComponentProps<typeof Sidebar>) {
+const userNavItems = [
+  { title: "Dashboard", url: "/user/dashboard" },
+  { title: "Offers", url: "/user/offers" },
+  { title: "Orders", url: "/user/orders" },
+  { title: "Marketplace", url: "/user/marketplace" },
+];
+
+function navItems(session: any) {
+  // 1) Decide which items to use
+  const navItems =
+    session!.user.role === "affiliate" ? affiliateNavItems : userNavItems;
+
+  // 2) Render the sidebar
+  return (
+    <SidebarMenu>
+      {navItems.map((item) => (
+        <SidebarMenuItem key={item.title}>
+          <SidebarMenuButton asChild>
+            <a href={item.url}>{item.title}</a>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
+  );
+}
+
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
   const router = useRouter();
 
@@ -48,7 +75,10 @@ export function AppSidebarAffiliate({ ...props }: React.ComponentProps<typeof Si
             <DropdownMenuItem onClick={() => router.push("/affiliate/profile")}>
               <User className="w-4 h-4 mr-2" /> Profile
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => signOut()} className="text-red-500">
+            <DropdownMenuItem
+              onClick={() => signOut()}
+              className="text-red-500"
+            >
               <LogOut className="w-4 h-4 mr-2" /> Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -59,16 +89,9 @@ export function AppSidebarAffiliate({ ...props }: React.ComponentProps<typeof Si
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>{item.title}</a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
+            <SidebarMenu>{navItems(session)}</SidebarMenu>
           </SidebarGroupContent>
+          <WalletSolana />
         </SidebarGroup>
       </SidebarContent>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { AppSidebarAffiliate } from "@/components/ui/sidebar/app-sidebar";
+import { AppSidebar } from "@/components/ui/sidebar/app-sidebar";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -27,7 +27,11 @@ function getPageName(pathname: string): string {
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-export default function AffiliateLayout({ children }: { children: React.ReactNode }) {
+export default function AffiliateLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const pageName = getPageName(pathname);
   const { data: session, status } = useSession();
@@ -40,7 +44,7 @@ export default function AffiliateLayout({ children }: { children: React.ReactNod
     <SidebarProvider>
       <div className="flex w-screen mx-36">
         {/* Sidebar */}
-        <AppSidebarAffiliate />
+        <AppSidebar />
 
         {/* Main Content */}
         <SidebarInset className="flex flex-1 flex-col">
@@ -50,7 +54,9 @@ export default function AffiliateLayout({ children }: { children: React.ReactNod
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/affiliate/dashboard">Affiliate</BreadcrumbLink>
+                  <BreadcrumbLink href="/affiliate/dashboard">
+                    Affiliate
+                  </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>

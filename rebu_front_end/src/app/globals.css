@@ -6,6 +6,11 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+.wallet-adapter-dropdown-list {
+  position: static !important;
+  margin: 0 auto !important;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

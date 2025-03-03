@@ -1,6 +1,5 @@
 "use client";
 
-import { AppSidebarUser } from "@/components/ui/sidebar/app-sidebar-user";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -17,6 +16,7 @@ import {
 } from "@/components/ui/sidebar/sidebar";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { AppSidebar } from "@/components/ui/sidebar/app-sidebar";
 
 function getPageName(pathname: string): string {
   const segments = pathname.split("/").filter(Boolean);
@@ -33,7 +33,11 @@ function getPageName(pathname: string): string {
   return pageName;
 }
 
-export default function UserLayout({ children }: { children: React.ReactNode }) {
+export default function UserLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const pageName = getPageName(pathname);
 
@@ -54,7 +58,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
     <SidebarProvider>
       <div className="flex">
         {/* Sidebar */}
-        <AppSidebarUser />
+        <AppSidebar />
 
         {/* Main Content */}
         <SidebarInset className="flex flex-1 flex-col">

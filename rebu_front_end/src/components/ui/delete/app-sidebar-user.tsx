@@ -23,32 +23,29 @@ import {
 } from "@/components/ui/sidebar/helpers/dropdown-menu";
 import { User, Wallet, LogOut, MoreHorizontal, Link } from "lucide-react";
 import { Button } from "@/components/ui/helpers/button";
-import  WalletSolana from "@/components/ui/crypto/solana-wallet-management";
-
-
+import WalletSolana from "@/components/ui/crypto/solana-wallet-management";
 
 const navItems = [
   { title: "Dashboard", url: "/user/dashboard" },
   { title: "Offers", url: "/user/offers" },
   { title: "Orders", url: "/user/orders" },
-  { title: "Marketplace", url: "/user/marketplace" }
+  { title: "Marketplace", url: "/user/marketplace" },
 ];
 
-export function AppSidebarUser({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebarUser({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession();
   const router = useRouter();
 
   return (
     <Sidebar {...props}>
-
       <div className="mt-auto p-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-full flex justify-between"
-            >
-              {session?.user?.id || session?.user?.email || "Profile"} <User className="w-4 h-4" />
+            <Button variant="outline" className="w-full flex justify-between">
+              {session?.user?.id || session?.user?.email || "Profile"}{" "}
+              <User className="w-4 h-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
@@ -58,33 +55,14 @@ export function AppSidebarUser({ ...props }: React.ComponentProps<typeof Sidebar
             <DropdownMenuItem onClick={() => router.push("/user/wallet")}>
               <Wallet className="w-4 h-4 mr-2" /> Wallet
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => signOut()} className="text-red-500">
+            <DropdownMenuItem
+              onClick={() => signOut()}
+              className="text-red-500"
+            >
               <LogOut className="w-4 h-4 mr-2" /> Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
-
-      <div className="px-4">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="default"
-              className="w-full flex justify-between"
-            >
-              Wallet <Wallet className="w-4 h-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem onClick={() => router.push("/user/wallet")}>
-              <Link className="w-4 h-4 mr-2" /> Connect Wallet
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push("/user/wallet")}>
-              <Wallet className="w-4 h-4 mr-2" /> View Wallet
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
       </div>
 
       <SidebarContent>
@@ -101,12 +79,12 @@ export function AppSidebarUser({ ...props }: React.ComponentProps<typeof Sidebar
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
+
+          <WalletSolana />
         </SidebarGroup>
       </SidebarContent>
 
       {/* Profile Button at Bottom */}
-
-      <WalletSolana></WalletSolana>
 
       <SidebarRail />
     </Sidebar>

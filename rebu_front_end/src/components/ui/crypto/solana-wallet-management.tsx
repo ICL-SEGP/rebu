@@ -1,7 +1,7 @@
-import { useWallet } from '@solana/wallet-adapter-react';
-import { WalletButton } from '@/components/ui/crypto/solana-provider';
-import { API_BASE_URL } from '@/lib/constants';
-import { useSession } from 'next-auth/react';
+import { useWallet } from "@solana/wallet-adapter-react";
+import { WalletButton } from "@/components/ui/crypto/solana-provider";
+import { API_BASE_URL } from "@/lib/constants";
+import { useSession } from "next-auth/react";
 
 export default function WalletSolana() {
   const { publicKey } = useWallet();
@@ -14,9 +14,9 @@ export default function WalletSolana() {
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/solana/publickey`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${session.accessToken}`,
         },
         body: JSON.stringify({
@@ -24,13 +24,13 @@ export default function WalletSolana() {
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to push key');
+      if (!res.ok) throw new Error("Failed to push key");
 
       const response = await res.json();
 
       console.log(response);
     } catch (error) {
-      console.error('Error pushing key', error);
+      console.error("Error pushing key", error);
     }
   };
 
@@ -39,7 +39,7 @@ export default function WalletSolana() {
   }
 
   return (
-    <div className="hero py-[64px]">
+    <div className="pt-6">
       <div className="hero-content text-center">
         <WalletButton />
       </div>
