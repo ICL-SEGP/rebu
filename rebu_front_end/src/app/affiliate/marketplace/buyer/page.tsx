@@ -5,200 +5,171 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/forms/input";
 import { Button } from "@/components/ui/helpers/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/helpers/card";
-import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/modals/dialog";
-import { StarIcon, ShoppingCartIcon } from "lucide-react";
-import { Product, Review, MarketplaceOrder, ProductStatus } from "@/types/app";
-import { createOrder } from "@/lib/api/marketplace";
+import { StarIcon } from "lucide-react";
+import { Product } from "@/types/app";
+import axios from "axios";
 
-// 🔹 Dummy Products for Testing
-// TODO: delete this when backend integrated
+
+const UNSPLASH_ACCESS_KEY = "TPFS6bS1JKJaCrphzZHJUUwGigQ1C1vFPZhfUKbi-nY";
+
+// Fetch Unsplash images
+const fetchCategoryImage = async (categoryName: string): Promise<string> => {
+  try {
+    const response = await axios.get("https://api.unsplash.com/search/photos", {
+      params: { query: categoryName, per_page: 1 },
+      headers: { Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}` },
+    });
+
+    return response.data.results[0]?.urls?.regular || "/fallback-category.jpg";
+  } catch (error) {
+    console.error(`Error fetching image for ${categoryName}:`, error);
+    return "/fallback-category.jpg"; // Fallback image if API fails
+  }
+};
+
+// Dummy Products
 const dummyProducts: Product[] = [
   {
-    id: "1",
+    id: 1,
     name: "Crypto Hoodie",
-    description: "A premium hoodie for blockchain lovers.",
+    desc: "A premium hoodie for blockchain lovers.",
     price: 50,
-    imageUrl: "https://picsum.photos/200/300",
-    category: "Clothing",
+    imageUrls: ["https://via.placeholder.com/400"],
+    fileUrl: "",
+    fileType: "pdf",
+    fileSize: 5000,
+    category: { name: "Clothing", imageUrl: new URL("https://via.placeholder.com/400") },
     status: "ACTIVE",
     createdAt: new Date(),
     sellerId: 101,
-    reviews: [
-      { id: "r1", userId: 201, productId: "1", rating: 5, comment: "Super comfortable!", createdAt: new Date() },
-      { id: "r2", userId: 202, productId: "1", rating: 4, comment: "Great design, a bit expensive.", createdAt: new Date() },
-    ],
+    reviews: [{ id: 1, userId: 201, productId: "1", rating: 5, comment: "Super comfortable!", createdAt: new Date() }],
   },
   {
-    id: "2",
+    id: 2,
     name: "Solana Cap",
-    description: "Stylish cap featuring the Solana logo.",
+    desc: "Stylish cap featuring the Solana logo.",
     price: 25,
-    imageUrl: "https://picsum.photos/200/300",
-    category: "Clothing",
+    imageUrls: ["https://via.placeholder.com/400"],
+    fileUrl: "",
+    fileType: "pdf",
+    fileSize: 5000,
+    category: { name: "Clothing", imageUrl: new URL("https://via.placeholder.com/400") },
     status: "ACTIVE",
     createdAt: new Date(),
     sellerId: 102,
-    reviews: [{ id: "r3", userId: 203, productId: "2", rating: 5, comment: "Love the material!", createdAt: new Date() }],
+    reviews: [{ id: 2, userId: 203, productId: "2", rating: 5, comment: "Love the material!", createdAt: new Date() }],
   },
 ];
-// TODO: uncomment this to dynamically fetch marketplaceproducts
-// const [products, setProducts] = useState<Product[]>([]);
-// useEffect(() => {
-//   async function fetchProducts() {
-//     try {
-//       const products = await getMarketplaceProducts();
-//       setProducts(products);
-//     } catch (error) {
-//       console.error("Failed to fetch products", error);
-//     }
-//   }
-//   fetchProducts();
-// }, []);
 
-
-// 🔹 Dummy Orders for Testing
-// TODO: delete this when backend integrated
-const dummyOrders: MarketplaceOrder[] = [];
-
-// TODO: uncomment this to fetch read orders
-// const [orders, setOrders] = useState<MarketplaceOrder[]>([]);
-// useEffect(() => {
-//   async function fetchOrders() {
-//     try {
-//       if (!user) return;
-//       const token = user.token;
-//       const orders = await getUserOrders(token, user.id);
-//       setOrders(orders);
-//     } catch (error) {
-//       console.error("Failed to fetch orders", error);
-//     }
-//   }
-//   fetchOrders();
-// }, [user]);
-
+// Extract Unique Categories
+const categories = [...new Set(dummyProducts.map((p) => p.category.name))];
 
 export default function BuyerMarketplace() {
-  const [orders, setOrders] = useState<MarketplaceOrder[]>(dummyOrders);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [purchaseSuccess, setPurchaseSuccess] = useState(false);
-  const [newOrderId, setNewOrderId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filteredCategory, setFilteredCategory] = useState<string | null>(null);
+  const [categoryImages, setCategoryImages] = useState<{ [key: string]: string }>({});
   const router = useRouter();
 
-  const handlePurchase = async (product: Product) => {
-    try {
-      const token = "USER_AUTH_TOKEN"; // TODO: Replace with actual auth token
-      const newOrder = await createOrder(token, {
-        buyerId: 999, // TODO: Dummy user ID, replace with actual logged-in user
-        productId: product.id,
-        totalAmount: product.price,
-        orderDate: new Date(),
-        status: "PENDING",
-      });
+  // Fetch category images once
+  useEffect(() => {
+    const fetchImages = async () => {
+      const newCategoryImages: { [key: string]: string } = {};
 
-      setOrders([...orders, newOrder]);
-      setNewOrderId(newOrder.id);
-      setPurchaseSuccess(true);
-    } catch (error) {
-      console.error("Purchase failed:", error);
-      alert("Purchase failed. Try again.");
-    }
+      for (const category of categories) {
+        if (!categoryImages[category]) {
+          newCategoryImages[category] = await fetchCategoryImage(category);
+        }
+      }
+      setCategoryImages((prev) => ({ ...prev, ...newCategoryImages }));
+    };
+
+    fetchImages();
+  }, [categories]);
+
+  const handleCategoryClick = (category: string) => {
+    setFilteredCategory((prev) => (prev === category ? null : category)); // Toggle category selection
   };
-
-  const handleRedirectToOrder = () => {
-    if (newOrderId) {
-      router.push(`/affiliate/marketplace/buyer/order-history?orderId=${newOrderId}`);
-    }
-  };
-
-  // 🔹 Extract Unique Categories
-  const categories = Array.from(new Set(dummyProducts.map((p) => p.category)));
 
   return (
-    <div className="p-8 space-y-6">
-      {/* Search & Order History */}
-      <div className="flex justify-between items-center">
+    <div className="p-8 max-w-6xl mx-auto space-y-8" onClick={(e) => {
+      if (!e.target.closest(".category-card")) setFilteredCategory(null);
+    }}>
+      {/* 🔹 Search Bar (Google-Like) */}
+      <div className="flex justify-center">
         <Input
           type="text"
           placeholder="Search for products..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-2xl"
+          className="w-full max-w-xl text-lg p-4 border rounded-full shadow-md"
         />
-        <Button variant="outline" className="ml-4" onClick={() => router.push("/affiliate/marketplace/buyer/order-history")}>
-          View My Order History
-        </Button>
       </div>
 
-      {/* Category Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
+      {/* 🔹 Category Cards (Amazon-Like) */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Categories</h2>
+        {filteredCategory && (
+          <Button variant="outline" onClick={() => setFilteredCategory(null)}>
+            Show All
+          </Button>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {categories.map((category) => (
           <CategoryCard
             key={category}
             category={category}
-            products={dummyProducts.filter((p) => p.category === category).slice(0, 4)}
-            onSelect={() => setFilteredCategory(category)}
+            imageUrl={categoryImages[category] || "/fallback-category.jpg"}
+            isActive={filteredCategory === category}
+            onSelect={() => handleCategoryClick(category)}
           />
         ))}
       </div>
 
-      {/* Product Listings */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {/* 🔹 Product Listings */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {dummyProducts
           .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
-          .filter((p) => (filteredCategory ? p.category === filteredCategory : true))
+          .filter((p) => (filteredCategory ? p.category.name === filteredCategory : true))
           .map((product) => (
-            <ProductCard key={product.id} product={product} onView={() => setSelectedProduct(product)} />
+            <ProductCard key={product.id} product={product} />
           ))}
       </div>
-
-        {/* Product Detail Modal */}
-        {selectedProduct && (
-        <ProductDetailModal 
-          product={selectedProduct} 
-          onClose={() => setSelectedProduct(null)} 
-          onBuy={() => handlePurchase(selectedProduct)} 
-        />
-      )}
-
-      {/* 🔹 Purchase Success Modal */}
-      {purchaseSuccess && (
-        <Dialog open={purchaseSuccess} onOpenChange={() => setPurchaseSuccess(false)}>
-          <DialogContent>
-            <DialogTitle>Purchase Successful!</DialogTitle>
-            <p className="text-gray-600">Your order has been placed successfully.</p>
-            <Button onClick={handleRedirectToOrder} className="mt-4">
-              View Order Details
-            </Button>
-          </DialogContent>
-        </Dialog>
-      )}
     </div>
   );
 }
 
-// ✅ Category Card Component (Displays Top Products in Each Category)
-function CategoryCard({ category, products, onSelect }: { category: string; products: Product[]; onSelect: () => void }) {
-    return (
-      <Card className="p-4 shadow-md cursor-pointer hover:shadow-lg transition-all" onClick={onSelect}>
-        <CardTitle className="text-lg font-semibold">{category}</CardTitle>
-        <div className="grid grid-cols-2 gap-2 mt-2">
-          {products.map((product) => (
-            <div key={product.id} className="flex items-center space-x-2">
-              <img src={product.imageUrl} alt={product.name} className="w-10 h-10 object-cover rounded-md" />
-              <p className="text-sm">{product.name}</p>
-            </div>
-          ))}
-        </div>
-      </Card>
-    );
-  }
+// ✅ Category Card Component
+function CategoryCard({
+  category,
+  imageUrl,
+  onSelect,
+  isActive,
+}: {
+  category: string;
+  imageUrl: string;
+  onSelect: () => void;
+  isActive: boolean;
+}) {
+  return (
+    <div
+      className={`relative cursor-pointer rounded-lg overflow-hidden transition-all shadow-md hover:shadow-lg category-card ${
+        isActive ? "border-2 border-blue-500" : ""
+      }`}
+      onClick={onSelect}
+    >
+      <img src={imageUrl} alt={category} className="w-full h-40 object-cover" />
+      <div className="absolute bottom-0 w-full h-20 bg-gradient-to-t from-white to-transparent flex items-end p-4">
+        <h3 className="text-lg font-semibold">{category}</h3>
+      </div>
+    </div>
+  );
+}
 
-// Product Card Component (Displays Product Overview with Average Rating & Purchase Count)
+// ✅ Product Card Component
 function ProductCard({ product }: { product: Product }) {
   const router = useRouter();
-  
   const averageRating = product.reviews.length
     ? product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length
     : 0;
@@ -208,29 +179,19 @@ function ProductCard({ product }: { product: Product }) {
       className="relative shadow-md cursor-pointer hover:shadow-lg transition-all p-4"
       onClick={() => router.push(`/affiliate/marketplace/buyer/${product.id}`)}
     >
-      <img src={product.imageUrl} alt={product.name} className="w-full h-40 object-cover rounded-md" />
-      <h2 className="text-lg font-semibold mt-2">{product.name}</h2>
-      <p className="text-xl font-bold text-green-600">{product.price} Tokens</p>
-
-      <div className="flex items-center space-x-1 mt-1">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <StarIcon
-            key={i}
-            size={14}
-            className="text-yellow-500"
-            fill={i < Math.round(averageRating) ? "currentColor" : "none"}
-            stroke={i < Math.round(averageRating) ? "currentColor" : "gray"}
-          />
-        ))}
-        <span className="text-xs font-medium ml-1">{averageRating.toFixed(1)} / 5</span>
-      </div>
-
-      <p className="text-xs text-gray-500 mt-1">
-        {product.reviews.length > 0 ? `${product.reviews.length}+ bought recently` : "No recent purchases"}
-      </p>
+      <img src={product.imageUrls[0]} alt={product.name} className="w-full h-40 object-cover rounded-md" />
+      <CardHeader className="p-2">
+        <CardTitle className="text-lg font-semibold">{product.name}</CardTitle>
+      </CardHeader>
+      <CardContent className="p-2 space-y-2">
+        <p className="text-xl font-bold text-green-600">{product.price} Tokens</p>
+        <div className="flex items-center space-x-1">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <StarIcon key={i} size={14} className="text-yellow-500" fill={i < Math.round(averageRating) ? "currentColor" : "none"} />
+          ))}
+          <span className="text-xs font-medium ml-1">{averageRating.toFixed(1)} / 5</span>
+        </div>
+      </CardContent>
     </Card>
   );
 }
-
-  
-  
