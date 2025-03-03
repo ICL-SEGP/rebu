@@ -98,6 +98,7 @@ export interface AdminMonthlyStat {
 
 export type Credentials = {
   firstName: string;
+  lastName: string;
   email: string;
   password: string;
 }
@@ -141,7 +142,7 @@ export interface Review {
 
 export interface Purchase {
   id: number;
-  buyerId: number; 
+  buyerId: number;
   sellerId: number // Track with seller fulfilled the order
   productId: number;
   totalAmount: number;

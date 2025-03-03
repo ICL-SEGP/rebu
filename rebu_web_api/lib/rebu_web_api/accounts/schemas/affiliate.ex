@@ -9,12 +9,10 @@ defmodule RebuWebApi.Accounts.Affiliate do
              :first_name,
              :last_name,
              :email,
-             :revenue,
-             :token_balance,
              :role,
              :inserted_at,
              :updated_at
-           ]}
+           ], except: [:token_balance, :revenue]}
 
   schema "affiliates" do
     field :first_name, :string

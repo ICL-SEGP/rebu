@@ -11,41 +11,45 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/helpers/card";
-import { Input } from "@/components/ui/forms/input"
-import { Label } from "@/components/ui/forms/label"
-import { useSession } from "next-auth/react";
-import { useEffect } from "react";
-
-
+import { Input } from "@/components/ui/forms/input";
+import { Label } from "@/components/ui/forms/label";
+import { Credentials } from "@/types/app";
 
 const signInPage = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [credentials, setCredentials] = useState<Credentials>();
   const [error, setError] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Attempts sign in with credentials
-    console.log("creds", email, password)
-    const res = await signIn("credentials", {
-      email,
-      password,
+    if (!credentials?.email || !credentials.password) {
+      setError("Missing sign-in details.");
+      return;
+    }
+
+    const response = await signIn("credentials", {
+      email: credentials!.email,
+      password: credentials!.password,
       redirect: false,
     });
-    console.log(res)
-    if (res?.error) {
-      setError("Invalid email or password");
-    } else {
-      const session = await getSession();
-      sessionStorage.setItem("fromSignIn", "true");
-      if (session) {
-        if (session.user.role == "affiliate") {
-          router.push("/affiliate/dashboard");
-        } else {
-          router.push("/user/dashboard");
-        }
+
+    if (response?.error) {
+      setError("Invalid email or password.");
+      return;
+    }
+
+    // Setting var for notification on redirect to dashboard
+    sessionStorage.setItem("fromSignIn", "true");
+
+    const session = await getSession();
+    console.log(session);
+
+    if (session) {
+      if (session.user.role == "affiliate") {
+        router.push("/affiliate/dashboard");
+      } else {
+        router.push("/user/dashboard");
       }
     }
   };
@@ -54,7 +58,7 @@ const signInPage = () => {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <Card className="w-[350px]">
         <CardHeader>
-          <CardTitle>Log In</CardTitle>
+          <CardTitle>Sign In</CardTitle>
           <CardDescription>
             <Label className="text-red-500">{error}</Label>
           </CardDescription>
@@ -64,11 +68,30 @@ const signInPage = () => {
             <div className="grid w-full items-center gap-4">
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" placeholder="user@gmail.com" onChange={(e) => setEmail(e.target.value)} />
+                <Input
+                  id="email"
+                  placeholder="user@gmail.com"
+                  onChange={(e) =>
+                    setCredentials((prev) => ({
+                      ...prev!,
+                      email: e.target.value,
+                    }))
+                  }
+                />
               </div>
               <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" placeholder="*******" type="password" onChange={(e) => setPassword(e.target.value)} />
+                <Input
+                  id="password"
+                  placeholder="*******"
+                  type="password"
+                  onChange={(e) =>
+                    setCredentials((prev) => ({
+                      ...prev!,
+                      password: e.target.value,
+                    }))
+                  }
+                />
               </div>
               <div className="flex items-center justify-between">
                 <Button type="submit" className="w-full">

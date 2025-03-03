@@ -1,4 +1,6 @@
 import { API_BASE_URL } from "@/lib/constants";
+import { Session } from "inspector/promises";
+import { TreePalm } from "lucide-react";
 import NextAuth from "next-auth";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -25,29 +27,30 @@ const authOptions: NextAuthOptions = {
         if (!response.ok) throw new Error("Invalid credentials");
 
 
-        // 2️⃣ Phoenix responds with a JWT
-        const user = (await response.json()).data; // Expecting { id, name, email, token }
+        // Phoenix responds with a JWT
+        const user = (await response.json()); // Expecting { id, name, email, token }
 
-
-        // 3️⃣ NextAuth stores the JWT
-        return user ? { id: user.id, email: user.email, token: user.token, role: user.role, name: user.first_name } : null;
+        // NextAuth stores the JWT
+        return user ? { id: user.id, email: user.email, accessToken: user.token, role: user.role, firstName: user.first_name } : null;
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.accessToken = user.token; // 4️⃣ Store JWT in NextAuth
+        token.accessToken = user.accessToken;
+        token.id = user.id
         token.email = user.email;
-        token.name = user.name;
+        token.firstName = user.firstName;
         token.role = user.role
       }
       return token;
     },
     async session({ session, token }) {
-      session.accessToken = token.accessToken; // 5️⃣ Add JWT to session object
+      session.accessToken = token.accessToken;
+      session.user.id = token.id;
       session.user.email = token.email;
-      session.user.name = token.name;
+      session.user.firstName = token.firstName;
       session.user.role = token.role;
       return session;
     },
