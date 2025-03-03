@@ -258,3 +258,21 @@ footer {
   max-width: 200px;
   margin: 0 auto;
 }
+
+/* Add to your existing styles.css */
+
+.payment-info {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.success-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  background: #00a651;
+  color: white;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
