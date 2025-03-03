@@ -196,103 +196,41 @@ function CategoryCard({ category, products, onSelect }: { category: string; prod
   }
 
 // Product Card Component (Displays Product Overview with Average Rating & Purchase Count)
-function ProductCard({ product, onView }: { product: Product; onView: () => void }) {
-    // Calculate Average Rating
-    const averageRating = product.reviews.length
-      ? product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length
-      : 0;
+function ProductCard({ product }: { product: Product }) {
+  const router = useRouter();
   
-    return (
-      <Card className="relative shadow-md cursor-pointer hover:shadow-lg transition-all p-4" onClick={onView}>
-        <img src={product.imageUrl} alt={product.name} className="w-full h-40 object-cover rounded-md" />
-        <CardHeader className="p-2">
-          <CardTitle className="text-lg font-semibold">{product.name}</CardTitle>
-        </CardHeader>
-        <CardContent className="p-2 space-y-2">
-          <p className="text-xl font-bold text-green-600">{product.price} Tokens</p>
-  
-          {/* 🔹 Average Review Rating */}
-          <div className="flex items-center space-x-1">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <StarIcon
-                key={i}
-                size={14} // ✅ Reduce size slightly to prevent overflow
-                className="text-yellow-500"
-                fill={i < Math.round(averageRating) ? "currentColor" : "none"}
-                stroke={i < Math.round(averageRating) ? "currentColor" : "gray"}
-              />
-            ))}
-            <span className="text-xs font-medium ml-1">{averageRating.toFixed(1)} / 5</span> {/* ✅ Adjust text size & spacing */}
-          </div>
-  
-          {/* 🔹 Purchase Count */}
-          <p className="text-xs text-gray-500">
-            {product.reviews.length > 0 ? `${product.reviews.length}+ bought recently` : "No recent purchases"}
-          </p>
-  
-          <p className="text-gray-500 text-sm">Non-Refundable</p>
-        </CardContent>
-      </Card>
-    );
-  }
-  
-  
+  const averageRating = product.reviews.length
+    ? product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length
+    : 0;
 
-function ProductDetailModal({
-    product,
-    onClose,
-    onBuy,
-  }: {
-    product: Product;
-    onClose: () => void;
-    onBuy: () => void;
-  }) {
-    return (
-      <Dialog open={!!product} onOpenChange={onClose}>
-        <DialogContent className="max-w-lg max-h-[80vh] p-0 rounded-lg flex flex-col">
-          {/* Scrollable Content */}
-          <div className="overflow-y-auto max-h-[60vh] p-6">
-            <DialogTitle>{product.name}</DialogTitle>
-            <img src={product.imageUrl} alt={product.name} className="w-full h-48 object-cover rounded-lg" />
-            <p className="text-lg font-semibold text-gray-700 mt-4">{product.description}</p>
-            <p className="text-xl font-bold text-green-600 mt-2">{product.price} Tokens</p>
-            <p className="text-gray-500">Category: {product.category}</p>
+  return (
+    <Card
+      className="relative shadow-md cursor-pointer hover:shadow-lg transition-all p-4"
+      onClick={() => router.push(`/affiliate/marketplace/buyer/${product.id}`)}
+    >
+      <img src={product.imageUrl} alt={product.name} className="w-full h-40 object-cover rounded-md" />
+      <h2 className="text-lg font-semibold mt-2">{product.name}</h2>
+      <p className="text-xl font-bold text-green-600">{product.price} Tokens</p>
+
+      <div className="flex items-center space-x-1 mt-1">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <StarIcon
+            key={i}
+            size={14}
+            className="text-yellow-500"
+            fill={i < Math.round(averageRating) ? "currentColor" : "none"}
+            stroke={i < Math.round(averageRating) ? "currentColor" : "gray"}
+          />
+        ))}
+        <span className="text-xs font-medium ml-1">{averageRating.toFixed(1)} / 5</span>
+      </div>
+
+      <p className="text-xs text-gray-500 mt-1">
+        {product.reviews.length > 0 ? `${product.reviews.length}+ bought recently` : "No recent purchases"}
+      </p>
+    </Card>
+  );
+}
+
   
-            {/* 🔹 Reviews Section */}
-            <h3 className="mt-4 font-semibold">Reviews:</h3>
-            <div className="space-y-2">
-              {product.reviews.length > 0 ? (
-                product.reviews.map((review) => (
-                  <div key={review.id} className="bg-gray-100 p-3 rounded-lg flex flex-col">
-                    <div className="flex justify-between items-center">
-                      <p className="text-sm">{review.comment}</p>
-                      <div className="flex items-center space-x-1">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <StarIcon
-                            key={i}
-                            size={14}
-                            className={i < review.rating ? "text-yellow-500" : "text-gray-300"}
-                            fill={i < review.rating ? "currentColor" : "none"}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-500 text-sm">No reviews yet.</p>
-              )}
-            </div>
-          </div>
-  
-          {/* 🔹 Sticky Buy Button */}
-          <div className="p-4 border-t bg-white">
-            <Button variant="default" onClick={onBuy} className="w-full">
-              <ShoppingCartIcon size={16} className="mr-2" /> Buy Now
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
   
