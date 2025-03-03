@@ -1,35 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Mock Website - Home</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header>
-    <h1>Welcome to the Mock Website</h1>
-    <nav>
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="purchase.html">Products</a></li>
-        <li><a href="checkout.html">Checkout</a></li>
-        <li><a href="https://www.example.com">External Link</a></li>
-      </ul>
-    </nav>
+    <div class="container">
+      <nav>
+        <h1>Mock Store</h1>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="purchase.html">Products</a></li>
+          <li><a href="checkout.html">Checkout</a></li>
+        </ul>
+      </nav>
+    </div>
   </header>
 
-  <main>
-    <section>
+  <main class="container">
+    <section class="hero">
       <h2>Test Our Tracking</h2>
-      <p>Click the links above to test the Chrome extension's tracking functionality. Links with keywords like <em>purchase</em> or <em>checkout</em> should be logged as purchase-related events.</p>
-      <p>For example, click the button below:</p>
-      <a href="purchase.html" class="buy-button">Buy Now</a>
+      <p>Click the links to test the Chrome extension's tracking functionality. Links with keywords like <em>purchase</em> or <em>checkout</em> will be tracked.</p>
+      <a href="purchase.html" class="button">View Products</a>
     </section>
   </main>
 
   <footer>
-    <p>&copy; Mock Website</p>
+    <p>&copy; 2024 Mock Store. All rights reserved.</p>
   </footer>
 </body>
 </html>

@@ -120,14 +120,15 @@ const sampleOffers = [
 
 
 function check_for_offer(url) {
-  // Check if the current URL contains any affiliate_link from our sample offers.
-  const found = sampleOffers.find((offer) => url.includes(offer.affiliate_link));
+  return true
+  // // Check if the current URL contains any affiliate_link from our sample offers.
+  // const found = sampleOffers.find((offer) => url.includes(offer.affiliate_link));
   
-  if (found) {
-    console.log("Matched offer:", found);
-    return true;
-  }
-  return false;
+  // if (found) {
+  //   console.log("Matched offer:", found);
+  //   return true;
+  // }
+  // return false;
 }
 
 async function check_correct_product_deepseek(product1, product2) {

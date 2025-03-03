@@ -1,14 +1,57 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Thank You</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 40px; }
-  </style>
+  <title>Thank You - Mock Website</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Thanks for buying Product A</h1>
-  <p></p>
+  <header>
+    <div class="container">
+      <nav>
+        <h1>Mock Store</h1>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="purchase.html">Products</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="thank-you">
+      <div class="confirmation-box">
+        <h1>Order Confirmed!</h1>
+        <div class="order-details">
+          <h2>Order Summary</h2>
+          <div class="product-info">
+            <p class="product-name">Loading...</p>
+            <p class="product-price">Loading...</p>
+          </div>
+        </div>
+        <p class="success-message">Thank you for your purchase!</p>
+        <a href="purchase.html" class="button">Continue Shopping</a>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2024 Mock Store. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Display product details from URL parameters
+    document.addEventListener('DOMContentLoaded', function() {
+      const params = new URLSearchParams(window.location.search);
+      const productName = params.get('product');
+      const productPrice = params.get('price');
+
+      if (productName && productPrice) {
+        document.querySelector('.product-name').textContent = productName;
+        document.querySelector('.product-price').textContent = productPrice;
+      }
+    });
+  </script>
 </body>
 </html>
