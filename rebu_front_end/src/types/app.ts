@@ -102,41 +102,36 @@ export type Credentials = {
   password: string;
 }
 
-export enum MarketplaceRole {
-  SELLER = "seller",
-  BUYER = "buyer",
-}
-
 export enum ProductStatus {
   ACTIVE = "active",
+  SCHEDULED = "scheduled",
   SOLD_OUT = "sold_out",
-  ARCHIVED = "archived",
-}
-
-export interface MarketplaceUser {
-  id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  token_balance: number; // Buyers use rebated tokens
-  role: Role; // AFFILIATE or USER
+  EXPIRED = "expired"
 }
 
 export interface Product {
-  id: string;
+  id: number;
   name: string;
-  description: string;
+  desc: string;
   price: number;
-  imageUrl: string;
-  category: string;
-  status: "ACTIVE" | "INACTIVE";
+  imageUrls: string[];
+  fileUrl: string;
+  fileType: string; // e.g., "pdf", "mp3", "zip"
+  fileSize: number; // Size in bytes
+  category: Category;
+  status: ProductStatus;
   createdAt: Date;
   sellerId: number; // Affiliates are sellers
   reviews: Review[];
 }
 
+export type Category = {
+  name: string;
+  imageUrl: URL;
+}
+
 export interface Review {
-  id: string;
+  id: number;
   userId: number;
   productId: string;
   rating: number;
@@ -144,10 +139,11 @@ export interface Review {
   createdAt: Date;
 }
 
-export interface MarketplaceOrder {
-  id: string;
-  buyerId: number; // Buyers can be Users or Affiliates
-  productId: string;
+export interface Purchase {
+  id: number;
+  buyerId: number; 
+  sellerId: number // Track with seller fulfilled the order
+  productId: number;
   totalAmount: number;
   orderDate: Date;
   status: OrderStatus;

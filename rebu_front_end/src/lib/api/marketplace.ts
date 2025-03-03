@@ -1,11 +1,14 @@
 import { API_BASE_URL } from "@/lib/constants";
-import { Product, Review, MarketplaceOrder } from "@/types/app";
+import { Product, Review, Purchase } from "@/types/app";
 
 // 📌 Get all marketplace products
 export async function getMarketplaceProducts(): Promise<Product[]> {
   const response = await fetch(`${API_BASE_URL}/marketplace/products`, {
     method: "GET",
-    headers: { "Content-Type": "application/json" },
+    headers: { 
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
   });
 
   if (!response.ok) {
@@ -15,7 +18,7 @@ export async function getMarketplaceProducts(): Promise<Product[]> {
 }
 
 // 📌 Add or update a product (Seller only)
-export async function saveProduct(token: string, product: Partial<Product>): Promise<Product> {
+export async function saveProduct(token: string, product: Product): Promise<Product> {
   const response = await fetch(`${API_BASE_URL}/marketplace/products/${product.id || ""}`, {
     method: product.id ? "PATCH" : "POST",
     headers: {
@@ -50,7 +53,7 @@ export async function deleteProduct(token: string, productId: string) {
 export async function getReviews(productId: string): Promise<Review[]> {
   const response = await fetch(`${API_BASE_URL}/marketplace/products/${productId}/reviews`, {
     method: "GET",
-    headers: { "Content-Type": "application/json" },
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", },
   });
 
   if (!response.ok) {
@@ -74,8 +77,8 @@ export async function deleteReview(token: string, reviewId: string) {
   }
 }
 
-// 📌 Create a new order (Buyer purchase)
-export async function createOrder(token: string, order: Partial<MarketplaceOrder>): Promise<MarketplaceOrder> {
+// 📌 Create a new purchase (Buyer purchase)
+export async function createPurchase(token: string, order: Partial<Purchase>): Promise<Purchase> {
   const response = await fetch(`${API_BASE_URL}/marketplace/orders`, {
     method: "POST",
     headers: {
@@ -91,8 +94,8 @@ export async function createOrder(token: string, order: Partial<MarketplaceOrder
   return response.json();
 }
 
-// 📌 Get user orders (For buyers)
-export async function getUserOrders(token: string, userId: number): Promise<MarketplaceOrder[]> {
+// 📌 Get user purchases (For buyers)
+export async function getUserPurchases(token: string, userId: number): Promise<Purchase[]> {
   const response = await fetch(`${API_BASE_URL}/marketplace/orders/user/${userId}`, {
     method: "GET",
     headers: {
@@ -123,5 +126,39 @@ export async function uploadProductImage(file: File): Promise<string> {
   
     const data = await response.json();
     return data.imageUrl; // Backend should return the generated URL
+  }
+
+export async function uploadProductFile(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${API_BASE_URL}/marketplace/upload-file`, {
+      method: "POST",
+      body: formData,
+  });
+
+  if (!response.ok) {
+      throw new Error(`Failed to upload file: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data.fileUrl; // Backend should return the generated URL
+}
+  
+  
+  // 📌 Get a single product by ID (For Buyers)
+export async function getSingleProduct(productId: string): Promise<Product> {
+    const response = await fetch(`${API_BASE_URL}/marketplace/products/${productId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+  
+    if (!response.ok) {
+      throw new Error(`Failed to fetch product: ${response.statusText}`);
+    }
+    return response.json();
   }
   

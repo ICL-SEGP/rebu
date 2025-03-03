@@ -4,30 +4,20 @@ import { useEffect, useState, useRef } from "react";
 import { Input } from "@/components/ui/forms/input";
 import { Button } from "@/components/ui/helpers/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/helpers/card";
-import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/modals/dialog";
-import { PlusIcon, TrashIcon, PencilIcon, StarIcon } from "lucide-react";
-import { Product, Review } from "@/types/app";
-import { getMarketplaceProducts, saveProduct, deleteProduct, getReviews, deleteReview, uploadProductImage } from "@/lib/api/marketplace";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/modals/dialog";
+import { PlusIcon, StarIcon, PencilIcon, TrashIcon } from "lucide-react";
+import { Product } from "@/types/app";
+import { getMarketplaceProducts, saveProduct, deleteProduct, uploadProductImage, uploadProductFile } from "@/lib/api/marketplace";
 
-
-// ✅ Final version is now API-ready – dummy data is still there but can be easily replaced.
-// ✅ Backend Dev Can Replace Calls:
-
-// getMarketplaceProducts()
-// saveProduct()
-// deleteProduct()
-// getReviews()
-// deleteReview()
-// uploadProductImage()
-
-// 🔹 Dummy Data (To Be Replaced with API Calls)
+// 🔹 Dummy Data (For Testing)
+// TODO: delete this when backend integrated
 const dummyProducts: Product[] = [
   {
     id: "1",
     name: "Crypto Hoodie",
     description: "A limited edition hoodie for crypto enthusiasts.",
     price: 50,
-    imageUrl: "https://via.placeholder.com/300",
+    imageUrl: "https://picsum.photos/200/300",
     category: "Clothing",
     status: "ACTIVE",
     createdAt: new Date(),
@@ -46,11 +36,12 @@ export default function SellerMarketplace() {
   const [search, setSearch] = useState("");
 
   // 🔹 Fetch Products (Dummy for now, API ready)
+  // TODO delete the dummy data when api ready
   useEffect(() => {
     async function fetchProducts() {
       try {
         // Replace with: const products = await getMarketplaceProducts();
-        const products = dummyProducts; 
+        const products = dummyProducts;
         setProducts(products);
       } catch (error) {
         console.error("Failed to fetch products", error);
@@ -59,13 +50,19 @@ export default function SellerMarketplace() {
     fetchProducts();
   }, []);
 
+  // Open Edit Form
+  const handleEditProduct = (product: Product) => {
+    setSelectedProduct(product);
+    setShowDialog(true);
+  };
+
   // 🔹 Add / Edit Product
   const handleSaveProduct = async (product: Partial<Product>) => {
     try {
       let updatedProduct;
       if (product.id) {
-        updatedProduct = { ...product, reviews: product.reviews || [] }; ;
-        // Replace with: updatedProduct = await saveProduct(product);
+        updatedProduct = { ...product, reviews: product.reviews || [] };
+        //TODO Replace with API call: await saveProduct(updatedProduct);
       } else {
         updatedProduct = { ...product, id: Date.now().toString(), createdAt: new Date(), sellerId: 999, reviews: [] };
       }
@@ -81,62 +78,39 @@ export default function SellerMarketplace() {
     }
   };
 
-  // 🔹 Delete Product
-  const handleDeleteProduct = async (id: string) => {
-    try {
-      // Replace with: await deleteProduct(id);
-      setProducts(products.filter((p) => p.id !== id));
-  
-      // ✅ Force UI Update by closing modal if deleting selected product
-      if (selectedProduct?.id === id) {
-        setSelectedProduct(null);
-      }
-    } catch (error) {
-      console.error("Failed to delete product", error);
-    }
-  };
-  
-
-  // 🔹 Delete Review
-  const handleDeleteReview = async (productId: string, reviewId: string) => {
-    try {
-      // Replace with: await deleteReview(reviewId);
-      setProducts(products.map((product) =>
-        product.id === productId
-          ? { ...product, reviews: product.reviews.filter((review) => review.id !== reviewId) }
-          : product
-      ));
-  
-      // ✅ Force UI Update by updating `selectedProduct`
-      if (selectedProduct?.id === productId) {
-        setSelectedProduct((prev) =>
-          prev ? { ...prev, reviews: prev.reviews.filter((review) => review.id !== reviewId) } : prev
-        );
-      }
-    } catch (error) {
-      console.error("Failed to delete review", error);
-    }
-  };
-  
-
   return (
     <div className="p-8 space-y-6">
       <h1 className="text-3xl font-bold text-gray-800">Seller Marketplace</h1>
 
+      {/* 🔹 Search & Add Product */}
       <div className="flex items-center space-x-3">
-        <Input type="text" placeholder="Search for products..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full max-w-lg" />
-        <Button variant="default" onClick={() => { setSelectedProduct(null); setShowDialog(true); }}>
+        <Input
+          type="text"
+          placeholder="Search for products..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full max-w-lg"
+        />
+        <Button
+          variant="default"
+          onClick={() => {
+            setSelectedProduct(null);
+            setShowDialog(true);
+          }}
+        >
           <PlusIcon size={16} /> Add Product
         </Button>
       </div>
-
+      {/* 🔹 Product Listings */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {products.filter(p => p.name.toLowerCase().includes(search.toLowerCase())).map(product => (
-          <ProductCard key={product.id} product={product} onEdit={handleSaveProduct} onDelete={handleDeleteProduct} onView={() => setSelectedProduct(product)} />
-        ))}
+        {products
+          .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
+          .map((product) => (
+            <ProductCard key={product.id} product={product} onView={() => setSelectedProduct(product)} />
+          ))}
       </div>
 
-      {/* Add/Edit Product Modal */}
+      {/* 🔹 Add/Edit Product Modal */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent>
           <DialogTitle>{selectedProduct ? "Edit Product" : "Add Product"}</DialogTitle>
@@ -144,44 +118,143 @@ export default function SellerMarketplace() {
         </DialogContent>
       </Dialog>
 
-      {/* Product Detail Modal */}
+      {/* 🔹 Product Detail Modal */}
       {selectedProduct && (
-        <Dialog open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>
-          <DialogContent>
-            <div className="flex justify-between items-center">
-              <DialogTitle>{selectedProduct.name}</DialogTitle>
-              <div className="flex space-x-2">
-                <Button size="icon" variant="ghost" className="hover:bg-gray-100 p-2 rounded-full" onClick={() => setShowDialog(true)}>
-                  <PencilIcon size={16} />
-                </Button>
-                <Button size="icon" variant="ghost" className="hover:bg-gray-100 p-2 rounded-full" onClick={() => handleDeleteProduct(selectedProduct.id)}>
-                  <TrashIcon size={16} className="text-red-500" />
-                </Button>
-              </div>
-            </div>
+        <ProductDetailModal
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          onEdit={() => {
+            setShowDialog(true);
+          }}
+          onDelete={() => {
+            handleDeleteProduct(selectedProduct.id);
+            setSelectedProduct(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}
 
-            <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="w-full h-60 object-cover rounded-lg" />
-            <p className="text-lg font-semibold text-gray-700 mt-4">{selectedProduct.description}</p>
-            <p className="text-xl font-bold text-green-600 mt-2">{selectedProduct.price} Tokens</p>
-            <p className="text-gray-500">Category: {selectedProduct.category}</p>
+// ✅ Product Card Component (Displays Product Overview with Average Rating & Purchases)
+function ProductCard({ product, onView }: { product: Product; onView: () => void }) {
+  // Calculate Average Rating
+  const totalRatings = product.reviews.length;
+  const averageRating = totalRatings
+    ? (product.reviews.reduce((sum, r) => sum + r.rating, 0) / totalRatings).toFixed(1)
+    : "N/A";
 
-            {/* Reviews */}
-            <h3 className="mt-4 font-semibold">Reviews:</h3>
+  return (
+    <Card className="relative shadow-md cursor-pointer hover:shadow-lg transition-all" onClick={onView}>
+      <img src={product.imageUrl} alt={product.name} className="w-full h-40 object-cover rounded-t-md" />
+      <CardHeader className="p-4">
+        <CardTitle className="text-lg font-semibold">{product.name}</CardTitle>
+      </CardHeader>
+      <CardContent className="p-4">
+        <p className="text-xl font-bold text-green-600">{product.price} Tokens</p>
+
+        {/* ⭐ Display Filled Star Rating */}
+        <div className="flex items-center space-x-1 mt-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <StarIcon
+              key={i}
+              size={16}
+              className="text-yellow-500"
+              fill={i < Math.round(parseFloat(averageRating)) ? "currentColor" : "none"}
+              stroke={i < Math.round(parseFloat(averageRating)) ? "currentColor" : "gray"}
+            />
+          ))}
+          <span className="text-sm font-medium">{averageRating} / 5</span>
+        </div>
+
+
+        {/* Display Purchase Count */}
+        <p className="text-gray-500 text-sm">{totalRatings}+ bought recently</p>
+
+        <p className="text-gray-500 text-sm">Non-Refundable</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ProductDetailModal({
+  product,
+  onClose,
+  onEdit,
+  onDelete,
+}: {
+  product: Product;
+  onClose: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <Dialog open={!!product} onOpenChange={onClose}>
+      <DialogContent className="max-w-lg max-h-[80vh] p-0 rounded-lg flex flex-col">
+        {/* 🔹 Scrollable Content */}
+        <div className="overflow-y-auto max-h-[60vh] p-6">
+          <DialogTitle>{product.name}</DialogTitle>
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            className="w-full h-48 object-cover rounded-lg"
+          />
+          <p className="text-lg font-semibold text-gray-700 mt-4">
+            {product.description}
+          </p>
+
+          {/* 🔹 Reviews Section */}
+          <h3 className="mt-4 font-semibold">Reviews:</h3>
             <div className="space-y-2">
-              {selectedProduct.reviews.length > 0 ? (
-                selectedProduct.reviews.map((review) => (
-                  <ReviewCard key={review.id} review={review} onDelete={() => handleDeleteReview(selectedProduct.id, review.id)} />
+              {product.reviews.length > 0 ? (
+                product.reviews.map((review) => (
+                  <div key={review.id} className="bg-gray-100 p-3 rounded-lg flex flex-col">
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm">{review.comment}</p>
+                      <div className="flex items-center space-x-1">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <StarIcon
+                            key={i}
+                            size={14}
+                            className={i < review.rating ? "text-yellow-500" : "text-gray-300"}
+                            fill={i < review.rating ? "currentColor" : "none"} // ✅ Fully fills the star
+                            stroke={i < review.rating ? "currentColor" : "gray"} // ✅ Keeps outline for empty stars
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 ))
               ) : (
                 <p className="text-gray-500 text-sm">No reviews yet.</p>
               )}
             </div>
-          </DialogContent>
-        </Dialog>
-      )}
-    </div>
+          </div>
+
+
+        {/* 🔹 Fixed Edit & Delete Buttons at Bottom (Balanced & Stretched) */}
+        <div className="p-4 border-t bg-white flex gap-4">
+          <Button 
+            variant="outline" 
+            onClick={onEdit} 
+            className="flex-1 flex items-center justify-center px-6 py-2"
+          >
+            <PencilIcon size={16} className="mr-2" /> Edit
+          </Button>
+          <Button 
+            variant="destructive" 
+            onClick={onDelete} 
+            className="flex-1 flex items-center justify-center px-6 py-2"
+          >
+            <TrashIcon size={16} className="mr-2" /> Delete
+          </Button>
+        </div>
+
+      </DialogContent>
+    </Dialog>
   );
 }
+
 
 // ✅ Product Form Component (Handles Adding & Editing)
 function ProductForm({ product, onSave }: { product: Product | null; onSave: (product: Partial<Product>) => void }) {
@@ -191,7 +264,9 @@ function ProductForm({ product, onSave }: { product: Product | null; onSave: (pr
   const [price, setPrice] = useState(product?.price || "");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(product?.imageUrl || null);
+  const [digitalFile, setDigitalFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const digitalFileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     setName(product?.name || "");
@@ -201,9 +276,9 @@ function ProductForm({ product, onSave }: { product: Product | null; onSave: (pr
     setImagePreview(product?.imageUrl || null);
   }, [product]);
 
-  const isValid = name && category && price;
+  const isValid = name.trim() && description.trim() && category.trim() && price && (imagePreview || imageFile) && digitalFile;
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setImageFile(file);
@@ -211,92 +286,84 @@ function ProductForm({ product, onSave }: { product: Product | null; onSave: (pr
     }
   };
 
+  // Handle Digital Product File Selection
+  const handleDigitalFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setDigitalFile(file);
+    }
+  };
+
   const handleSubmit = async () => {
     let imageUrl = imagePreview;
+    let fileUrl = "";
+    let fileType = "";
+    let fileSize = 0;
 
-    if (imageFile) {
-      try {
-        // Replace with: imageUrl = await uploadProductImage(imageFile);
-        imageUrl = "https://via.placeholder.com/300"; 
-      } catch (error) {
-        console.error("Image upload failed", error);
+    try {
+      if (imageFile) {
+        //TODO Replace with: imageUrl = await uploadProductImage(imageFile);
+        imageUrl = "https://via.placeholder.com/300";
       }
+
+      if (digitalFile) {
+        fileType = digitalFile.type;
+        fileSize = digitalFile.size;
+        //TODO Replace with: fileUrl = await uploadProductFile(digitalFile);
+        fileUrl = "https://via.placeholder.com/digital-product";
+      }
+    } catch (error) {
+      console.error("File upload failed", error);
+      return;
     }
 
-    onSave({ id: product?.id || Date.now().toString(), name, description, category, price: Number(price), imageUrl });
+    onSave({
+      id: product?.id,
+      name,
+      description,
+      category,
+      price: Number(price),
+      imageUrl,
+      fileUrl,
+      fileType,
+      fileSize,
+      createdAt: product?.createdAt || new Date(),
+    });
   };
 
   return (
     <div className="space-y-4">
-      <Input placeholder="Product Name" value={name} onChange={(e) => setName(e.target.value)} required />
-      <Input placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} required />
-      <Input placeholder="Category" value={category} onChange={(e) => setCategory(e.target.value)} required />
-      <Input type="number" placeholder="Price (Tokens)" value={price} onChange={(e) => setPrice(e.target.value)} required />
 
       {/* Image Upload */}
       <div className="space-y-2">
         {imagePreview && <img src={imagePreview} alt="Preview" className="w-full h-40 object-cover rounded-lg" />}
-        <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
+        <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} className="hidden" />
         <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
           Upload Image
         </Button>
       </div>
 
-      <Button onClick={handleSubmit} disabled={!isValid}>
-        Confirm
-      </Button>
+      {/* Digital Product Upload */}
+      <div className="space-y-2">
+        <input type="file" ref={digitalFileInputRef} onChange={handleDigitalFileChange} className="hidden" />
+        <Button variant="outline" onClick={() => digitalFileInputRef.current?.click()}>
+          Upload Digital Product
+        </Button>
+        {digitalFile && <p className="text-sm text-gray-500">Selected: {digitalFile.name} ({(digitalFile.size / 1024 / 1024).toFixed(2)} MB)</p>}
+      </div>
+
+      <Input placeholder="Product Name" value={name} onChange={(e) => setName(e.target.value)} required />
+      <Input placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} required />
+      <Input placeholder="Category" value={category} onChange={(e) => setCategory(e.target.value)} required />
+      <Input type="number" placeholder="Price (Tokens)" value={price} onChange={(e) => setPrice(e.target.value)} required />
+
+
+      <div className="py-2 bg-white flex justify-end">
+        <Button onClick={handleSubmit} disabled={!isValid} className="px-6 py-2">
+          Confirm
+        </Button>
+      </div>
     </div>
   );
 }
 
-// ✅ Product Card Component (Displays Product & Controls)
-function ProductCard({ product, onEdit, onDelete, onView }: { product: Product; onEdit: (product: Product) => void; onDelete: (id: string) => void; onView: () => void }) {
-  const averageRating = product.reviews.length
-    ? (product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length).toFixed(1)
-    : "N/A";
-
-  return (
-    <Card className="relative shadow-lg rounded-xl overflow-hidden transition-all hover:shadow-2xl cursor-pointer" onClick={onView}>
-      <div className="relative">
-        <img src={product.imageUrl} alt={product.name} className="w-full h-48 object-cover rounded-t-lg" />
-        <div className="absolute top-3 right-3 flex space-x-2">
-          <Button size="icon" variant="ghost" className="hover:bg-gray-100 p-2 rounded-full" onClick={(e) => { e.stopPropagation(); onEdit(product); }}>
-            <PencilIcon size={16} />
-          </Button>
-          <Button size="icon" variant="ghost" className="hover:bg-gray-100 p-2 rounded-full" onClick={(e) => { e.stopPropagation(); onDelete(product.id); }}>
-            <TrashIcon size={16} className="text-red-500" />
-          </Button>
-        </div>
-      </div>
-
-      <CardHeader className="p-4">
-        <CardTitle className="text-lg font-semibold">{product.name}</CardTitle>
-      </CardHeader>
-
-      <CardContent className="p-4">
-        <p className="text-xl font-bold text-green-600">{product.price} Tokens</p>
-        <div className="flex items-center space-x-1 mt-2">
-          <StarIcon size={16} className="text-yellow-500" />
-          <span className="text-sm font-medium">{averageRating} / 5</span>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-// ✅ Review Card Component (Includes Delete & Star Rating)
-function ReviewCard({ review, onDelete }: { review: Review; onDelete: () => void }) {
-  return (
-    <div className="flex justify-between items-center bg-gray-100 p-3 rounded-lg">
-      <div className="flex items-center space-x-2">
-        <span className="text-yellow-500 flex">
-          {Array(review.rating).fill(null).map((_, i) => <StarIcon key={i} size={14} />)}
-        </span>
-        <p className="text-sm">{review.comment}</p>
-      </div>
-      <Button size="icon" variant="ghost" className="hover:bg-red-100 p-2 rounded-full text-red-500" onClick={onDelete}>
-        <TrashIcon size={14} />
-      </Button>
-    </div>
-  );
-}
