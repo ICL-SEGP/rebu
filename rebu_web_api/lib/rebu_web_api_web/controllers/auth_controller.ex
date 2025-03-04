@@ -5,7 +5,7 @@ defmodule RebuWebApiWeb.AuthController do
 
   action_fallback RebuWebApiWeb.FallbackController
 
-  def register(conn, %{"role" => "user", "user" => user_params}) do
+  def register(conn, %{"user" => user_params}) do
     with {:ok, user} <- Accounts.register_user(user_params),
          {:ok, token, _claims} <- Guardian.encode_and_sign(user) do
       conn
@@ -14,7 +14,7 @@ defmodule RebuWebApiWeb.AuthController do
     end
   end
 
-  def register(conn, %{"role" => "affiliate", "affiliate" => affiliate_params}) do
+  def register(conn, %{"affiliate" => affiliate_params}) do
     with {:ok, affiliate} <- Accounts.register_affiliate(affiliate_params),
          {:ok, token, _claims} <- Guardian.encode_and_sign(affiliate) do
       conn

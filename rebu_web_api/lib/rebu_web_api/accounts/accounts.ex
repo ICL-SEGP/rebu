@@ -65,6 +65,13 @@ defmodule RebuWebApi.Accounts do
 
   """
   def register_user(attrs \\ %{}) do
+    attrs =
+      if is_nil(Map.get(attrs, "date_joined")) do
+        Map.put(attrs, "date_joined", Timex.now())
+      else
+        attrs
+      end
+
     %User{}
     |> User.registration_changeset(attrs)
     |> Repo.insert()
