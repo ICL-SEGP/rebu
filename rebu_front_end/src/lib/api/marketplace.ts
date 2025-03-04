@@ -185,3 +185,12 @@ export async function getSingleProduct(productId: number): Promise<Product> {
     return response.json();
   }
   
+  async function updateProductStatus(productId: number, newStatus: ProductStatus) {
+    await fetch(`/api/products/${productId}/status`, {
+      method: "PATCH",
+      body: JSON.stringify({ status: newStatus }),
+      headers: { 
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json" },
+    });
+  }
