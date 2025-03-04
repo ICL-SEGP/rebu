@@ -5,76 +5,117 @@ import { Input } from "@/components/ui/forms/input";
 import { Button } from "@/components/ui/helpers/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/helpers/card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/modals/dialog";
-import { PlusIcon, StarIcon, PencilIcon, TrashIcon } from "lucide-react";
-import { Product } from "@/types/app";
-import { getMarketplaceProducts, saveProduct, deleteProduct, uploadProductImage, uploadProductFile } from "@/lib/api/marketplace";
-
-// 🔹 Dummy Data (For Testing)
-// TODO: delete this when backend integrated
-const dummyProducts: Product[] = [
-  {
-    id: "1",
-    name: "Crypto Hoodie",
-    description: "A limited edition hoodie for crypto enthusiasts.",
-    price: 50,
-    imageUrl: "https://picsum.photos/200/300",
-    category: "Clothing",
-    status: "ACTIVE",
-    createdAt: new Date(),
-    sellerId: 101,
-    reviews: [
-      { id: "r1", userId: 201, productId: "1", rating: 5, comment: "Awesome hoodie!", createdAt: new Date() },
-      { id: "r2", userId: 202, productId: "1", rating: 4, comment: "Good quality but a bit pricey.", createdAt: new Date() },
-    ],
-  },
-];
+import { 
+  UploadIcon, XCircleIcon, PlusIcon, StarIcon, 
+  PencilIcon, TrashIcon, ChevronLeft, ChevronRight, DownloadIcon 
+} from "lucide-react";
+import { useSession } from "next-auth/react";
+import { User, Product, ProductStatus } from "@/types/app";
+import { 
+  uploadProductImage, uploadProductFile,
+  getAffiliateProducts, saveProduct, deleteProduct 
+} from "@/lib/api/marketplace";
+import { ActiveDraggableContext } from "@dnd-kit/core/dist/components/DndContext";
+import { DndContext, closestCenter } from "@dnd-kit/core";
+import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 export default function SellerMarketplace() {
-  const [products, setProducts] = useState<Product[]>(dummyProducts);
+  const { data : session } = useSession();
+  const [user, setUser] = useState<User | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showDialog, setShowDialog] = useState(false);
   const [search, setSearch] = useState("");
 
-  // 🔹 Fetch Products (Dummy for now, API ready)
-  // TODO delete the dummy data when api ready
+  if (!session) {
+    throw new Error("No user logged in.");
+  }
+
+  /**
+ * Fetches the seller's products from the backend.
+ * TODO: Replace dummy data with actual backend fetch
+ */
   useEffect(() => {
-    async function fetchProducts() {
+    async function fetchSellerProducts() {
       try {
-        // Replace with: const products = await getMarketplaceProducts();
-        const products = dummyProducts;
-        setProducts(products);
+        // TODO: Uncomment when backend is ready
+        // const userProducts = await getAffiliateProducts(session.accessToken);
+        // setProducts(userProducts);
+
+        // Dummy data for now
+        const dummyProducts: Product[] = [
+          {
+            id: 1,
+            name: "Ebook: Mastering Next.js",
+            desc: "A comprehensive guide to building scalable Next.js applications.",
+            price: 29.99,
+            imageUrls: ["/images/nextjs-ebook.png"],
+            fileUrl: "https://example.com/ebook.pdf",
+            fileType: "pdf",
+            fileSize: 1048576,
+            category: { name: "Ebooks", imageUrl: new URL("https://example.com/category.png") },
+            status: "active",
+            createdAt: "",
+            sellerId: 1,
+            reviews: [],
+          },
+          {
+            id: 2,
+            name: "UI Kit for Designers",
+            desc: "A modern UI kit for Figma and Sketch users.",
+            price: 49.99,
+            imageUrls: ["/images/ui-kit.png"],
+            fileUrl: "/Users/roypark337/Downloads/codingclub_week6",
+            fileType: "zip",
+            fileSize: 2048576,
+            category: { name: "Design Assets", imageUrl: new URL("https://example.com/category.png") },
+            status: "active",
+            createdAt: "",
+            sellerId: 1,
+            reviews: [],
+          },
+        ];
+
+        setProducts(dummyProducts);
       } catch (error) {
         console.error("Failed to fetch products", error);
       }
     }
-    fetchProducts();
-  }, []);
+    fetchSellerProducts();
+  }, [session?.accessToken]);
 
-  // Open Edit Form
-  const handleEditProduct = (product: Product) => {
-    setSelectedProduct(product);
-    setShowDialog(true);
+  /**
+   * Handles product deletion by calling the API and updating the local state.
+   */
+  const handleDeleteProduct = async (productId: number) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    
+    try {
+      await deleteProduct(session.accessToken, productId);
+      setProducts((prev) => prev.filter((p) => p.id !== productId));
+      alert("Product deleted successfully!");
+    } catch (error) {
+      console.error("Failed to delete product:", error);
+      alert("Failed to delete product. Try again.");
+    }
   };
 
-  // 🔹 Add / Edit Product
-  const handleSaveProduct = async (product: Partial<Product>) => {
+  /**
+   * Handles adding or updating a product by calling the backend API.
+   */
+  const handleSaveProduct = async (updatedProduct: Product) => {
     try {
-      let updatedProduct;
-      if (product.id) {
-        updatedProduct = { ...product, reviews: product.reviews || [] };
-        //TODO Replace with API call: await saveProduct(updatedProduct);
-      } else {
-        updatedProduct = { ...product, id: Date.now().toString(), createdAt: new Date(), sellerId: 999, reviews: [] };
-      }
-
+      const savedProduct = await saveProduct(session.accessToken, updatedProduct);
       setProducts((prev) =>
-        prev.some((p) => p.id === updatedProduct.id)
-          ? prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
-          : [...prev, updatedProduct]
+        prev.some((p) => p.id === savedProduct.id)
+          ? prev.map((p) => (p.id === savedProduct.id ? savedProduct : p))
+          : [...prev, savedProduct]
       );
       setShowDialog(false);
     } catch (error) {
       console.error("Failed to save product", error);
+      alert("Failed to save product. Try again.");
     }
   };
 
@@ -101,6 +142,7 @@ export default function SellerMarketplace() {
           <PlusIcon size={16} /> Add Product
         </Button>
       </div>
+
       {/* 🔹 Product Listings */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products
@@ -136,24 +178,24 @@ export default function SellerMarketplace() {
   );
 }
 
-// ✅ Product Card Component (Displays Product Overview with Average Rating & Purchases)
-function ProductCard({ product, onView }: { product: Product; onView: () => void }) {
-  // Calculate Average Rating
-  const totalRatings = product.reviews.length;
+
+/**
+ * Displays a product card with image, name, price, and rating.
+ */
+export function ProductCard({ product, onView }: { product: Product; onView: () => void }) {
+  const totalRatings = product.reviews?.length || 0;
   const averageRating = totalRatings
     ? (product.reviews.reduce((sum, r) => sum + r.rating, 0) / totalRatings).toFixed(1)
     : "N/A";
 
   return (
     <Card className="relative shadow-md cursor-pointer hover:shadow-lg transition-all" onClick={onView}>
-      <img src={product.imageUrl} alt={product.name} className="w-full h-40 object-cover rounded-t-md" />
+      <img src={product.imageUrls[0]} alt={product.name} className="w-full h-40 object-cover rounded-t-md" />
       <CardHeader className="p-4">
-        <CardTitle className="text-lg font-semibold">{product.name}</CardTitle>
+        <CardTitle className="h-14 line-clamp-2 text-lg font-semibold">{product.name}</CardTitle>
       </CardHeader>
       <CardContent className="p-4">
         <p className="text-xl font-bold text-green-600">{product.price} Tokens</p>
-
-        {/* ⭐ Display Filled Star Rating */}
         <div className="flex items-center space-x-1 mt-2">
           {Array.from({ length: 5 }).map((_, i) => (
             <StarIcon
@@ -166,18 +208,15 @@ function ProductCard({ product, onView }: { product: Product; onView: () => void
           ))}
           <span className="text-sm font-medium">{averageRating} / 5</span>
         </div>
-
-
-        {/* Display Purchase Count */}
-        <p className="text-gray-500 text-sm">{totalRatings}+ bought recently</p>
-
-        <p className="text-gray-500 text-sm">Non-Refundable</p>
       </CardContent>
     </Card>
   );
 }
 
-function ProductDetailModal({
+/**
+ * Displays detailed product info with options to edit or delete.
+ */
+export function ProductDetailModal({
   product,
   onClose,
   onEdit,
@@ -188,37 +227,86 @@ function ProductDetailModal({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const nextImage = () => {
+    if (currentImageIndex < product.imageUrls.length - 1) {
+      setCurrentImageIndex((prevIndex) => prevIndex + 1);
+    }
+  };
+
+  const prevImage = () => {
+    if (currentImageIndex > 0) {
+      setCurrentImageIndex((prevIndex) => prevIndex - 1);
+    }
+  };
+
   return (
     <Dialog open={!!product} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[80vh] p-0 rounded-lg flex flex-col">
-        {/* 🔹 Scrollable Content */}
-        <div className="overflow-y-auto max-h-[60vh] p-6">
-          <DialogTitle>{product.name}</DialogTitle>
-          <img
-            src={product.imageUrl}
-            alt={product.name}
-            className="w-full h-48 object-cover rounded-lg"
-          />
-          <p className="text-lg font-semibold text-gray-700 mt-4">
-            {product.description}
-          </p>
+      <DialogContent className="max-w-lg max-h-[85vh] p-4 rounded-lg flex flex-col shadow-lg bg-white">
+        <div className="overflow-y-auto max-h-[65vh] space-y-4">
+          <DialogTitle className="text-xl font-bold text-gray-900">{product.name}</DialogTitle>
 
-          {/* 🔹 Reviews Section */}
-          <h3 className="mt-4 font-semibold">Reviews:</h3>
-            <div className="space-y-2">
-              {product.reviews.length > 0 ? (
+          {/* Image Carousel */}
+          <div className="relative rounded-lg overflow-hidden">
+            <img
+              src={product.imageUrls[currentImageIndex]}
+              alt={product.name}
+              className="w-full h-56 object-cover rounded-lg"
+            />
+            {product.imageUrls.length > 1 && (
+              <>
+                <button
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md"
+                  onClick={prevImage}
+                  disabled={currentImageIndex === 0}
+                >
+                  <ChevronLeft size={24} />
+                </button>
+                <button
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md"
+                  onClick={nextImage}
+                  disabled={currentImageIndex === product.imageUrls.length - 1}
+                >
+                  <ChevronRight size={24} />
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Description */}
+          <div className="text-gray-700">
+            <h3 className="text-md font-semibold text-gray-900">Description</h3>
+            <p className="text-sm text-gray-600 mt-1 leading-relaxed">{product.desc}</p>
+          </div>
+
+          {/* File Download */}
+          {product.fileUrl && (
+            <div className="bg-gray-100 p-3 rounded-lg flex items-center space-x-3">
+              <DownloadIcon size={18} className="text-gray-500" />
+              <a href={product.fileUrl} download className="text-blue-600 text-sm font-medium hover:underline">
+                {product.fileType.toUpperCase()} File (Click to Download)
+              </a>
+            </div>
+          )}
+
+          {/* Reviews */}
+          <div>
+            <h3 className="text-md font-semibold text-gray-900">Reviews</h3>
+            <div className="space-y-3 mt-2">
+              {product.reviews?.length > 0 ? (
                 product.reviews.map((review) => (
-                  <div key={review.id} className="bg-gray-100 p-3 rounded-lg flex flex-col">
+                  <div key={review.id} className="bg-gray-50 p-3 rounded-lg flex flex-col shadow-sm">
                     <div className="flex justify-between items-center">
-                      <p className="text-sm">{review.comment}</p>
+                      <p className="text-sm text-gray-800">{review.comment}</p>
                       <div className="flex items-center space-x-1">
                         {Array.from({ length: 5 }).map((_, i) => (
                           <StarIcon
                             key={i}
                             size={14}
                             className={i < review.rating ? "text-yellow-500" : "text-gray-300"}
-                            fill={i < review.rating ? "currentColor" : "none"} // ✅ Fully fills the star
-                            stroke={i < review.rating ? "currentColor" : "gray"} // ✅ Keeps outline for empty stars
+                            fill={i < review.rating ? "currentColor" : "none"}
+                            stroke={i < review.rating ? "currentColor" : "gray"}
                           />
                         ))}
                       </div>
@@ -230,63 +318,115 @@ function ProductDetailModal({
               )}
             </div>
           </div>
+        </div>
 
-
-        {/* 🔹 Fixed Edit & Delete Buttons at Bottom (Balanced & Stretched) */}
+        {/* Edit & Delete Buttons */}
         <div className="p-4 border-t bg-white flex gap-4">
-          <Button 
-            variant="outline" 
-            onClick={onEdit} 
-            className="flex-1 flex items-center justify-center px-6 py-2"
-          >
+          <Button variant="outline" onClick={onEdit} className="flex-1 flex items-center justify-center px-6 py-2">
             <PencilIcon size={16} className="mr-2" /> Edit
           </Button>
-          <Button 
-            variant="destructive" 
-            onClick={onDelete} 
-            className="flex-1 flex items-center justify-center px-6 py-2"
-          >
+          <Button variant="destructive" onClick={onDelete} className="flex-1 flex items-center justify-center px-6 py-2">
             <TrashIcon size={16} className="mr-2" /> Delete
           </Button>
         </div>
-
       </DialogContent>
     </Dialog>
   );
 }
 
-
-// ✅ Product Form Component (Handles Adding & Editing)
-function ProductForm({ product, onSave }: { product: Product | null; onSave: (product: Partial<Product>) => void }) {
+/**
+ * Handles product creation and editing, including file uploads.
+ */
+export function ProductForm({
+  product,
+  onSave,
+  currentUserToken,
+}: {
+  product: Product | null;
+  onSave: (product: Partial<Product>) => void;
+  currentUserToken: string;
+}) {
   const [name, setName] = useState(product?.name || "");
-  const [description, setDescription] = useState(product?.description || "");
-  const [category, setCategory] = useState(product?.category || "");
-  const [price, setPrice] = useState(product?.price || "");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(product?.imageUrl || null);
+  const [desc, setDesc] = useState(product?.desc || "");
+  const [category, setCategory] = useState(product?.category.name || "");
+  const [price, setPrice] = useState(product?.price.toString() || "");
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>(product?.imageUrls || []);
   const [digitalFile, setDigitalFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
   const digitalFileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     setName(product?.name || "");
-    setDescription(product?.description || "");
-    setCategory(product?.category || "");
+    setDesc(product?.desc || "");
+    setCategory(product?.category.name || "");
     setPrice(product?.price?.toString() || "");
-    setImagePreview(product?.imageUrl || null);
+    setImagePreviews(product?.imageUrls || []);
   }, [product]);
 
-  const isValid = name.trim() && description.trim() && category.trim() && price && (imagePreview || imageFile) && digitalFile;
+  const isValid = name.trim() && desc.trim() && category.trim() && price && imagePreviews.length > 0 && digitalFile;
 
+  /**
+   * Handles image selection and previewing.
+   */
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file)); // Show preview before upload
+    const files = event.target.files ? Array.from(event.target.files) : [];
+    const validFiles = files.filter((file) => ["image/png", "image/jpeg", "image/jpg"].includes(file.type));
+
+    if (validFiles.length + imagePreviews.length > 3) {
+      alert("You can upload a maximum of 3 images.");
+      return;
     }
+
+    const newPreviews = validFiles.map((file) => URL.createObjectURL(file));
+
+    setImageFiles((prev) => [...prev, ...validFiles]);
+    setImagePreviews((prev) => [...prev, ...newPreviews]);
   };
 
-  // Handle Digital Product File Selection
+  // 🔹 Drag-and-Drop Image Component
+function SortableImage({ id, src, onRemove }: { id: string; src: string; onRemove: () => void }) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="relative">
+      <img src={src} alt="Preview" className="w-24 h-24 object-cover rounded-md shadow-md cursor-move" />
+      <button className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1" onClick={onRemove}>
+        <XCircleIcon size={16} />
+      </button>
+    </div>
+  );
+}
+
+// 🔹 Drag-and-Drop Logic for Reordering
+const handleDragEnd = (event: any) => {
+  const { active, over } = event;
+  if (active.id !== over.id) {
+    const oldIndex = imagePreviews.findIndex((url) => url === active.id);
+    const newIndex = imagePreviews.findIndex((url) => url === over.id);
+
+    setImagePreviews((prev) => arrayMove(prev, oldIndex, newIndex));
+    setImageFiles((prev) => arrayMove(prev, oldIndex, newIndex));
+  }
+};
+
+  /**
+   * Removes a selected image.
+   */
+  const removeImage = (index: number) => {
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  /**
+   * Handles digital product file selection.
+   */
   const handleDigitalFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -294,23 +434,26 @@ function ProductForm({ product, onSave }: { product: Product | null; onSave: (pr
     }
   };
 
+  /**
+   * Handles product submission by uploading images & digital files to the backend.
+   */
   const handleSubmit = async () => {
-    let imageUrl = imagePreview;
+    let uploadedImageUrls = [...imagePreviews];
     let fileUrl = "";
     let fileType = "";
     let fileSize = 0;
 
     try {
-      if (imageFile) {
-        //TODO Replace with: imageUrl = await uploadProductImage(imageFile);
-        imageUrl = "https://via.placeholder.com/300";
+      if (imageFiles.length > 0) {
+        uploadedImageUrls = await Promise.all(
+          imageFiles.map(async (file) => await uploadProductImage(currentUserToken, file))
+        );
       }
 
       if (digitalFile) {
         fileType = digitalFile.type;
         fileSize = digitalFile.size;
-        //TODO Replace with: fileUrl = await uploadProductFile(digitalFile);
-        fileUrl = "https://via.placeholder.com/digital-product";
+        fileUrl = await uploadProductFile(currentUserToken, digitalFile);
       }
     } catch (error) {
       console.error("File upload failed", error);
@@ -320,44 +463,71 @@ function ProductForm({ product, onSave }: { product: Product | null; onSave: (pr
     onSave({
       id: product?.id,
       name,
-      description,
-      category,
+      desc,
+      category: { name: category, imageUrl: new URL(uploadedImageUrls[0]) },
       price: Number(price),
-      imageUrl,
+      imageUrls: uploadedImageUrls,
       fileUrl,
       fileType,
       fileSize,
-      createdAt: product?.createdAt || new Date(),
+      createdAt: product?.createdAt || "",
     });
   };
 
   return (
     <div className="space-y-4">
-
-      {/* Image Upload */}
+      {/* 🔹 Image Upload Section */}
       <div className="space-y-2">
-        {imagePreview && <img src={imagePreview} alt="Preview" className="w-full h-40 object-cover rounded-lg" />}
-        <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} className="hidden" />
-        <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
-          Upload Image
-        </Button>
+        <p className="text-gray-700 text-sm">Upload up to 3 images (PNG, JPG, JPEG). Drag to reorder.</p>
+        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={imagePreviews} strategy={verticalListSortingStrategy}>
+          <div className="flex space-x-2">
+            {imagePreviews.map((preview, index) => (
+              <SortableImage key={preview} id={preview} src={preview} onRemove={() => removeImage(index)} />
+            ))}
+          </div>
+          </SortableContext>
+        </DndContext>
+        
+        
+        {imagePreviews.length < 3 && (
+          <>
+            <input
+              type="file"
+              accept="image/png, image/jpeg, image/jpg"
+              ref={imageInputRef}
+              multiple
+              onChange={handleImageChange}
+              className="hidden"
+            />
+            <Button variant="outline" onClick={() => imageInputRef.current?.click()}>
+              <UploadIcon size={16} className="mr-2" /> Upload Images
+            </Button>
+          </>
+        )}
       </div>
 
-      {/* Digital Product Upload */}
+      {/* 🔹 Digital Product Upload */}
       <div className="space-y-2">
+        <p className="text-gray-700 text-sm">Upload a digital product file.</p>
         <input type="file" ref={digitalFileInputRef} onChange={handleDigitalFileChange} className="hidden" />
         <Button variant="outline" onClick={() => digitalFileInputRef.current?.click()}>
-          Upload Digital Product
+          <UploadIcon size={16} className="mr-2" /> Upload File
         </Button>
-        {digitalFile && <p className="text-sm text-gray-500">Selected: {digitalFile.name} ({(digitalFile.size / 1024 / 1024).toFixed(2)} MB)</p>}
+        {digitalFile && (
+          <p className="text-sm text-gray-500">
+            Selected: {digitalFile.name} ({(digitalFile.size / 1024 / 1024).toFixed(2)} MB)
+          </p>
+        )}
       </div>
 
+      {/* 🔹 Product Details */}
       <Input placeholder="Product Name" value={name} onChange={(e) => setName(e.target.value)} required />
-      <Input placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} required />
+      <Input placeholder="Description" value={desc} onChange={(e) => setDesc(e.target.value)} required />
       <Input placeholder="Category" value={category} onChange={(e) => setCategory(e.target.value)} required />
       <Input type="number" placeholder="Price (Tokens)" value={price} onChange={(e) => setPrice(e.target.value)} required />
 
-
+      {/* 🔹 Confirm Button */}
       <div className="py-2 bg-white flex justify-end">
         <Button onClick={handleSubmit} disabled={!isValid} className="px-6 py-2">
           Confirm
@@ -366,4 +536,3 @@ function ProductForm({ product, onSave }: { product: Product | null; onSave: (pr
     </div>
   );
 }
-

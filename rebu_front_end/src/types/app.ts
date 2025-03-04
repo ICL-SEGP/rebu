@@ -137,7 +137,7 @@ export type Category = {
 export interface Review {
   id: number;
   userId: number;
-  productId: string;
+  productId: number;
   rating: number;
   comment: string;
   createdAt: Date;

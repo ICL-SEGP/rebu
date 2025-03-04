@@ -17,6 +17,29 @@ export async function getMarketplaceProducts(): Promise<Product[]> {
   return response.json();
 }
 
+//Fetches only the products created by the logged-in affiliate.
+export async function getAffiliateProducts(token: string): Promise<Product[]> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/marketplace/products`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch affiliate products: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching affiliate products:", error);
+    return []; // Return an empty array if the request fails
+  }
+}
+
+
 // 📌 Add or update a product (Seller only)
 export async function saveProduct(token: string, product: Product): Promise<Product> {
   const response = await fetch(`${API_BASE_URL}/marketplace/products/${product.id || ""}`, {
@@ -35,7 +58,7 @@ export async function saveProduct(token: string, product: Product): Promise<Prod
 }
 
 // 📌 Delete a product (Seller only)
-export async function deleteProduct(token: string, productId: string) {
+export async function deleteProduct(token: string, productId: number) {
   const response = await fetch(`${API_BASE_URL}/marketplace/products/${productId}`, {
     method: "DELETE",
     headers: {
@@ -50,7 +73,7 @@ export async function deleteProduct(token: string, productId: string) {
 }
 
 // 📌 Get product reviews
-export async function getReviews(productId: string): Promise<Review[]> {
+export async function getReviews(productId: number): Promise<Review[]> {
   const response = await fetch(`${API_BASE_URL}/marketplace/products/${productId}/reviews`, {
     method: "GET",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", },
@@ -63,7 +86,7 @@ export async function getReviews(productId: string): Promise<Review[]> {
 }
 
 // 📌 Delete a review (Seller only)
-export async function deleteReview(token: string, reviewId: string) {
+export async function deleteReview(token: string, reviewId: number) {
   const response = await fetch(`${API_BASE_URL}/marketplace/reviews/${reviewId}`, {
     method: "DELETE",
     headers: {
@@ -147,7 +170,7 @@ export async function uploadProductFile(file: File): Promise<string> {
   
   
   // 📌 Get a single product by ID (For Buyers)
-export async function getSingleProduct(productId: string): Promise<Product> {
+export async function getSingleProduct(productId: number): Promise<Product> {
     const response = await fetch(`${API_BASE_URL}/marketplace/products/${productId}`, {
       method: "GET",
       headers: {
