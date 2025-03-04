@@ -3,7 +3,7 @@
 import { SessionProvider } from "next-auth/react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { SolanaProvider } from "@/components/ui/crypto/solana-provider"
+import { SolanaProvider } from "@/components/ui/solana/solana-provider"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Toaster } from "react-hot-toast";

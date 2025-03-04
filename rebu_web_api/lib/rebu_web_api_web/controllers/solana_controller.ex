@@ -7,6 +7,8 @@ defmodule RebuWebApiWeb.SolanaController do
   def update_key(conn, %{"public_key" => key}) do
     user = Guardian.Plug.current_resource(conn)
 
+    dbg(key)
+
     Solana.update_key(user, key)
 
     conn

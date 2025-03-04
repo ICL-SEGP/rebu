@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar/helpers/dropdown-menu";
 import { User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/helpers/button";
-import WalletSolana from "../crypto/solana-wallet-management";
+import WalletSolana from "../solana/solana-wallet-management";
 
 const affiliateNavItems = [
   { title: "Dashboard", url: "/affiliate/dashboard" },

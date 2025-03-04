@@ -12,6 +12,7 @@ defmodule RebuWebApi.Accounts.User do
              :role,
              :inserted_at,
              :updated_at,
+             :solana_pub_key
            ], except: [:token_balance]}
 
   schema "users" do

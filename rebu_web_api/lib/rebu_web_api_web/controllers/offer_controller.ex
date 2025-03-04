@@ -14,7 +14,6 @@ defmodule RebuWebApiWeb.OfferController do
 
     affiliate = Accounts.get_affiliate!(user.affiliate_id)
 
-    dbg(affiliate)
 
     offers = Sales.list_offers_by_affiliate_id(affiliate.id)
 

@@ -1,16 +1,17 @@
+import humps from "humps";
 import { API_BASE_URL } from "../constants";
 
 export async function setPublicKey(
   token: string,
   publicKey: string
 ) {
-  const response = await fetch(`${API_BASE_URL}/solana`, {
+  const response = await fetch(`${API_BASE_URL}/solana/key`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(publicKey),
+    body: JSON.stringify(humps.decamelizeKeys({ publicKey: publicKey})),
   });
 
   if (!response.ok) {

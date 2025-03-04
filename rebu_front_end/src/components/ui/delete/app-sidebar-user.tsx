@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/sidebar/helpers/dropdown-menu";
 import { User, Wallet, LogOut, MoreHorizontal, Link } from "lucide-react";
 import { Button } from "@/components/ui/helpers/button";
-import WalletSolana from "@/components/ui/crypto/solana-wallet-management";
+import WalletSolana from "@/components/ui/solana/solana-wallet-management";
 
 const navItems = [
   { title: "Dashboard", url: "/user/dashboard" },

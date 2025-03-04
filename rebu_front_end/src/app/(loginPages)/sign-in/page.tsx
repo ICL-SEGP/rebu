@@ -14,6 +14,9 @@ import {
 import { Input } from "@/components/ui/forms/input";
 import { Label } from "@/components/ui/forms/label";
 import { Credentials } from "@/types/app";
+import { getUserProfile } from "@/lib/api/user";
+import { useQuery } from "@tanstack/react-query";
+import { getAffiliateProfile } from "@/lib/api/affiliate";
 
 const signInPage = () => {
   const [credentials, setCredentials] = useState<Credentials>();
@@ -39,18 +42,25 @@ const signInPage = () => {
       return;
     }
 
-    // Setting var for notification on redirect to dashboard
+    const session = await getSession();
+
+    const profile =
+      session!.user.role === "affiliate"
+        ? await getAffiliateProfile(session!.accessToken)
+        : await getUserProfile(session!.accessToken);
+
+    if (profile) {
+      sessionStorage.setItem("profile", JSON.stringify(profile));
+    }
+
+    // ✅ Store flag for notification on dashboard
     sessionStorage.setItem("fromSignIn", "true");
 
-    const session = await getSession();
-    console.log(session);
-
-    if (session) {
-      if (session.user.role == "affiliate") {
-        router.push("/affiliate/dashboard");
-      } else {
-        router.push("/user/dashboard");
-      }
+    // ✅ Redirect based on user role
+    if (session!.user.role === "affiliate") {
+      router.push("/affiliate/dashboard");
+    } else {
+      router.push("/user/dashboard");
     }
   };
 

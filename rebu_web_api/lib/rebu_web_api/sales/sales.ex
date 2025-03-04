@@ -254,8 +254,6 @@ defmodule RebuWebApi.Sales do
     offer_ids = Map.get(attrs, :offers, [])
     # Fetch Offer structs
     offers = Repo.all(from(o in Offer, where: o.id in ^offer_ids))
-    dbg(attrs)
-    dbg(offers)
 
     order
     |> Order.changeset(attrs)

@@ -38,7 +38,6 @@ export default function offersPage() {
     queryFn: () => getAllOffers(session!.accessToken),
   });
 
-
   useEffect(() => {
     if (offersList) {
       setOffers(offersList);
@@ -111,11 +110,9 @@ export default function offersPage() {
               <CardTitle>{offer.desc}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
-              <p>
-                <Badge className="bg-blue-500">
-                  {offer.rebatePercentage} Rebate
-                </Badge>
-              </p>
+              <Badge className="bg-blue-500">
+                {offer.rebatePercentage} Rebate
+              </Badge>
               <p className="text-sm text-gray-500">
                 Starts: {offer.offerStart.toLocaleDateString()}
               </p>
@@ -144,12 +141,10 @@ export default function offersPage() {
                       <p className="text-lg font-semibold">
                         {selectedOffer.desc}
                       </p>
-                      <p className="text-gray-500">
-                        Rebate:{" "}
-                        <Badge className="bg-green-500">
-                          {selectedOffer.rebatePercentage}
-                        </Badge>
-                      </p>
+                      <p className="text-gray-500">Rebate: </p>
+                      <Badge className="bg-green-500">
+                        {selectedOffer.rebatePercentage}
+                      </Badge>
                       <p>
                         Offer starts on:{" "}
                         {selectedOffer.offerStart.toLocaleString()}
