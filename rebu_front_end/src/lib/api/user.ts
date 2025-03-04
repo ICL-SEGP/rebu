@@ -179,20 +179,19 @@ export async function updateUserOrder(
 
 
 // Offers
-export async function getAllOffers(token: string): Promise<Offer[]> {
-  const response = await fetch(`${API_BASE_URL}/offers`, {
+export function getAllOffers(token: string): Promise<Offer[]> {
+  return fetch(`${API_BASE_URL}/offers`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch offers: ${response.statusText}`);
-  }
-
-  const offers = await response.json();
-
-  return offers.map((offer: any) => toOffer(offer));
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Failed to fetch offers: ${response.statusText}`);
+      }
+      return response.json();
+    })
+    .then((offers) => offers.map((offer: any) => toOffer(offer)));
 }

@@ -24,7 +24,8 @@ defmodule RebuWebApi.Factory do
         password: @password,
         hashed_password: Bcrypt.hash_pwd_salt(@password),
         role: :user,
-        date_joined: days_ago(:rand.uniform(180))
+        date_joined: days_ago(:rand.uniform(180)),
+        affiliate: build(:affiliate)
       },
       attrs
     )
@@ -94,7 +95,6 @@ defmodule RebuWebApi.Factory do
         offer_start: offer_start,
         offer_end: offer_end,
         item_cost: Decimal.new(:rand.uniform(250)),
-        # Explicitly set the correct status
         status: status,
         affiliate: build(:affiliate)
       },

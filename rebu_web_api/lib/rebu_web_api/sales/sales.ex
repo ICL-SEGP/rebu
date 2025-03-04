@@ -42,7 +42,7 @@ defmodule RebuWebApi.Sales do
   end
 
   def list_offers_by_affiliate_id(id) do
-    from(o in "offers", where: o.user_id == ^id)
+    from(o in Offer, where: o.affiliate_id == ^id)
     |> Repo.all()
   end
 

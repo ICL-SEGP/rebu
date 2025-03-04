@@ -11,7 +11,7 @@ defmodule RebuWebApi.Accounts.User do
              :email,
              :role,
              :inserted_at,
-             :updated_at
+             :updated_at,
            ], except: [:token_balance]}
 
   schema "users" do
@@ -25,6 +25,8 @@ defmodule RebuWebApi.Accounts.User do
     field :date_joined, :date
 
     field :role, Ecto.Enum, values: [:user], default: :user
+
+
 
     has_many :orders, RebuWebApi.Sales.Order
     belongs_to :affiliate, RebuWebApi.Accounts.Affiliate

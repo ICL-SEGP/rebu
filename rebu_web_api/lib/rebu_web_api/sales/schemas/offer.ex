@@ -14,7 +14,6 @@ defmodule RebuWebApi.Sales.Offer do
              :offer_end,
              :affiliate_id,
              :inserted_at,
-             :updated_at
            ]}
 
   schema "offers" do

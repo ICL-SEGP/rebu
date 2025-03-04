@@ -12,9 +12,6 @@
 
 alias RebuWebApi.Repo
 alias RebuWebApi.Factory
-alias RebuWebApi.Accounts
-alias RebuWebApi.Sales.{Offer, Order}
-alias RebuWebApi.Sales
 
 IO.puts("Seeding database...")
 
@@ -30,23 +27,14 @@ IO.puts("affiliate created: #{affiliate.email}")
 
 # Step 2: Create Offers owned by the affiliate
 
-offers =
-  Enum.map(
-    1..10,
-    fn _x ->
-      {:ok, offer} =
-        Repo.insert(Offer.changeset(%Offer{}, Factory.offer(%{affiliate: affiliate})))
-
-      offer
-    end
-  )
+offers = Factory.insert_list(10, :offer, affiliate: affiliate)
 
 IO.puts("Created #{length(offers)} offers for affiliate.")
 
 # Step 3: Create Multiple Users
-users = Factory.insert_list(2, :user)
+users = Factory.insert_list(2, :user, affiliate: affiliate)
 
-users = [Factory.insert(:user, email: "test@test.com") | users]
+users = [Factory.insert(:user, email: "test@test.com", affiliate: affiliate) | users]
 
 IO.puts("Created #{length(users)} users.")
 
@@ -69,18 +57,8 @@ end)
 
 IO.puts("Orders created for all users, each linked to an offer by the affiliate.")
 
-offers =
-  Enum.map(
-    1..10,
-    fn _x ->
-      {:ok, offer} =
-        Repo.insert(
-          Offer.changeset(%Offer{}, Factory.offer(%{affiliate: affiliate, status: :scheduled}))
-        )
+offers = Factory.insert_list(10, :offer, affiliate: affiliate, status: :scheduled)
 
-      offer
-    end
-  )
 
 IO.puts("Scheduled Future affiliate Orders.")
 

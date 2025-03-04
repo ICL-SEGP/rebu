@@ -1,3 +1,5 @@
+import humps from "humps";
+
 export enum Role {
   AFFILIATE = "affiliate",
   USER = "user",
@@ -46,8 +48,8 @@ export type AffiliateBalance = {
 
 export interface Order {
   id: number;
-  userId: number;
-  totalRebateAmount: number;
+  userId: string;
+  totalRebateAmount: string;
   status: OrderStatus;
   orderDate: Date;
   offerIds: number[];
@@ -57,11 +59,12 @@ export interface Offer {
   id: number;
   affiliateId: number;
   itemCost: number;
+  rebatePercentage: number;
   desc: string;
   status: OfferStatus;
-  offer_start: Date;
-  offer_end: Date;
-  affiliate_link: string;
+  offerStart: Date;
+  offerEnd: Date;
+  affiliateLink: string;
   orderIds: number[];
 }
 
@@ -160,7 +163,16 @@ export function toAffiliate(affiliate: any): Affiliate {}
 
 export function toOrder(order: any): Order {}
 
-export function toOffer(offer: any): Offer {}
+export function toOffer(offer: any): Offer {
+  offer = humps.camelizeKeys(offer)
+
+  offer.id = Number(offer.id);
+  offer.rebatePercentage = parseFloat(offer.rebatePercentage).toFixed(2);
+  offer.offerStart = new Date(offer.offerStart);
+  offer.offerEnd = new Date(offer.offerEnd);
+
+  return offer
+}
 
 export function toUserBalance(balance: any): UserBalance {}
 
