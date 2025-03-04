@@ -26,7 +26,7 @@ defmodule RebuWebApiWeb.AuthController do
   def sign_in(conn, %{"email" => email, "password" => password}) do
     with {:ok, user, token} <- Accounts.authenticate_sign_in(email, password) do
       conn
-      |> json(Map.merge(user, %{token: token}))
+      |> json(%{user: user, token: token})
     end
   end
 
