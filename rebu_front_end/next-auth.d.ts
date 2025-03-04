@@ -7,10 +7,12 @@ declare module "next-auth" {
     accessToken: string;
     role: string;
     firstName: string;
+    mint: string;
   }
 
   interface Session {
     accessToken: string;
+    mint: Mint;
     user: User
   }
 }
@@ -22,5 +24,6 @@ declare module "next-auth/jwt" {
     email: string;
     role: string;
     firstName: string;
+    mint: string;
   }
 }

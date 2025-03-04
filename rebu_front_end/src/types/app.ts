@@ -21,7 +21,7 @@ export enum OfferStatus {
 export interface User {
   id: number;
   firstName: string;
-  LastName: string;
+  LastName: string;p
   email: string;
   token_balance: number;
   role: Role;
@@ -127,6 +127,7 @@ export interface Product {
   createdAt: Date;
   sellerId: number; // Affiliates are sellers
   reviews: Review[];
+  sellerPubKey: string;
 }
 
 export type Category = {

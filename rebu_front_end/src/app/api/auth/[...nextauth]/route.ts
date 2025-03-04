@@ -28,10 +28,10 @@ const authOptions: NextAuthOptions = {
 
 
         // Phoenix responds with a JWT
-        const {user, token} = (await response.json()); // Expecting { id, name, email, token }
+        const {user, token, mint} = (await response.json()); // Expecting { id, name, email, token }
 
         // NextAuth stores the JWT
-        return user ? { id: user.id, email: user.email, accessToken: token, role: user.role, firstName: user.first_name } : null;
+        return user ? { id: user.id, email: user.email, accessToken: token, role: user.role, firstName: user.first_name, mint: mint } : null;
       },
     }),
   ],
@@ -42,12 +42,14 @@ const authOptions: NextAuthOptions = {
         token.id = user.id
         token.email = user.email;
         token.firstName = user.firstName;
-        token.role = user.role
+        token.role = user.role;
+        token.mint = user.mint;
       }
       return token;
     },
     async session({ session, token }) {
       session.accessToken = token.accessToken;
+      session.mint = token.mint;
       session.user.id = token.id;
       session.user.email = token.email;
       session.user.firstName = token.firstName;

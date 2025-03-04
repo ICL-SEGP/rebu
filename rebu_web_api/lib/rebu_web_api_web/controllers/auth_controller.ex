@@ -10,7 +10,7 @@ defmodule RebuWebApiWeb.AuthController do
          {:ok, token, _claims} <- Guardian.encode_and_sign(user) do
       conn
       |> put_status(:created)
-      |> json(%{user: user, token: token})
+      |> render(:user, %{user: affiliate, token: token})
     end
   end
 
@@ -19,14 +19,14 @@ defmodule RebuWebApiWeb.AuthController do
          {:ok, token, _claims} <- Guardian.encode_and_sign(affiliate) do
       conn
       |> put_status(:created)
-      |> json(%{user: affiliate, token: token})
+      |> render(:user, %{user: affiliate, token: token})
     end
   end
 
   def sign_in(conn, %{"email" => email, "password" => password}) do
     with {:ok, user, token} <- Accounts.authenticate_sign_in(email, password) do
       conn
-      |> json(%{user: user, token: token})
+      |> render(:user, %{user: affiliate, token: token})
     end
   end
 

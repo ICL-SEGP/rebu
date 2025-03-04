@@ -18,7 +18,7 @@ export async function logout(token: string) {
 }
 
 export async function registerUser(credentials: Credentials): Promise<User> {
-  const response = await fetch(`${API_BASE_URL}/register`, {
+const response = await fetch(`${API_BASE_URL}/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
