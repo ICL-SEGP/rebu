@@ -154,6 +154,13 @@ export interface Purchase {
   status: OrderStatus;
 }
 
+export interface Upload {
+    type: string;
+    metadata?: Object;
+    url: string;
+    key: string;
+}
+
 // Parsing functions
 // TODO: remember to use humps to cammelize keys
 

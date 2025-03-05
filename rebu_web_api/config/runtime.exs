@@ -45,6 +45,16 @@ if System.get_env("PHX_SERVER") do
   config :rebu_web_api, RebuWebApiWeb.Endpoint, server: true
 end
 
+config :ex_aws,
+  access_key_id: Application.get_env(:aws, :AWS_ACCESS_KEY_ID),
+  secret_access_key: Application.get_env(:aws, :AWS_SECRET_ACCESS_KEY),
+  region: Application.get_env(:aws, :AWS_REGION)
+
+config :ex_aws, :s3,
+  scheme: "https://",
+  host: "s3.amazonaws.com",
+  region: Application.get_env(:aws, :AWS_REGION)
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||

@@ -66,6 +66,7 @@ config :logger, :console,
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
+config :jason, :protocol, true
 
 config :elixir, :inspect, limit: :infinity, pretty: true
 

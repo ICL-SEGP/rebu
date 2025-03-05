@@ -31,10 +31,12 @@ defmodule RebuWebApi.Accounts.Affiliate do
     has_many :offers, RebuWebApi.Sales.Offer
     has_many :users, RebuWebApi.Accounts.User
 
+    has_many :uploads, RebuWebApi.Uploads.Upload, foreign_key: :owner_id, where: [owner_type: :affiliate]
+
     timestamps(type: :utc_datetime)
   end
 
- 
+
   def registration_changeset(user, attrs) do
     user
     |> cast(attrs, [

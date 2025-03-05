@@ -32,6 +32,9 @@ defmodule RebuWebApi.Accounts.User do
     has_many :orders, RebuWebApi.Sales.Order
     belongs_to :affiliate, RebuWebApi.Accounts.Affiliate
 
+    has_many :uploads, RebuWebApi.Uploads.Upload, foreign_key: :owner_id, where: [owner_type: :user]
+
+
     timestamps(type: :utc_datetime)
   end
 

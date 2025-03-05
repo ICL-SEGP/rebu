@@ -85,6 +85,10 @@ defmodule RebuWebApiWeb.Router do
 
     # Offers
     get "/offers", OfferController, :get_offers_for_user
+
+    # uploads
+    post "/upload", UploadsController, :create
+    get "/upload", UploadsController, :gen_presigned_url
   end
 
   scope "/solana", RebuWebApiWeb do

@@ -11,17 +11,17 @@ defmodule RebuWebApi.MixProject do
       aliases: aliases(),
       deps: deps(),
       releases: [
-        # rebu_web_api: [
-        #   config_providers: [
-        #     {
-        #       SopsConfigProvider,
-        #       %{
-        #         app_name: :rebu_web_api,
-        #         secret_file_path: "priv/secrets/secrets.enc.yaml"
-        #       }
-        #     }
-        #   ]
-        # ]
+        rebu_web_api: [
+          config_providers: [
+            {
+              SopsConfigProvider,
+              %{
+                app_name: :rebu_web_api,
+                secret_file_path: "priv/secrets/elixir-secrets.enc.yaml"
+              }
+            }
+          ]
+        ]
       ]
     ]
   end
@@ -79,7 +79,12 @@ defmodule RebuWebApi.MixProject do
       {:faker, "~> 0.18.0"},
       {:ex_machina, "~> 2.7.0"},
       {:rustler, "~> 0.36.1"},
-      {:timex, "~> 3.7"}
+      {:timex, "~> 3.7"},
+      # AWS se & sns stuff
+      {:ex_aws, "~> 2.5"},
+      {:ex_aws_s3, "~> 2.5"},
+      {:hackney, "~> 1.23"},
+      {:sweet_xml, "~> 0.7.5"}
     ]
   end
 
