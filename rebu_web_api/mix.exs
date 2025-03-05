@@ -84,7 +84,10 @@ defmodule RebuWebApi.MixProject do
       {:ex_aws, "~> 2.5"},
       {:ex_aws_s3, "~> 2.5"},
       {:hackney, "~> 1.23"},
-      {:sweet_xml, "~> 0.7.5"}
+      {:sweet_xml, "~> 0.7.5"},
+      {:ex_aws_ses, "~> 2.4"},
+      {:poison, "~> 6.0"},
+      {:gen_smtp, "~> 1.2"}
     ]
   end
 

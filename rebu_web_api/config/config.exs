@@ -35,7 +35,8 @@ config :rebu_web_api, RebuWebApiWeb.Endpoint,
 #
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
-config :rebu_web_api, RebuWebApi.Mailer, adapter: Swoosh.Adapters.Local
+config :rebu_web_api, RebuWebApi.Mailer, adapter: Swoosh.Adapters.ExAwsAmazonSES
+config :swoosh, :api_client, Swoosh.ApiClient.Hackney
 
 # Configure esbuild (the version is required)
 config :esbuild,

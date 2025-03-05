@@ -48,7 +48,7 @@ defmodule RebuWebApiWeb.UploadsController do
         expires_in: 3600
       )
 
-    json(conn, %{url: url})
+    url
   end
 
   def create(conn, %{"upload" => upload_params}) do
