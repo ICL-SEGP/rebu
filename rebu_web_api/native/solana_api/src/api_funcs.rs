@@ -47,7 +47,7 @@ impl PublicKey for Keypair {
 }
 
 pub fn new_rpc_client() -> RpcClient {
-    RpcClient::new("http://127.0.0.1:8899")
+    RpcClient::new("https://api.devnet.solana.com")
 }
 
 // fn request_airdrop(rpc_client: &RpcClient, pub_key: &Pubkey, amount_sol: f64) -> Result<Signature, Box<dyn Error>> {
@@ -85,23 +85,27 @@ pub fn get_token_account(user_pubkey: &Pubkey, mint_pubkey: &Pubkey) -> Pubkey {
     )
 }
 
-// #[rustler::nif]
 pub fn mint_str() -> String {
     "mntSPLHmrFAELUiNxDC31Nm44TofrAs7VXBknPoqiBY".to_string()
 }
 
-// #[rustler::nif]
+#[rustler::nif]
+pub fn mint_str() -> String {
+    "mntSPLHmrFAELUiNxDC31Nm44TofrAs7VXBknPoqiBY".to_string()
+}
+
+#[rustler::nif]
 pub fn new_product_listing(
-    owner: String, id: u64, 
+    owner_keypair: String, id: u64, 
     stock: u64, price: u64,
 ) -> Result<(), String> {
 
     let mint_pubkey = mint_str();
 
-    let owner_keypair = &get_keypair_from_str(owner);
+    let owner_keypair = &get_keypair_from_str(owner_keypair);
     let mint = &get_pubkey_from_str(&mint_pubkey);
 
-    let provider = Client::new(Cluster::Localnet, Rc::new(owner_keypair));
+    let provider = Client::new(Cluster::Devnet, Rc::new(owner_keypair));
     println!("Rebu pid: {:?}", &rebu_solana::ID);
     let program = provider
         .program(rebu_solana::ID)
@@ -145,14 +149,15 @@ pub fn new_product_listing(
     Ok(())
 }
 
+#[rustler::nif]
 pub fn modify_product_listing( // TODO: extract duplicate code
-    owner: String, id: u64, 
+    owner_keypair: String, id: u64, 
     stock: u64, price: u64,
 ) -> Result<(), String> {
 
-    let owner_keypair = &get_keypair_from_str(owner);
+    let owner_keypair = &get_keypair_from_str(owner_keypair);
 
-    let provider = Client::new(Cluster::Localnet, Rc::new(owner_keypair));
+    let provider = Client::new(Cluster::Devnet, Rc::new(owner_keypair));
     println!("Rebu pid: {:?}", &rebu_solana::ID);
     let program = provider
         .program(rebu_solana::ID)
@@ -193,21 +198,19 @@ pub fn modify_product_listing( // TODO: extract duplicate code
     Ok(())
 }
 
-pub fn make_purchase( // TODO: extract duplicate code
-    customer: String,
-    owner: String,
-    id: u64
-) -> Result<(), String> {
+#[rustler::nif]
+pub fn make_purchase(customer_keypair: String, owner_keypair: String, id: u64) -> Result<(), String> {
+    // TODO: extract duplicate code
 
+    let owner = get_keypair_from_str(owner_keypair).pubkey();
     let mint_pubkey = mint_str();
 
-    let customer_keypair = &get_keypair_from_str(customer);
+    let customer_keypair = &get_keypair_from_str(customer_keypair);
     let mint = get_pubkey_from_str(&mint_pubkey);
-    let owner = &get_pubkey_from_str(&owner);
     let customer_ata = get_token_account(&customer_keypair.pubkey(), &mint);
-    let owner_ata = get_token_account(owner, &mint);
+    let owner_ata = get_token_account(&owner, &mint);
 
-    let provider = Client::new(Cluster::Localnet, Rc::new(customer_keypair));
+    let provider = Client::new(Cluster::Devnet, Rc::new(customer_keypair));
     let program = provider
         .program(rebu_solana::ID)
         .map_err(|_| "Error: rebu_solana could not be loaded as a client program.".to_string())?;
@@ -238,7 +241,7 @@ pub fn make_purchase( // TODO: extract duplicate code
             customer: program.payer(),
             customer_ata,
             mint,
-            seller: *owner,
+            seller: owner,
             seller_ata: owner_ata,
             product_listing,
             product_purchase,
@@ -261,16 +264,13 @@ pub fn make_purchase( // TODO: extract duplicate code
     Ok(())
 }
 
-pub fn verify_purchase( // TODO: extract duplicate code
-    customer: String,
-    owner: String,
-    id: u64
-) -> Result<(), String> {
+#[rustler::nif]
+pub fn verify_purchase(owner_keypair: String, customer_pubkey: String, id: u64) -> Result<(), String> {
 
-    let customer = get_pubkey_from_str(&customer);
-    let owner = &get_keypair_from_str(owner);
+    let customer = get_pubkey_from_str(&customer_pubkey);
+    let owner = &get_keypair_from_str(owner_keypair);
 
-    let provider = Client::new(Cluster::Localnet, Rc::new(owner));
+    let provider = Client::new(Cluster::Devnet, Rc::new(owner));
     let program = provider
         .program(rebu_solana::ID)
         .map_err(|_| "Error: rebu_solana could not be loaded as a client program.".to_string())?;
@@ -323,15 +323,15 @@ pub fn get_user_token_balance(user_pubkey: String) -> u64 {
     amount.ui_amount.expect("Something went wrong when getting user ui amount balance.") as u64
 }
 
-// #[rustler::nif]
+#[rustler::nif]
 pub fn mint_tokens_to_user(
-    owner: String, user_pubkey: String, 
+    owner_keypair: String, user_pubkey: String, 
     amount: u64, is_new_user: bool,
 ) -> Result<(), String> {
 
     let mint_pubkey = mint_str();
     let rpc_client = &new_rpc_client();
-    let owner_keypair = &get_keypair_from_str(owner);
+    let owner_keypair = &get_keypair_from_str(owner_keypair);
     let mint_pubkey = &get_pubkey_from_str(&mint_pubkey);
     let user_pubkey = &get_pubkey_from_str(&user_pubkey);
     
@@ -367,10 +367,6 @@ pub fn mint_tokens_to_user(
     );
 
     println!("Mint Transaction: {:?}", &mint_transaction);
-
-    // if requires_airdrop(rpc_client, &owner.pubkey())? {
-    //     request_airdrop(rpc_client, &owner.pubkey(), 1.0)?;
-    // }
 
     rpc_client
         .send_and_confirm_transaction_with_spinner(&mint_transaction)

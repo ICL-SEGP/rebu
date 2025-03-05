@@ -7,4 +7,4 @@ pub use api_funcs::*;
 
 rustler::init!(
     "Elixir.RebuWebApi.SolanaApi", 
-    [new_product_listing, mint_tokens_to_user, get_user_token_balance, get_mint_str]);
+    [mint_str, new_product_listing, modify_product_listing, make_purchase, verify_purchase, get_user_token_balance, mint_tokens_to_user]);
