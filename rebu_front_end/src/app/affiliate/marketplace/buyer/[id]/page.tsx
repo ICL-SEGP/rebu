@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/helpers/button";
+import { motion } from "framer-motion"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/modals/dialog";
-import { StarIcon, ShoppingCartIcon, ChevronRight } from "lucide-react";
+import { StarIcon, ShoppingCartIcon, ChevronRight, XIcon, CheckCircleIcon } from "lucide-react";
 import { Product } from "@/types/app";
 import { createPurchase, getSingleProduct } from "@/lib/api/marketplace";
 
@@ -15,6 +16,8 @@ export default function ProductPage() {
   const { id } = useParams();
   const [product, setProduct] = useState<Product | null>(null);
   const [isReviewModalOpen, setReviewModalOpen] = useState(false);
+  const [isPurchaseModalOpen, setPurchaseModalOpen] = useState(false);
+  const [isPurchased, setIsPurchased] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,14 +71,31 @@ export default function ProductPage() {
   if (!product) return <div className="p-8 text-center">Product not found</div>;
 
 
+
   // 🔹 Calculate Average Rating
   const averageRating =
     product.reviews.length > 0
       ? product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length
       : 0;
 
+
+  //    // 🔹 Simulated Purchase Flow (No Backend)
+  // const handlePurchase = async () => {
+  //   setLoading(true);
+
+  //   setTimeout(() => {
+  //     setIsPurchased(true);
+  //     setLoading(false);
+
+  //     setTimeout(() => {
+  //       setPurchaseModalOpen(false);
+  //       setIsPurchased(false);
+  //     }, 2500); // Auto close after 2.5s
+  //   }, 1500); // Simulate delay
+  // }; 
+
   // 🔹 Handle Buy Now Purchase
-  const handleBuyNow = async () => {
+  const handlePurchase = async () => {
     if (!session) {
       alert("You need to log in to make a purchase.");
       return;
@@ -92,8 +112,12 @@ export default function ProductPage() {
         amount: product.price, // Price in tokens
       };
 
-      const response = await createPurchase(token, orderData);
-      alert(`Purchase successful! Order ID: ${response.id}`);
+      await createPurchase(token, orderData);
+      setIsPurchased(true);
+      setTimeout(() => {
+        setPurchaseModalOpen(false);
+        setIsPurchased(false);
+      }, 2500);
     } catch (err: any) {
       setError(err.message || "Something went wrong.");
     } finally {
@@ -169,7 +193,7 @@ export default function ProductPage() {
               <Button 
                 variant="default" 
                 className="w-full" 
-                onClick={handleBuyNow} 
+                onClick={handlePurchase} 
                 disabled={loading}
               >
                 {loading ? "Processing..." : (
@@ -187,6 +211,39 @@ export default function ProductPage() {
             {/* Show error message if purchase fails */}
             {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
           </div>
+
+              {/* 🔹 Purchase Confirmation Modal */}
+          <Dialog open={isPurchaseModalOpen} onOpenChange={setPurchaseModalOpen}>
+            <DialogContent className="p-6 text-center rounded-lg shadow-lg">
+              {!isPurchased ? (
+                <>
+                  <DialogTitle>Are you sure?</DialogTitle>
+                  <p className="text-sm text-gray-500 mt-2">This purchase is <strong>non-refundable</strong>.</p>
+                  <div className="mt-4 flex justify-center gap-4">
+                    <Button variant="outline" onClick={() => setPurchaseModalOpen(false)} className="flex items-center">
+                      <XIcon size={16} className="mr-1" />
+                      No
+                    </Button>
+                    <Button onClick={handlePurchase} className="flex items-center bg-blue-600 text-white">
+                      <CheckCircleIcon size={16} className="mr-1" />
+                      Confirm
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1.1, opacity: 1 }} transition={{ duration: 0.5, type: "spring" }}>
+                  <CheckCircleIcon size={48} className="text-green-500 mx-auto" />
+                  <h2 className="text-lg font-semibold mt-2">Thank You!</h2>
+                  <p className="text-sm text-gray-500">Your purchase was successful.</p>
+
+                  {/* 🎉 Celebration Animation */}
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: -10 }} transition={{ duration: 0.5, repeat: Infinity, repeatType: "reverse" }} className="mt-4">
+                    🎉 🎊 🎈
+                  </motion.div>
+                </motion.div>
+              )}
+            </DialogContent>
+          </Dialog>
       
          {/* 🔹 Review Modal */}
       <Dialog open={isReviewModalOpen} onOpenChange={setReviewModalOpen}>
@@ -219,3 +276,4 @@ export default function ProductPage() {
     </div>
   );
 }
+

@@ -43,6 +43,7 @@
     "cookies-next": "^5.1.0",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.5.2",
+    "framer-motion": "^12.4.10",
     "humps": "^2.0.1",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.473.0",
