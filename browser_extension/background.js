@@ -64,7 +64,8 @@ chrome.webRequest.onCompleted.addListener((details) => {
       "item_confirmed": false
     }
   }, (result) => {
-    if (details.url.includes("stripe.com/v1/charges") && details.statusCode === 200) {
+    console.log(details.url);
+    if (details.url.includes("checkout.stripe.com/c/pay") && details.statusCode === 200) {
       console.log("Stripe payment likely completed", details);
       const updatedFlags = {
         ...result.flags,
@@ -73,7 +74,7 @@ chrome.webRequest.onCompleted.addListener((details) => {
       chrome.storage.local.set({ flags: updatedFlags });
     }
   });
-}, { urls: ["*://api.stripe.com/v1/charges*"] });
+}, { urls: ["*://checkout.stripe.com/*"] });
 
 
 chrome.webRequest.onCompleted.addListener((details) => {
