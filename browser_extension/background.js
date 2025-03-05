@@ -106,6 +106,7 @@ function reset_variables() {
   
 
 async function check_for_offer(url) {
+  return true;
   try {
       // Retrieve token from Chrome storage
       const token = await new Promise((resolve) => {
