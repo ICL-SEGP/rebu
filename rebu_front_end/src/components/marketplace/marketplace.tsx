@@ -76,7 +76,7 @@ const fetchProducts = async () => {
   }
 };
 
-export default function BuyerMarketplace() {
+export default function Marketplace() {
   const { data : session } = useSession();
   const [search, setSearch] = useState("");
   const [filteredCategory, setFilteredCategory] = useState<string | null>(null);
@@ -86,6 +86,19 @@ export default function BuyerMarketplace() {
   const [products, setProducts] = useState<Product[]>([]); // Using the products state here
   const router = useRouter();
 
+  const getPopularCategories = (products: Product[], maxCount: number = 8) => {
+    const categoryCounts: Record<string, number> = {};
+  
+    products.forEach((product) => {
+      const category = product.category.name;
+      categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+    });
+  
+    return Object.entries(categoryCounts)
+      .sort((a, b) => b[1] - a[1]) // Sort by popularity
+      .slice(0, maxCount) // Take the top 8
+      .map(([category]) => category);
+  };
 
   if (!session) {
     throw new Error("No user logged in.");
@@ -97,12 +110,12 @@ export default function BuyerMarketplace() {
       const fetchedProducts = await fetchProducts();
       setProducts(fetchedProducts);
       
-      const categories = [...new Set(fetchedProducts.map((p) => p.category.name))];
-      setCategories(categories);
+      const topCategories = getPopularCategories(fetchedProducts, 8);
+      setCategories(topCategories);
 
       // Fetch category images
       const newCategoryImages: { [key: string]: string } = {};
-      for (const category of categories) {
+      for (const category of topCategories) {
         if (!categoryImages[category]) {
           newCategoryImages[category] = await fetchCategoryImage(category);
         }
@@ -211,16 +224,26 @@ function CategoryCard({
   onSelect: () => void;
   isActive: boolean;
 }) {
+  const router = useRouter();
+  const { data: session } = useSession(); // Ensure session is fetched
+  const role = session?.user?.role; // Assuming session is defined somewhere
+  const handleClick = () => {
+    if (role === "affiliate") {
+      router.push(`/affiliate/marketplace/category/${encodeURIComponent(category)}`);
+    } else if (role === "user") {
+      router.push(`/user/marketplace/category/${encodeURIComponent(category)}`);
+    } else {
+      router.push(`/marketplace/product/category/${encodeURIComponent(category)}`);
+    }
+  };
   return (
     <div
-      className={`relative cursor-pointer rounded-lg overflow-hidden transition-all shadow-md hover:shadow-lg category-card ${
-        isActive ? "border-2 border-blue-500" : ""
-      }`}
-      onClick={onSelect}
+      className="relative cursor-pointer rounded-lg overflow-hidden transition-all shadow-md hover:shadow-lg"
+      onClick={handleClick}
     >
-      <img src={imageUrl} alt={category} className="w-full h-40 object-cover" />
-      <div className="absolute bottom-0 w-full h-20 bg-gradient-to-t from-white to-transparent flex items-end p-4">
-        <h3 className="text-lg font-semibold">{category}</h3>
+      <img src={imageUrl} alt={category} className="w-full h-60 object-cover" />
+      <div className="absolute bottom-0 w-full h-24 bg-gradient-to-t from-white/50 to-transparent flex items-end p-4">
+        <h3 className="text-lg font-semibold text-white">{category}</h3>
       </div>
     </div>
   );
@@ -242,12 +265,12 @@ function ProductCard({ product }: { product: Product }) {
 
         if (role === 'affiliate') {
           // If the user is an affiliate, go to the affiliate marketplace page
-          router.push(`/affiliate/marketplace/buyer/${product.id}`);
+          router.push(`/affiliate/marketplace/buyer/product/${product.id}`);
         } else if (role === 'user') {
           // If the user is a regular user, go to the user marketplace page
-          router.push(`/user/marketplace/${product.id}`);
+          router.push(`/user/marketplace/product/${product.id}`);
         } else {
-            router.push(`/marketplace/product/${product.id}`); // Default route
+            router.push(`/marketplace/product/product/${product.id}`); // Default route
         } 
       }}
     >
