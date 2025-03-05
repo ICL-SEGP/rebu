@@ -10,10 +10,10 @@ defmodule RebuWebApi.Accounts.User do
              :last_name,
              :email,
              :role,
-             :inserted_at,
-             :updated_at,
-             :solana_pub_key
-           ], except: [:token_balance]}
+             :solana_pub_key,
+             :date_joined,
+             :token_balance
+           ]}
 
   schema "users" do
     field :first_name, :string
@@ -27,13 +27,12 @@ defmodule RebuWebApi.Accounts.User do
 
     field :role, Ecto.Enum, values: [:user], default: :user
 
-
-
     has_many :orders, RebuWebApi.Sales.Order
     belongs_to :affiliate, RebuWebApi.Accounts.Affiliate
 
-    has_many :uploads, RebuWebApi.Uploads.Upload, foreign_key: :owner_id, where: [owner_type: :user]
-
+    has_many :uploads, RebuWebApi.Uploads.Upload,
+      foreign_key: :owner_id,
+      where: [owner_type: :user]
 
     timestamps(type: :utc_datetime)
   end

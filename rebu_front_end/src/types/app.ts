@@ -4,6 +4,7 @@ export enum Role {
   AFFILIATE = "affiliate",
   USER = "user",
   ADMIN = "admin",
+  ALL = "all"
 }
 
 export enum OrderStatus {
@@ -21,12 +22,13 @@ export enum OfferStatus {
 export interface User {
   id: number;
   firstName: string;
-  LastName: string;
+  lastName: string;
   email: string;
-  token_balance: number;
+  tokenBalance: number;
   role: Role;
-  orderIds: number;
+  orders: Order[];
   solanaPubKey: string;
+  dateJoined: Date;
 }
 
 export type UserBalance = {
@@ -155,22 +157,30 @@ export interface Purchase {
 }
 
 export interface Upload {
-    type: string;
-    metadata?: Object;
-    url: string;
-    key: string;
+  type: string;
+  metadata?: Object;
+  url: string;
+  key: string;
 }
 
 // Parsing functions
 // TODO: remember to use humps to cammelize keys
 
-export function toUser(user: any): User {}
+export function toUser(user: any): User {
+  user = humps.camelizeKeys(user);
+
+  user.id = Number(user.id);
+
+  user.tokenBalance = parseFloat(user.tokenBalance).toFixed(2);
+  user.dateJoined = new Date(user.dateJoined);
+  user.orders = user.orders?.map((order: any) => toOrder(order));
+
+  return user;
+}
 
 export function toAffiliate(affiliate: any): Affiliate {}
 
 export function toOrder(order: any): Order {
-  console.log(order);
-
   order = humps.camelizeKeys(order);
 
   order.id = Number(order.id);
@@ -192,6 +202,7 @@ export function toOrder(order: any): Order {
 
   return order;
 }
+
 export function toOffer(offer: any): Offer {
   offer = humps.camelizeKeys(offer);
 

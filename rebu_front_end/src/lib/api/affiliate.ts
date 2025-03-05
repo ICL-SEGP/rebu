@@ -229,24 +229,24 @@ export async function markOfferExpired(
 
 // Users
 
-export async function affiliateGetUsers(token: string): Promise<User[]> {
-  const response = await fetch(`${API_BASE_URL}/affiliate/users`, {
+export function affiliateGetUsers(token: string): Promise<User[]> {
+  return fetch(`${API_BASE_URL}/affiliate/users`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-  });
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch all Affiliate's users: ${response.statusText}`
+        );
+      }
 
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch all Affiliate's users: ${response.statusText}`
-    );
-  }
-
-  const users = await response.json();
-
-  return users.map((user: any) => toUser(user));
+      return response.json();
+    })
+    .then((users) => users.map((user: any) => toUser(user)));
 }
 
 export async function affiliateCreateUser(

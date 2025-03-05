@@ -4,7 +4,7 @@ defmodule RebuWebApi.Solana do
 
   alias RebuWebApi.Accounts.User
 
-  def update_key(%User{} = user, key) do
+  def update_key(user, key) do
     user
     |> Ecto.Changeset.change(%{solana_pub_key: key})
     |> Repo.update()

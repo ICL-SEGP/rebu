@@ -30,7 +30,7 @@ export default function offersPage() {
 
   // TODO check for errors on the api response here
   const {
-    status,
+  status,
     error,
     data: offersList,
   } = useQuery({
@@ -38,11 +38,7 @@ export default function offersPage() {
     queryFn: () => getAllOffers(session!.accessToken),
   });
 
-  useEffect(() => {
-    if (offersList) {
-      setOffers(offersList);
-    }
-  }, [offersList]);
+
 
   // Sorting Function
   const sortOffers = (criteria: string) => {
