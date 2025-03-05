@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import { Badge } from "@/components/ui/helpers/badge";
 import { Input } from "@/components/ui/forms/input";
 import { Button } from "@/components/ui/helpers/button";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/shadcn/select";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/helpers/card";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/modals/dialog";
 import { 
@@ -27,6 +29,7 @@ export default function SellerMarketplace() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showDialog, setShowDialog] = useState(false);
   const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
 
   if (!session) {
     throw new Error("No user logged in.");
@@ -123,7 +126,7 @@ export default function SellerMarketplace() {
     <div className="p-8 space-y-6">
       <h1 className="text-3xl font-bold text-gray-800">Seller Marketplace</h1>
 
-      {/* 🔹 Search & Add Product */}
+      {/* 🔹 Search & Add Product & Filtering Based On Product Status */}
       <div className="flex items-center space-x-3">
         <Input
           type="text"
@@ -132,6 +135,20 @@ export default function SellerMarketplace() {
           onChange={(e) => setSearch(e.target.value)}
           className="w-full max-w-lg"
         />
+
+        <Select onValueChange={(status) => setFilterStatus(status)} defaultValue="all">
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Products</SelectItem>
+            <SelectItem value={ProductStatus.ACTIVE}>Active</SelectItem>
+            <SelectItem value={ProductStatus.SCHEDULED}>Scheduled</SelectItem>
+            <SelectItem value={ProductStatus.SOLD_OUT}>Sold Out</SelectItem>
+            <SelectItem value={ProductStatus.EXPIRED}>Expired</SelectItem>
+          </SelectContent>
+        </Select>
+
         <Button
           variant="default"
           onClick={() => {
@@ -147,9 +164,10 @@ export default function SellerMarketplace() {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products
           .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
+          .filter((p) => filterStatus === "all" || p.status === filterStatus)
           .map((product) => (
             <ProductCard key={product.id} product={product} onView={() => setSelectedProduct(product)} />
-          ))}
+        ))}
       </div>
 
       {/* 🔹 Add/Edit Product Modal */}
@@ -207,6 +225,21 @@ export function ProductCard({ product, onView }: { product: Product; onView: () 
             />
           ))}
           <span className="text-sm font-medium">{averageRating} / 5</span>
+        </div>
+        <div className="mt-2">
+          <Badge
+            variant={
+              product.status === "active"
+                ? "success"
+                : product.status === "scheduled"
+                ? "blue"
+                : product.status === "sold_out"
+                ? "destructive"
+                : "gray"
+            }
+          >
+            {product.status.toUpperCase()}
+          </Badge>
         </div>
       </CardContent>
     </Card>
@@ -274,10 +307,29 @@ export function ProductDetailModal({
             )}
           </div>
 
-          {/* Description */}
+    
+          {/* Description & Status */}
           <div className="text-gray-700">
             <h3 className="text-md font-semibold text-gray-900">Description</h3>
             <p className="text-sm text-gray-600 mt-1 leading-relaxed">{product.desc}</p>
+
+            {/* Ambient Product Status Badge */}
+            <div className="mt-2 flex items-center space-x-2">
+              <span className="text-sm text-gray-500">Status:</span>
+              <Badge
+                variant={
+                  product.status === "active"
+                    ? "success"
+                    : product.status === "scheduled"
+                    ? "blue"
+                    : product.status === "sold_out"
+                    ? "destructive"
+                    : "gray"
+                }
+              >
+                {product.status.toUpperCase()}
+              </Badge>
+            </div>
           </div>
 
           {/* File Download */}
@@ -320,6 +372,9 @@ export function ProductDetailModal({
           </div>
         </div>
 
+        
+
+
         {/* Edit & Delete Buttons */}
         <div className="p-4 border-t bg-white flex gap-4">
           <Button variant="outline" onClick={onEdit} className="flex-1 flex items-center justify-center px-6 py-2">
@@ -353,6 +408,8 @@ export function ProductForm({
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>(product?.imageUrls || []);
   const [digitalFile, setDigitalFile] = useState<File | null>(null);
+  const [status, setStatus] = useState<ProductStatus>(product?.status || ProductStatus.ACTIVE);
+
 
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const digitalFileInputRef = useRef<HTMLInputElement | null>(null);
@@ -363,6 +420,7 @@ export function ProductForm({
     setCategory(product?.category.name || "");
     setPrice(product?.price?.toString() || "");
     setImagePreviews(product?.imageUrls || []);
+    setStatus(product?.status || ProductStatus.ACTIVE);
   }, [product]);
 
   const isValid = name.trim() && desc.trim() && category.trim() && price && imagePreviews.length > 0 && digitalFile;
@@ -466,6 +524,7 @@ const handleDragEnd = (event: any) => {
       desc,
       category: { name: category, imageUrl: new URL(uploadedImageUrls[0]) },
       price: Number(price),
+      status,
       imageUrls: uploadedImageUrls,
       fileUrl,
       fileType,
@@ -527,6 +586,22 @@ const handleDragEnd = (event: any) => {
       <Input placeholder="Category" value={category} onChange={(e) => setCategory(e.target.value)} required />
       <Input type="number" placeholder="Price (Tokens)" value={price} onChange={(e) => setPrice(e.target.value)} required />
 
+      {/* Product Status Selector */}
+      <div className="space-y-2">
+        <h3 className="text-md font-semibold text-gray-900">Product Status</h3>
+        <Select onValueChange={(newStatus) => setStatus(newStatus)} defaultValue={status}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ProductStatus.ACTIVE}>Active</SelectItem>
+            <SelectItem value={ProductStatus.SCHEDULED}>Scheduled</SelectItem>
+            <SelectItem value={ProductStatus.SOLD_OUT}>Sold Out</SelectItem>
+            <SelectItem value={ProductStatus.EXPIRED}>Expired</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+  
       {/* 🔹 Confirm Button */}
       <div className="py-2 bg-white flex justify-end">
         <Button onClick={handleSubmit} disabled={!isValid} className="px-6 py-2">
