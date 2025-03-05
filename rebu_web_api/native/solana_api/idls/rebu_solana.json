@@ -1,5 +1,5 @@
 {
-  "address": "BhitfXGo3bXsyF5AXQhvnSM28u2tqUkbGabtFPBdoYJc",
+  "address": "3BjmHpjppF39NVDJbL4UG7pD6tV75fLHMuh7aZU4f2Qc",
   "metadata": {
     "name": "rebu_solana",
     "version": "0.1.0",
@@ -21,7 +21,7 @@
       ],
       "accounts": [
         {
-          "name": "signer",
+          "name": "seller",
           "docs": [
             "Affiliate"
           ],
@@ -45,7 +45,7 @@
             "seeds": [
               {
                 "kind": "account",
-                "path": "signer"
+                "path": "seller"
               },
               {
                 "kind": "const",
@@ -159,7 +159,7 @@
               },
               {
                 "kind": "account",
-                "path": "signer"
+                "path": "seller"
               },
               {
                 "kind": "arg",
@@ -167,6 +167,10 @@
               }
             ]
           }
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
         },
         {
           "name": "token_program"
@@ -192,20 +196,20 @@
       ]
     },
     {
-      "name": "complete_purchase",
+      "name": "make_purchase",
       "discriminator": [
-        153,
-        113,
-        69,
-        133,
-        179,
-        163,
-        189,
-        64
+        193,
+        62,
+        227,
+        136,
+        105,
+        212,
+        201,
+        20
       ],
       "accounts": [
         {
-          "name": "signer",
+          "name": "customer",
           "docs": [
             "Customer"
           ],
@@ -317,9 +321,6 @@
           }
         },
         {
-          "name": "customer"
-        },
-        {
           "name": "customer_ata",
           "docs": [
             "ATA of customer"
@@ -412,6 +413,10 @@
           }
         },
         {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
           "name": "token_program"
         },
         {
@@ -422,6 +427,92 @@
       "args": [
         {
           "name": "id",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "modify_listing",
+      "discriminator": [
+        36,
+        132,
+        230,
+        119,
+        139,
+        147,
+        164,
+        183
+      ],
+      "accounts": [
+        {
+          "name": "seller",
+          "docs": [
+            "Affiliate"
+          ],
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "product_listing"
+          ]
+        },
+        {
+          "name": "product_listing",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  100,
+                  117,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  105,
+                  115,
+                  116,
+                  105,
+                  110,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "seller"
+              },
+              {
+                "kind": "arg",
+                "path": "id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "id",
+          "type": "u64"
+        },
+        {
+          "name": "stock",
+          "type": "u64"
+        },
+        {
+          "name": "price",
           "type": "u64"
         }
       ]
@@ -440,9 +531,12 @@
       ],
       "accounts": [
         {
-          "name": "signer",
+          "name": "seller",
           "writable": true,
-          "signer": true
+          "signer": true,
+          "relations": [
+            "product_purchase"
+          ]
         },
         {
           "name": "customer",
@@ -480,7 +574,7 @@
               },
               {
                 "kind": "account",
-                "path": "signer"
+                "path": "seller"
               },
               {
                 "kind": "arg",
@@ -517,16 +611,16 @@
       ]
     },
     {
-      "name": "ProductPurchase",
+      "name": "PurchaseReceipt",
       "discriminator": [
-        63,
-        63,
-        31,
-        130,
-        199,
-        201,
-        162,
-        171
+        79,
+        127,
+        222,
+        137,
+        154,
+        131,
+        150,
+        134
       ]
     }
   ],
@@ -564,7 +658,7 @@
       }
     },
     {
-      "name": "ProductPurchase",
+      "name": "PurchaseReceipt",
       "type": {
         "kind": "struct",
         "fields": [

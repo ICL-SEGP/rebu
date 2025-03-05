@@ -21,9 +21,12 @@ use anchor_client::{
     }
 };
 use anchor_spl::{
-    associated_token::spl_associated_token_account::{
+    associated_token::{
+        self,
+        spl_associated_token_account::{
         instruction::create_associated_token_account,
-        get_associated_token_address_with_program_id,
+        get_associated_token_address_with_program_id 
+        },
     },
     token_2022::spl_token_2022,
 };
@@ -44,7 +47,7 @@ impl PublicKey for Keypair {
 }
 
 pub fn new_rpc_client() -> RpcClient {
-    RpcClient::new("https://api.devnet.solana.com")
+    RpcClient::new("http://127.0.0.1:8899")
 }
 
 // fn request_airdrop(rpc_client: &RpcClient, pub_key: &Pubkey, amount_sol: f64) -> Result<Signature, Box<dyn Error>> {
@@ -82,30 +85,46 @@ pub fn get_token_account(user_pubkey: &Pubkey, mint_pubkey: &Pubkey) -> Pubkey {
     )
 }
 
-#[rustler::nif]
+// #[rustler::nif]
+pub fn mint_str() -> String {
+    "mntSPLHmrFAELUiNxDC31Nm44TofrAs7VXBknPoqiBY".to_string()
+}
+
+// #[rustler::nif]
 pub fn new_product_listing(
-    owner: String, mint_pubkey: String,
-    id: u64, stock: u64, price: u64,
+    owner: String, id: u64, 
+    stock: u64, price: u64,
 ) -> Result<(), String> {
+
+    let mint_pubkey = mint_str();
 
     let owner_keypair = &get_keypair_from_str(owner);
     let mint = &get_pubkey_from_str(&mint_pubkey);
 
     let provider = Client::new(Cluster::Localnet, Rc::new(owner_keypair));
+    println!("Rebu pid: {:?}", &rebu_solana::ID);
     let program = provider
         .program(rebu_solana::ID)
         .map_err(|_| "Error: rebu_solana could not be loaded as a client program.".to_string())?;
 
-    let product_listing = Keypair::new();
+    let (product_listing, _) = Pubkey::find_program_address(
+        &[
+            b"product".as_ref(),
+            b"listing".as_ref(),
+            program.payer().as_ref(),
+            id.to_le_bytes().as_ref()
+        ], 
+        &rebu_solana::ID);
 
     let new_product_listing_ix = program
         .request()
         .signer(owner_keypair)
         .accounts(accounts::AddListing {
             mint: mint.clone(),
-            signer: program.payer(),
+            seller: program.payer(),
             seller_ata: get_token_account(&program.payer(), mint),
-            product_listing: product_listing.pubkey(),
+            product_listing: product_listing,
+            associated_token_program: associated_token::ID,
             token_program: spl_token_2022::ID,
             system_program: system_program::ID,
         })
@@ -120,14 +139,134 @@ pub fn new_product_listing(
         new_product_listing_ix
             .send()
             .await 
-            .map_err(|_| "Error: Product Listing initialization".to_string())
+            .map_err(|e| format!("Error: Product Listing initialization. {}", e))
+    })?};
+
+    Ok(())
+}
+
+pub fn modify_product_listing( // TODO: extract duplicate code
+    owner: String, id: u64, 
+    stock: u64, price: u64,
+) -> Result<(), String> {
+
+    let mint_pubkey = mint_str();
+
+    let owner_keypair = &get_keypair_from_str(owner);
+    let mint = &get_pubkey_from_str(&mint_pubkey);
+
+    let provider = Client::new(Cluster::Localnet, Rc::new(owner_keypair));
+    println!("Rebu pid: {:?}", &rebu_solana::ID);
+    let program = provider
+        .program(rebu_solana::ID)
+        .map_err(|_| "Error: rebu_solana could not be loaded as a client program.".to_string())?;
+
+    let (product_listing, _) = Pubkey::find_program_address(
+        &[
+            b"product".as_ref(),
+            b"listing".as_ref(),
+            program.payer().as_ref(),
+            id.to_le_bytes().as_ref()
+        ], 
+        &rebu_solana::ID);
+
+    let new_product_listing_ix = program
+        .request()
+        .signer(owner_keypair)
+        .accounts(accounts::ModifyListing {
+            seller: program.payer(),
+            product_listing: product_listing,
+            token_program: spl_token_2022::ID,
+            system_program: system_program::ID,
+        })
+        .args(args::ModifyListing {
+            id,
+            stock,
+            price
+        });
+
+    let rt = Runtime::new().expect("Error when creating tokio runtime.");
+    let _transaction: Signature = { rt.block_on(async { 
+        new_product_listing_ix
+            .send()
+            .await 
+            .map_err(|e| format!("Error: Product Listing initialization. {}", e))
+    })?};
+
+    Ok(())
+}
+
+pub fn make_purchase( // TODO: extract duplicate code
+    customer: String,
+    owner: String,
+    id: u64
+) -> Result<(), String> {
+
+    let mint_pubkey = mint_str();
+
+    let customer_keypair = &get_keypair_from_str(customer);
+    let mint = get_pubkey_from_str(&mint_pubkey);
+    let owner = &get_pubkey_from_str(&owner);
+    let customer_ata = get_token_account(&customer_keypair.pubkey(), &mint);
+    let owner_ata = get_token_account(owner, &mint);
+
+    let provider = Client::new(Cluster::Localnet, Rc::new(customer_keypair));
+    let program = provider
+        .program(rebu_solana::ID)
+        .map_err(|_| "Error: rebu_solana could not be loaded as a client program.".to_string())?;
+
+    let (product_listing, _) = Pubkey::find_program_address(
+        &[
+            b"product".as_ref(),
+            b"listing".as_ref(),
+            owner.as_ref(),
+            id.to_le_bytes().as_ref()
+        ], 
+        &rebu_solana::ID);
+
+    let (product_purchase, _) = Pubkey::find_program_address(
+        &[
+            b"product".as_ref(),
+            b"purchase".as_ref(),
+            owner.as_ref(),
+            id.to_le_bytes().as_ref(),
+            program.payer().as_ref(),
+        ], 
+        &rebu_solana::ID);
+
+    let new_product_listing_ix = program
+        .request()
+        .signer(customer_keypair)
+        .accounts(accounts::MakePurchase {
+            customer: program.payer(),
+            customer_ata,
+            mint,
+            seller: *owner,
+            seller_ata: owner_ata,
+            product_listing,
+            product_purchase,
+            associated_token_program: associated_token::ID,
+            token_program: spl_token_2022::ID,
+            system_program: system_program::ID,
+        })
+        .args(args::MakePurchase {
+            id
+        });
+
+    let rt = Runtime::new().expect("Error when creating tokio runtime.");
+    let _transaction: Signature = { rt.block_on(async { 
+        new_product_listing_ix
+            .send()
+            .await 
+            .map_err(|e| format!("Error: Product Listing initialization. {}", e))
     })?};
 
     Ok(())
 }
 
 #[rustler::nif]
-pub fn get_user_token_balance(user_pubkey: String, mint_pubkey: String) -> u64 {
+pub fn get_user_token_balance(user_pubkey: String) -> u64 {
+    let mint_pubkey = mint_str();
     let rpc_client = &new_rpc_client();
     let mint_pubkey = &get_pubkey_from_str(&mint_pubkey);
     let user_pubkey = &get_pubkey_from_str(&user_pubkey);
@@ -140,13 +279,13 @@ pub fn get_user_token_balance(user_pubkey: String, mint_pubkey: String) -> u64 {
     amount.ui_amount.expect("Something went wrong when getting user ui amount balance.") as u64
 }
 
-#[rustler::nif]
+// #[rustler::nif]
 pub fn mint_tokens_to_user(
-    owner: String, mint_pubkey: String,
-    user_pubkey: String, amount: u64, 
-    is_new_user: bool,
+    owner: String, user_pubkey: String, 
+    amount: u64, is_new_user: bool,
 ) -> Result<(), String> {
 
+    let mint_pubkey = mint_str();
     let rpc_client = &new_rpc_client();
     let owner_keypair = &get_keypair_from_str(owner);
     let mint_pubkey = &get_pubkey_from_str(&mint_pubkey);
