@@ -36,7 +36,7 @@ pub struct AddListing<'info> {
         init, 
         payer = seller,
         space = ANCHOR_DISCRIMINATOR + ProductListing::INIT_SPACE,
-        has_one = seller,
+        // has_one = seller,
         seeds = [
             b"product".as_ref(), b"listing".as_ref(), 
             seller.key().as_ref(), 

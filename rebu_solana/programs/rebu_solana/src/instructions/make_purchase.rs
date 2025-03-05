@@ -30,22 +30,22 @@ pub struct MakePurchase<'info> {
     /// ATA of seller 
     #[account(
         mut,
-        associated_token::mint = mint,
-        associated_token::authority = seller,
+        // associated_token::mint = mint,
+        // associated_token::authority = seller,
     )] 
     seller_ata: InterfaceAccount<'info, TokenAccount>,
 
     /// ATA of customer 
     #[account(
-        mut,
-        associated_token::mint = mint,
-        associated_token::authority = customer,
+        mut
+        // associated_token::mint = mint,
+        // associated_token::authority = customer,
     )] 
     customer_ata: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
         mut,
-        has_one = seller,
+        // has_one = seller,
         seeds = [
             b"product".as_ref(), b"listing".as_ref(), 
             seller.key().as_ref(), 
@@ -59,7 +59,7 @@ pub struct MakePurchase<'info> {
         init, 
         payer = customer,
         space = ANCHOR_DISCRIMINATOR + PurchaseReceipt::INIT_SPACE,
-        has_one = customer,
+        // has_one = customer,
         seeds = [
             b"product".as_ref(), b"purchase".as_ref(),
             seller.key().as_ref(),
@@ -68,22 +68,22 @@ pub struct MakePurchase<'info> {
         ],
         bump,
     )]
-    product_purchase: Account<'info, PurchaseReceipt>,
+    product_purchase: Account<'info, PurchaseReceipt>, // TODO
 
     associated_token_program: Program<'info, AssociatedToken>,
     token_program: Interface<'info, TokenInterface>,
     system_program: Program<'info, System>,
 }
 
-pub fn decrement_stock(ctx: &mut Context<MakePurchase>, _id: u64) -> Result<()> {
+pub fn decrement_stock(ctx: Context<MakePurchase>, _id: u64) -> Result<()> {
     require!(ctx.accounts.product_listing.stock > 0, RebuError::OutOfStock);
 
     let product_listing = &mut ctx.accounts.product_listing;
     product_listing.stock -= 1;
 
-    if product_listing.stock == 0 {
-        product_listing.close(ctx.accounts.seller.to_account_info())?;
-    }
+    // if product_listing.stock == 0 {
+    //     product_listing.close(ctx.accounts.seller.to_account_info())?;
+    // }
     msg!("Stock decreased");
     Ok(())
 }
@@ -104,7 +104,7 @@ pub fn transfer_tokens(ctx: &Context<MakePurchase>, _id: u64) -> Result<()> {
     Ok(())
 }
 
-pub fn save_purchase(ctx: Context<MakePurchase>, _id: u64) -> Result<()> {
+pub fn save_purchase(ctx: Context<MakePurchase>, id: u64) -> Result<()> {
     ctx.accounts.product_purchase.set_inner(
         PurchaseReceipt {
             seller: ctx.accounts.seller.key(),
@@ -112,6 +112,7 @@ pub fn save_purchase(ctx: Context<MakePurchase>, _id: u64) -> Result<()> {
             product_id: ctx.accounts.product_listing.id,
             bump: ctx.bumps.product_purchase,
         });
+    decrement_stock(ctx, id)?;
 
     msg!("Purchase saved");
     Ok(())

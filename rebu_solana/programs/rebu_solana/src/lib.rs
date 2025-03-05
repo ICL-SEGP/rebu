@@ -13,7 +13,7 @@ pub use constants::*;
 pub use error::*;
 
 
-declare_id!("bge7eN33n681hb6CsQSjcea4mCB5AYyaQrsfERRAPN7");
+declare_id!("3BjmHpjppF39NVDJbL4UG7pD6tV75fLHMuh7aZU4f2Qc");
 
 #[program]
 pub mod rebu_solana {
@@ -27,8 +27,7 @@ pub mod rebu_solana {
         instructions::modify_listing::modify_product_listing(ctx, id, stock, price)
     }
 
-    pub fn make_purchase(mut ctx: Context<MakePurchase>, id: u64) -> Result<()> {
-        instructions::make_purchase::decrement_stock(&mut ctx, id)?;
+    pub fn make_purchase(ctx: Context<MakePurchase>, id: u64) -> Result<()> {
         instructions::make_purchase::transfer_tokens(&ctx, id)?;
         instructions::make_purchase::save_purchase(ctx, id)
     }

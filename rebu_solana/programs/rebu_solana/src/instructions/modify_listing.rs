@@ -1,10 +1,7 @@
 #![allow(clippy::result_large_err)]
 
 use anchor_lang::prelude::*; 
-use anchor_spl::{ 
-    token_interface::{ Mint, TokenAccount, TokenInterface }, 
-    associated_token::AssociatedToken,
-};
+use anchor_spl::token_interface::TokenInterface;
 
 use crate::{ ProductListing, RebuError };
 
@@ -15,17 +12,6 @@ pub struct ModifyListing<'info> {
     /// Affiliate
     #[account(mut)]
     seller: Signer<'info>,
-
-    /// Rebu mint
-    #[account(mut)]
-    mint: InterfaceAccount<'info, Mint>,
-
-    /// ATA of seller 
-    #[account(
-        associated_token::mint = mint,
-        associated_token::authority = seller,
-    )] 
-    seller_ata: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
         has_one = seller,
@@ -38,7 +24,6 @@ pub struct ModifyListing<'info> {
     )]
     product_listing: Account<'info, ProductListing>,
 
-    associated_token_program: Program<'info, AssociatedToken>,
     token_program: Interface<'info, TokenInterface>,
     system_program: Program<'info, System>,
 }
