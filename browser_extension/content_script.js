@@ -1,5 +1,6 @@
 (function() {
-  chrome.storage.local.get({affiliate_product: "Nothing", redirected: false, trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing", flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}}, (result) => {
+  chrome.storage.local.get({loggedIn: false, affiliate_product: "Nothing", redirected: false, trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing", flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}}, (result) => {
+    if (!result.loggedIn)
     if (!result.trackingEnabled) return;
     if (!result.flags["affiliate_link_detected"] && check_for_offer(window.location.href)) {
       chrome.storage.local.set({url: window.location.href});
@@ -24,7 +25,7 @@
     // Observe the body for changes in its subtree.
     observer.observe(document.body, { childList: true, subtree: true });
   });
-
+  
 
   const confirmationKeywords = [
     "thank you for your purchase",

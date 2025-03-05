@@ -20,6 +20,7 @@ chrome.webRequest.onBeforeRedirect.addListener(
   { urls: ["<all_urls>"] } // Adjust URL patterns as needed
 );
 
+
 // Reset local storage during tab switch
 chrome.tabs.onActivated.addListener((activeInfo) => {
   chrome.tabs.get(activeInfo.tabId, (tab) => {
