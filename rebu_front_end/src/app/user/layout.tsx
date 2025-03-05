@@ -56,7 +56,7 @@ export default function UserLayout({
 
   return (
     <SidebarProvider>
-      <div className="flex">
+      <div className="flex w-screen mx-36">
         {/* Sidebar */}
         <AppSidebar />
 
@@ -79,7 +79,7 @@ export default function UserLayout({
           </header>
 
           {/* Page Content */}
-          <main className="p-6 flex-1 w-screen">{children}</main>
+          <main className="p-6 flex-1">{children}</main>
         </SidebarInset>
       </div>
     </SidebarProvider>
