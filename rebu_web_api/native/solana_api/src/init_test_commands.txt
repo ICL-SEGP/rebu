@@ -1,0 +1,7 @@
+solana airdrop 2
+spl-token create-token --program-id TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb --enable-metadata ../../../../token-info/.config/solana/mint_keypair.json 
+spl-token initialize-metadata mntSPLHmrFAELUiNxDC31Nm44TofrAs7VXBknPoqiBY 'Rebu token' 'REBU' https://raw.githubusercontent.com/ICL-SEGP/rebu-token-info/refs/heads/main/token_metadata.json
+spl-token create-account mntSPLHmrFAELUiNxDC31Nm44TofrAs7VXBknPoqiBY
+
+
+TODO: mnt func

@@ -13,7 +13,7 @@ pub struct ProductListing {
 
 #[account]
 #[derive(InitSpace)]
-pub struct ProductPurchase {
+pub struct PurchaseReceipt {
     pub seller: Pubkey,
     pub customer: Pubkey,
     pub product_id: u64,
