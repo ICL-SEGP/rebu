@@ -1,68 +1,62 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/helpers/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/helpers/card";
 import { Button } from "@/components/ui/helpers/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/tables/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/modals/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/tables/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/modals/dialog";
 import { Label } from "@/components/ui/forms/label";
 import { Input } from "@/components/ui/forms/input";
 import { Textarea } from "@/components/ui/forms/textarea";
 import { Trash2, Pencil, PlusCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { API_BASE_URL } from "@/lib/constants";
-
-// Define Offer type
-interface Offer {
-  id: number;
-  desc: string;
-  affiliate_link: string;
-  offer_started: string;
-  offer_end: string;
-  status: "scheduled" | "expired" | "active";
-  rebate_percentage: string;
-  item_cost: string; // Added item cost field
-}
+import { useQuery } from "@tanstack/react-query";
+import { getAffiliateOffers } from "@/lib/api/affiliate";
+import { getAllOffers } from "@/lib/api/user";
+import { Offer, OfferStatus, OrderStatus } from "@/types/app";
 
 export default function OffersPage() {
   const [offers, setOffers] = useState<Offer[]>([]);
-  const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedOffer, setSelectedOffer] = useState<Offer>();
   const { data: session } = useSession();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const fetchOffers = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/affiliate/offers`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.accessToken}`,
-        },
-      });
+  const {
+    status,
+    error,
+    data: offersList,
+  } = useQuery({
+    queryKey: ["affiliate-offers"],
+    queryFn: () => getAffiliateOffers(session!.accessToken),
+  });
 
-      if (!res.ok) throw new Error("Failed to fetch offers");
-
-      const offers = (await res.json()).data;
-
-      let fetchedOffers = await offers.map((offer: any) => ({
-        id: offer.id,
-        desc: offer.desc,
-        affiliate_link: offer.affiliate_link,
-        offer_started: offer.offer_start,
-        offer_end: offer.offer_end,
-        status: offer.status,
-        rebate_percentage: parseFloat(offer.rebate_percentage).toFixed(2),
-        item_cost: offer.item_cost || "", // Added item cost
-      }));
-
-      setOffers(fetchedOffers);
-    } catch (error) {
-      console.error("Error fetching offers:", error);
+  useEffect(() => {
+    if (offersList) {
+      setOffers(offersList);
     }
-  };
+  }, [offersList]);
 
-  // Handle search
+
+
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
@@ -70,7 +64,7 @@ export default function OffersPage() {
   // Filtered offers based on search
   const filteredOffers = offers.filter(
     (offer) =>
-      offer.affiliate_link.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      offer.affiliateLink.toLowerCase().includes(searchQuery.toLowerCase()) ||
       offer.desc.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -84,7 +78,7 @@ export default function OffersPage() {
   const handleSaveOffer = async () => {
     if (selectedOffer) {
       try {
-        console.log("selected", selectedOffer)
+        console.log("selected", selectedOffer);
 
         const res = await fetch(`${API_BASE_URL}/api/affiliate/offers`, {
           method: "POST",
@@ -108,15 +102,17 @@ export default function OffersPage() {
   const handleUpdateOffer = async () => {
     if (selectedOffer) {
       try {
-
-        const res = await fetch(`${API_BASE_URL}/api/affiliate/offers/${selectedOffer.id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.accessToken}`,
-          },
-          body: JSON.stringify(selectedOffer),
-        });
+        const res = await fetch(
+          `${API_BASE_URL}/api/affiliate/offers/${selectedOffer.id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+            body: JSON.stringify(selectedOffer),
+          }
+        );
 
         if (!res.ok) throw new Error(`Failed toupdate offer`);
 
@@ -138,13 +134,16 @@ export default function OffersPage() {
 
   const deleteOffer = async (id) => {
     try {
-      const res = await fetch(`<span class="math-inline">\{API\_BASE\_URL\}/api/offers/</span>{id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.accessToken}`,
-        },
-      });
+      const res = await fetch(
+        `<span class="math-inline">\{API\_BASE\_URL\}/api/offers/</span>{id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        }
+      );
 
       if (!res.ok) throw new Error("Failed to delete offer");
     } catch (error) {
@@ -167,13 +166,17 @@ export default function OffersPage() {
     setIsDialogOpen(true);
   };
 
-  useEffect(() => {
-    fetchOffers();
-  }, []);
 
-  const scheduledOffers = filteredOffers.filter((offer) => offer.status === "scheduled");
-  const expiredOffers = filteredOffers.filter((offer) => offer.status === "expired");
-  const activeOffers = filteredOffers.filter((offer) => offer.status === "active");
+
+  const scheduledOffers = filteredOffers.filter(
+    (offer) => offer.status === OfferStatus.SCHEDULED
+  );
+  const expiredOffers = filteredOffers.filter(
+    (offer) => offer.status === OfferStatus.EXPIRED
+  );
+  const activeOffers = filteredOffers.filter(
+    (offer) => offer.status === OfferStatus.EXPIRED
+  );
 
   return (
     <div className="space-y-6 p-6">
@@ -181,7 +184,12 @@ export default function OffersPage() {
 
       {/* Search & Create Offer */}
       <div className="flex gap-4">
-        <Input placeholder="Search offers..." value={searchQuery} onChange={handleSearch} className="w-1/3" />
+        <Input
+          placeholder="Search offers..."
+          value={searchQuery}
+          onChange={handleSearch}
+          className="w-1/3"
+        />
         <Button className="flex items-center gap-2" onClick={handleCreateOffer}>
           <PlusCircle size={18} /> Add New Offer
         </Button>
@@ -222,7 +230,9 @@ export default function OffersPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{selectedOffer?.id ? "Edit Offer" : "Create New Offer"}</DialogTitle>
+            <DialogTitle>
+              {selectedOffer?.id ? "Edit Offer" : "Create New Offer"}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -230,7 +240,9 @@ export default function OffersPage() {
               <Textarea
                 name="description"
                 value={selectedOffer?.desc || ""}
-                onChange={(e) => setSelectedOffer({ ...selectedOffer!, desc: e.target.value })}
+                onChange={(e) =>
+                  setSelectedOffer({ ...selectedOffer!, desc: e.target.value })
+                }
                 placeholder="Enter offer description"
               />
             </div>
@@ -238,8 +250,13 @@ export default function OffersPage() {
               <Label>Rebate %</Label>
               <Input
                 name="rebate"
-                value={selectedOffer?.rebate_percentage || ""}
-                onChange={(e) => setSelectedOffer({ ...selectedOffer!, rebate_percentage: e.target.value })}
+                value={selectedOffer?.rebatePercentage || ""}
+                onChange={(e) =>
+                  setSelectedOffer({
+                    ...selectedOffer!,
+                    rebatePercentage: Number(e.target.value),
+                  })
+                }
                 placeholder="e.g., 20%"
               />
             </div>
@@ -247,8 +264,13 @@ export default function OffersPage() {
               <Label>Item Cost</Label>
               <Input
                 name="item_cost"
-                value={selectedOffer?.item_cost || ""}
-                onChange={(e) => setSelectedOffer({ ...selectedOffer!, item_cost: e.target.value })}
+                value={selectedOffer?.itemCost || ""}
+                onChange={(e) =>
+                  setSelectedOffer({
+                    ...selectedOffer!,
+                    itemCost: Number(e.target.value),
+                  })
+                }
                 placeholder="e.g., 19.99"
               />
             </div>
@@ -256,7 +278,12 @@ export default function OffersPage() {
               <Label>Status</Label>
               <select
                 value={selectedOffer?.status || "scheduled"}
-                onChange={(e) => setSelectedOffer({ ...selectedOffer!, status: e.target.value as "scheduled" | "expired" | "active" })}
+                onChange={(e) =>
+                  setSelectedOffer({
+                    ...selectedOffer!,
+                    status: e.target.value as OfferStatus,
+                  })
+                }
                 className="w-full p-2 border rounded"
               >
                 <option value="scheduled">Scheduled</option>
@@ -270,16 +297,38 @@ export default function OffersPage() {
                 <Input
                   type="date"
                   name="offer_started"
-                  value={selectedOffer?.offer_started || new Date().toISOString().split("T")[0]}
-                  onChange={(e) => setSelectedOffer({ ...selectedOffer!, offer_started: e.target.value })}
-                  className={`w-full p-2 border rounded ${selectedOffer?.status === "scheduled" && !selectedOffer?.offer_started ? "border-red-500" : "border-gray-300"}`}
-                  min={selectedOffer?.status === "scheduled" ? new Date().toISOString().split("T")[0] : undefined}
+                  value={
+                    selectedOffer?.offerStart.toISOString().split("T")[0] ||
+                    new Date().toISOString().split("T")[0]
+                  }
+                  onChange={(e) =>
+                    setSelectedOffer({
+                      ...selectedOffer!,
+                      offerStart: new Date(e.target.value),
+                    })
+                  }
+                  className={`w-full p-2 border rounded ${
+                    selectedOffer?.status === OfferStatus.SCHEDULED &&
+                    !selectedOffer?.offerStart
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  min={
+                    selectedOffer?.status === OfferStatus.SCHEDULED
+                      ? new Date().toISOString().split("T")[0]
+                      : undefined
+                  }
                 />
-                {selectedOffer?.status === "scheduled" && !selectedOffer?.offer_started && (
-                  <p className="text-xs text-red-600 mt-1">Required for scheduled offers</p>
-                )}
-                {selectedOffer?.status === "scheduled" && (
-                  <p className="text-xs text-gray-600 mt-1">Must be in the future</p>
+                {selectedOffer?.status === OfferStatus.SCHEDULED &&
+                  !selectedOffer?.offerStart && (
+                    <p className="text-xs text-red-600 mt-1">
+                      Required for scheduled offers
+                    </p>
+                  )}
+                {selectedOffer?.status === OfferStatus.SCHEDULED && (
+                  <p className="text-xs text-gray-600 mt-1">
+                    Must be in the future
+                  </p>
                 )}
               </div>
               <div>
@@ -287,19 +336,48 @@ export default function OffersPage() {
                 <Input
                   type="date"
                   name="offer_end"
-                  value={selectedOffer?.offer_end || new Date().toISOString().split("T")[0]}
-                  onChange={(e) => setSelectedOffer({ ...selectedOffer!, offer_end: e.target.value })}
-                  className={`w-full p-2 border rounded ${selectedOffer?.status === "scheduled" && !selectedOffer?.offer_end ? "border-red-500" : selectedOffer?.offer_started && selectedOffer?.offer_end < selectedOffer?.offer_started ? "border-red-500" : "border-gray-300"}`}
-                  min={selectedOffer?.status === "scheduled" ? new Date().toISOString().split("T")[0] : selectedOffer?.offer_started || undefined}
+                  value={
+                    selectedOffer?.offerEnd.toISOString().split("T")[0] ||
+                    new Date().toISOString().split("T")[0]
+                  }
+                  onChange={(e) =>
+                    setSelectedOffer({
+                      ...selectedOffer!,
+                      offerEnd: new Date(e.target.value),
+                    })
+                  }
+                  className={`w-full p-2 border rounded ${
+                    selectedOffer?.status === "scheduled" &&
+                    !selectedOffer?.offerEnd
+                      ? "border-red-500"
+                      : selectedOffer?.offerStart &&
+                        selectedOffer?.offerEnd < selectedOffer?.offerStart
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  min={
+                    selectedOffer?.status === "scheduled"
+                      ? new Date().toISOString().split("T")[0]
+                      : selectedOffer?.offerStart.toISOString().split("T")[0] ||
+                        undefined
+                  }
                 />
-                {selectedOffer?.status === "scheduled" && !selectedOffer?.offer_end && (
-                  <p className="text-xs text-red-600 mt-1">Required for scheduled offers</p>
-                )}
-                {selectedOffer?.offer_started && selectedOffer?.offer_end < selectedOffer?.offer_started && (
-                  <p className="text-xs text-red-600 mt-1">End date must be after start date</p>
-                )}
+                {selectedOffer?.status === "scheduled" &&
+                  !selectedOffer?.offerEnd && (
+                    <p className="text-xs text-red-600 mt-1">
+                      Required for scheduled offers
+                    </p>
+                  )}
+                {selectedOffer?.offerStart &&
+                  selectedOffer?.offerEnd < selectedOffer?.offerStart && (
+                    <p className="text-xs text-red-600 mt-1">
+                      End date must be after start date
+                    </p>
+                  )}
                 {selectedOffer?.status === "scheduled" && (
-                  <p className="text-xs text-gray-600 mt-1">Must be in the future</p>
+                  <p className="text-xs text-gray-600 mt-1">
+                    Must be in the future
+                  </p>
                 )}
               </div>
             </div>
@@ -307,12 +385,20 @@ export default function OffersPage() {
               <Label>Affiliate Link</Label>
               <Input
                 name="link"
-                value={selectedOffer?.affiliate_link || ""}
-                onChange={(e) => setSelectedOffer({ ...selectedOffer!, affiliate_link: e.target.value })}
+                value={selectedOffer?.affiliateLink || ""}
+                onChange={(e) =>
+                  setSelectedOffer({
+                    ...selectedOffer!,
+                    affiliateLink: e.target.value,
+                  })
+                }
                 placeholder="https://affiliate.example.com"
               />
             </div>
-            <Button className="w-full" onClick={selectedOffer?.id ? handleUpdateOffer : handleSaveOffer}>
+            <Button
+              className="w-full"
+              onClick={selectedOffer?.id ? handleUpdateOffer : handleSaveOffer}
+            >
               {selectedOffer?.id ? "Update Offer" : "Add Offer"}
             </Button>
           </div>
@@ -322,7 +408,13 @@ export default function OffersPage() {
   );
 }
 
-function OfferSection({ title, offers, borderColor, handleEditOffer, handleDeleteOffer }: {
+function OfferSection({
+  title,
+  offers,
+  borderColor,
+  handleEditOffer,
+  handleDeleteOffer,
+}: {
   title: string;
   offers: Offer[];
   borderColor: string;
@@ -352,21 +444,34 @@ function OfferSection({ title, offers, borderColor, handleEditOffer, handleDelet
             {offers.map((offer) => (
               <TableRow key={offer.id}>
                 <TableCell>{offer.desc}</TableCell>
-                <TableCell>{offer.rebate_percentage}</TableCell>
-                <TableCell>{offer.item_cost}</TableCell>
-                <TableCell>{offer.offer_started}</TableCell>
-                <TableCell>{offer.offer_end}</TableCell>
+                <TableCell>{offer.rebatePercentage}</TableCell>
+                <TableCell>{offer.itemCost}</TableCell>
+                <TableCell>{offer.offerStart.toISOString().split("T")[0]}</TableCell>
+                <TableCell>{offer.offerEnd.toISOString().split("T")[0]}</TableCell>
                 <TableCell>
-                  <a href={offer.affiliate_link} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                  <a
+                    href={offer.affiliateLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline"
+                  >
                     Visit
                   </a>
                 </TableCell>
                 <TableCell>{offer.status}</TableCell>
                 <TableCell className="flex gap-2">
-                  <Button variant="outline" size="icon" onClick={() => handleEditOffer(offer)}>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleEditOffer(offer)}
+                  >
                     <Pencil size={16} />
                   </Button>
-                  <Button variant="destructive" size="icon" onClick={() => handleDeleteOffer(offer.id)}>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => handleDeleteOffer(offer.id)}
+                  >
                     <Trash2 size={16} />
                   </Button>
                 </TableCell>

@@ -23,14 +23,14 @@ import { getAllOffers } from "@/lib/api/user";
 import { Offer } from "@/types/app";
 
 export default function offersPage() {
-  const { data: session } = useSession();
+  
   const [offers, setOffers] = useState<Offer[]>([]);
   const [selectedOffer, setSelectedOffer] = useState<Offer>();
   const [sortBy, setSortBy] = useState("endingSoonest");
 
   // TODO check for errors on the api response here
   const {
-  status,
+    status,
     error,
     data: offersList,
   } = useQuery({
@@ -38,7 +38,11 @@ export default function offersPage() {
     queryFn: () => getAllOffers(session!.accessToken),
   });
 
-
+  useEffect(() => {
+    if (offersList) {
+      setOffers(offersList);
+    }
+  }, [offersList]);
 
   // Sorting Function
   const sortOffers = (criteria: string) => {

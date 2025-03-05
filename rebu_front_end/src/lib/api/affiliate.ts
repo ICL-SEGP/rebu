@@ -121,22 +121,23 @@ export async function getAffiliateStats(
 
 // Offers
 
-export async function getAffiliateOffers(token: string): Promise<Offer[]> {
-  const response = await fetch(`${API_BASE_URL}/affiliate/offers`, {
+export function getAffiliateOffers(token: string): Promise<Offer[]> {
+  return fetch(`${API_BASE_URL}/affiliate/offers`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch Affiliate offers: ${response.statusText}`);
-  }
-
-  const offers = await response.json();
-
-  return offers.map((offer: any) => toOffer(offer));
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch Affiliate offers: ${response.statusText}`
+        );
+      }
+      return response.json();
+    })
+    .then((offers) => offers.map((offer: any) => toOffer(offer)));
 }
 
 export async function createOffer(

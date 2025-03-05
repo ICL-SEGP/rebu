@@ -35,7 +35,7 @@ export type UserBalance = {
   token_balance: number;
   locked_tokens: number;
   rescinded_token: number;
-  last_updated: Date;
+  lastUpdated: Date;
 };
 
 export interface Affiliate extends User {
