@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function () {
       //     password: password,
       //   }),
       // });
-      console.log(response);
+      // console.log(response);
       console.log("HELLOOOOOOOOO");
       await new Promise(resolve => setTimeout(resolve, 500)); // Fake network delay
       const data = { success: true }; // Simulated response
