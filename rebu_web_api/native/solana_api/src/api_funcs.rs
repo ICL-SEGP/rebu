@@ -150,10 +150,7 @@ pub fn modify_product_listing( // TODO: extract duplicate code
     stock: u64, price: u64,
 ) -> Result<(), String> {
 
-    let mint_pubkey = mint_str();
-
     let owner_keypair = &get_keypair_from_str(owner);
-    let mint = &get_pubkey_from_str(&mint_pubkey);
 
     let provider = Client::new(Cluster::Localnet, Rc::new(owner_keypair));
     println!("Rebu pid: {:?}", &rebu_solana::ID);
@@ -190,7 +187,7 @@ pub fn modify_product_listing( // TODO: extract duplicate code
         new_product_listing_ix
             .send()
             .await 
-            .map_err(|e| format!("Error: Product Listing initialization. {}", e))
+            .map_err(|e| format!("Error: Product Listing modification. {}", e))
     })?};
 
     Ok(())
@@ -258,7 +255,54 @@ pub fn make_purchase( // TODO: extract duplicate code
         new_product_listing_ix
             .send()
             .await 
-            .map_err(|e| format!("Error: Product Listing initialization. {}", e))
+            .map_err(|e| format!("Error: Purchase. {}", e))
+    })?};
+
+    Ok(())
+}
+
+pub fn verify_purchase( // TODO: extract duplicate code
+    customer: String,
+    owner: String,
+    id: u64
+) -> Result<(), String> {
+
+    let customer = get_pubkey_from_str(&customer);
+    let owner = &get_keypair_from_str(owner);
+
+    let provider = Client::new(Cluster::Localnet, Rc::new(owner));
+    let program = provider
+        .program(rebu_solana::ID)
+        .map_err(|_| "Error: rebu_solana could not be loaded as a client program.".to_string())?;
+
+    let (product_purchase, _) = Pubkey::find_program_address(
+        &[
+            b"product".as_ref(),
+            b"purchase".as_ref(),
+            owner.pubkey().as_ref(),
+            id.to_le_bytes().as_ref(),
+            customer.as_ref(),
+        ], 
+        &rebu_solana::ID);
+
+    let verify_purchase_ix = program
+        .request()
+        .signer(owner)
+        .accounts(accounts::VerifyPurchase {
+            seller: owner.pubkey(),
+            customer: customer,
+            product_purchase
+        })
+        .args(args::VerifyPurchase {
+            id
+        });
+
+    let rt = Runtime::new().expect("Error when creating tokio runtime.");
+    let _transaction: Signature = { rt.block_on(async { 
+        verify_purchase_ix
+            .send()
+            .await 
+            .map_err(|e| format!("Error: Verifying purchase. {}", e))
     })?};
 
     Ok(())

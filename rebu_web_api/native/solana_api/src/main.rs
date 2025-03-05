@@ -66,13 +66,13 @@ fn main() {
     
     println!("Minted\n ");
 
-    let id = 27;
+    let id = 31;
 
     let result = new_product_listing(
         owner.to_base58_string(),
         id,
         5,
-        2
+        1
     );
 
     let _ten_millis = time::Duration::from_millis(10000);
@@ -87,6 +87,15 @@ fn main() {
     );
 
     println!("New purchase result: {:?}", result);
+
+    let result = verify_purchase(
+        new_user.get_pubkey().to_string(),
+        owner.to_base58_string(),
+        id
+    );
+
+    println!("Verifying: {:?}", result);
+
 
 //     let provider = Client::new_with_options(
 //         Cluster::Localnet,
