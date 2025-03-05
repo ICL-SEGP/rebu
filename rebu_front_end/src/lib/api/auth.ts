@@ -18,12 +18,12 @@ export async function logout(token: string) {
 }
 
 export async function registerUser(credentials: Credentials): Promise<User> {
-const response = await fetch(`${API_BASE_URL}/register`, {
+  const response = await fetch(`${API_BASE_URL}/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({user: humps.decamelizeKeys(credentials)}),
+    body: JSON.stringify({ user: humps.decamelizeKeys(credentials) }),
   });
 
   if (!response.ok) {
@@ -53,4 +53,23 @@ export async function registerAffiliate(
   const user = await response.json();
 
   return toUser(user);
+}
+
+export async function changePassword(
+  token: string,
+  password: string,
+  newPassword: string
+) {
+  const response = await fetch(`${API_BASE_URL}/password-reset`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(humps.decamelizeKeys({ password, newPassword })),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to update password: ${response.statusText}`);
+  }
 }

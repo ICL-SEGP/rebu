@@ -30,6 +30,15 @@ defmodule RebuWebApiWeb.AuthController do
     end
   end
 
+  def password_reset(conn, %{"password" => password, "new_password" => new_password}) do
+    user = Guardian.Plug.current_resource(conn)
+
+    with true <- Bcrypt.verify_pass(password, user.hashed_password) do
+      conn
+      |> render(:user, %{user: user})
+    end
+  end
+
   def sign_out(conn, _params) do
     token = Guardian.Plug.current_token(conn)
     Guardian.revoke(token)

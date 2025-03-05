@@ -66,6 +66,9 @@ defmodule RebuWebApiWeb.Router do
   scope "/", RebuWebApiWeb do
     pipe_through [:api, :auth]
 
+    # Password Reset
+    post "/password-reset", AuthController, :password_reset
+
     # User Profile
     get "/user", UserController, :get_profile
     patch "/user", UserController, :update_profile
