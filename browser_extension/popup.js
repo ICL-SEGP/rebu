@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Clear loggedIn state
     chrome.storage.sync.set({ loggedIn: false, username: "" }, function () {
       messageDisplay.innerText = "You have been logged out.";
-      // Switch back to login tab
+      // Switch back to login tab 
       switchTab("login");
     });
   });
