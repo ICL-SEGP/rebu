@@ -11,7 +11,6 @@ import {
 } from "@/types/app";
 import humps from "humps";
 
-
 export async function getUserProfile(token: string): Promise<User> {
   const response = await fetch(`${API_BASE_URL}/user`, {
     method: "GET",
@@ -95,21 +94,20 @@ export async function getUserBalance(token: string): Promise<UserBalance> {
 // Orders
 
 export async function getUserOrders(token: string): Promise<Order[]> {
-  const response = await fetch(`${API_BASE_URL}/orders`, {
+  return fetch(`${API_BASE_URL}/orders`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch Orders: ${response.statusText}`);
-  }
-
-  const orders = await response.json();
-
-  return orders.map((order: any) => toOrder(order));
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Failed to fetch Orders: ${response.statusText}`);
+      }
+      return response.json();
+    })
+    .then((orders) => orders.map((order: any) => toOrder(order)));
 }
 
 export async function createUserOrder(
@@ -176,7 +174,6 @@ export async function updateUserOrder(
 
   return toOrder(order);
 }
-
 
 // Offers
 export function getAllOffers(token: string): Promise<Offer[]> {

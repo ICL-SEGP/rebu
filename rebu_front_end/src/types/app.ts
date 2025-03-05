@@ -21,7 +21,7 @@ export enum OfferStatus {
 export interface User {
   id: number;
   firstName: string;
-  LastName: string;p
+  LastName: string;
   email: string;
   token_balance: number;
   role: Role;
@@ -52,7 +52,7 @@ export interface Order {
   totalRebateAmount: string;
   status: OrderStatus;
   orderDate: Date;
-  offerIds: number[];
+  offers: Offer[];
 }
 
 export interface Offer {
@@ -104,13 +104,13 @@ export type Credentials = {
   lastName: string;
   email: string;
   password: string;
-}
+};
 
 export enum ProductStatus {
   ACTIVE = "active",
   SCHEDULED = "scheduled",
   SOLD_OUT = "sold_out",
-  EXPIRED = "expired"
+  EXPIRED = "expired",
 }
 
 export interface Product {
@@ -133,7 +133,7 @@ export interface Product {
 export type Category = {
   name: string;
   imageUrl: URL;
-}
+};
 
 export interface Review {
   id: number;
@@ -147,13 +147,12 @@ export interface Review {
 export interface Purchase {
   id: number;
   buyerId: number;
-  sellerId: number // Track with seller fulfilled the order
+  sellerId: number; // Track with seller fulfilled the order
   productId: number;
   totalAmount: number;
   orderDate: Date;
   status: OrderStatus;
 }
-
 
 // Parsing functions
 // TODO: remember to use humps to cammelize keys
@@ -162,17 +161,39 @@ export function toUser(user: any): User {}
 
 export function toAffiliate(affiliate: any): Affiliate {}
 
-export function toOrder(order: any): Order {}
+export function toOrder(order: any): Order {
+  console.log(order);
 
+  order = humps.camelizeKeys(order);
+
+  order.id = Number(order.id);
+  order.totalRebateAmount = parseFloat(order.totalRebateAmount).toFixed(2);
+  order.orderDate = new Date(order.orderDate);
+  order.offers = order.offers.map((offer: any) => toOffer(offer));
+
+  switch (order.status) {
+    case "pending":
+      order.status = OrderStatus.PENDING;
+      break;
+    case "completed":
+      order.status = OrderStatus.COMPLETED;
+      break;
+    case "canceled":
+      order.status = OrderStatus.CANCELED;
+      break;
+  }
+
+  return order;
+}
 export function toOffer(offer: any): Offer {
-  offer = humps.camelizeKeys(offer)
+  offer = humps.camelizeKeys(offer);
 
   offer.id = Number(offer.id);
   offer.rebatePercentage = parseFloat(offer.rebatePercentage).toFixed(2);
   offer.offerStart = new Date(offer.offerStart);
   offer.offerEnd = new Date(offer.offerEnd);
 
-  return offer
+  return offer;
 }
 
 export function toUserBalance(balance: any): UserBalance {}

@@ -12,7 +12,8 @@ defmodule RebuWebApiWeb.OrderController do
     user = Guardian.Plug.current_resource(conn)
     orders = Sales.get_orders_by_user(user)
 
-    render(orders)
+    conn
+    |> json(orders)
   end
 
   def create(conn, %{"order" => order_params}) do

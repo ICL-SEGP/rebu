@@ -2,6 +2,15 @@ defmodule RebuWebApi.Sales.Order do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @derive {Jason.Encoder,
+           only: [
+             :id,
+             :status,
+             :total_rebate_amount,
+             :order_date,
+             :offers
+           ]}
+
   schema "orders" do
     field :status, Ecto.Enum, values: [:pending, :refunded, :completed], default: :pending
     field :total_rebate_amount, :decimal
