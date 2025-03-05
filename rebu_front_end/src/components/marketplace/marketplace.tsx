@@ -11,7 +11,7 @@ import { Product } from "@/types/app";
 import axios from "axios";
 
 
-const UNSPLASH_ACCESS_KEY = "TPFS6bS1JKJaCrphzZHJUUwGigQ1C1vFPZhfUKbi-nY";
+const UNSPLASH_ACCESS_KEY = "TPFS6bS1JKJaCrphzZHJUUwGigQ1ClvFPZhfUKbi-nY";
 
 // Fetch Unsplash images
 const fetchCategoryImage = async (categoryName: string): Promise<string> => {
@@ -51,6 +51,7 @@ const fetchProducts = async () => {
         createdAt: "",
         sellerId: 101,
         reviews: [{ id: 1, userId: 201, productId: 1, rating: 5, comment: "Super comfortable!", createdAt: "" }],
+        sellerPubKey: "123"
       },
       {
         id: 2,
@@ -66,6 +67,7 @@ const fetchProducts = async () => {
         createdAt: "",
         sellerId: 102,
         reviews: [{ id: 2, userId: 203, productId: 2, rating: 5, comment: "Love the material!", createdAt: "" }],
+        sellerPubKey: "123"
       },
     ];
   } catch (error) {
