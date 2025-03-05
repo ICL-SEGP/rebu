@@ -88,6 +88,7 @@ export default function SellerMarketplace() {
     fetchSellerProducts();
   }, [session?.accessToken]);
 
+
   /**
    * Handles product deletion by calling the API and updating the local state.
    */
@@ -174,9 +175,14 @@ export default function SellerMarketplace() {
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent>
           <DialogTitle>{selectedProduct ? "Edit Product" : "Add Product"}</DialogTitle>
-          <ProductForm product={selectedProduct} onSave={handleSaveProduct} />
+          {products.length > 0 ? ( // ✅ Ensures `products` is ready before rendering `ProductForm`
+            <ProductForm product={selectedProduct} onSave={handleSaveProduct} products={products} />
+          ) : (
+            <p>Loading...</p> // Optional: Show a loading message while products are fetched
+          )}
         </DialogContent>
       </Dialog>
+
 
       {/* 🔹 Product Detail Modal */}
       {selectedProduct && (
@@ -396,10 +402,12 @@ export function ProductForm({
   product,
   onSave,
   currentUserToken,
+  products, //array of all products
 }: {
   product: Product | null;
   onSave: (product: Partial<Product>) => void;
   currentUserToken: string;
+  products: Product[];
 }) {
   const [name, setName] = useState(product?.name || "");
   const [desc, setDesc] = useState(product?.desc || "");
@@ -409,10 +417,25 @@ export function ProductForm({
   const [imagePreviews, setImagePreviews] = useState<string[]>(product?.imageUrls || []);
   const [digitalFile, setDigitalFile] = useState<File | null>(null);
   const [status, setStatus] = useState<ProductStatus>(product?.status || ProductStatus.ACTIVE);
+  const [filteredCategories, setFilteredCategories] = useState<string[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
 
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const digitalFileInputRef = useRef<HTMLInputElement | null>(null);
+
+
+  useEffect(() => {
+    console.log("Extracted Categories:", products.map((p) => p.category?.name));
+  }, [products]);
+  
+  // Extract unique categories dynamically
+  const existingCategories = Array.from(
+    new Set((products ?? []).map((p) => p.category.name))
+  ).sort();
+
+  console.log(existingCategories, filteredCategories)
 
   useEffect(() => {
     setName(product?.name || "");
@@ -422,6 +445,34 @@ export function ProductForm({
     setImagePreviews(product?.imageUrls || []);
     setStatus(product?.status || ProductStatus.ACTIVE);
   }, [product]);
+
+  useEffect(() => {
+    const updatedCategories = existingCategories.filter((cat) =>
+      cat.toLowerCase().includes((category || "").toLowerCase())
+    );
+  
+    // Only update state if filtered categories have actually changed
+    if (JSON.stringify(updatedCategories) !== JSON.stringify(filteredCategories)) {
+      setFilteredCategories(updatedCategories);
+    }
+  }, [category, existingCategories]); // 🔥 Removed filteredCategories from dependencies
+  
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newCategory = e.target.value;
+  
+    // Only update state if value actually changes
+    if (newCategory !== category) {
+      setCategory(newCategory);
+      setShowDropdown(true);
+    }
+  };
+  
+
+  const handleCategorySelect = (selected: string) => {
+    setCategory(selected);
+    setShowDropdown(false);
+  };
 
   const isValid = name.trim() && desc.trim() && category.trim() && price && imagePreviews.length > 0 && digitalFile;
 
@@ -583,7 +634,33 @@ const handleDragEnd = (event: any) => {
       {/* 🔹 Product Details */}
       <Input placeholder="Product Name" value={name} onChange={(e) => setName(e.target.value)} required />
       <Input placeholder="Description" value={desc} onChange={(e) => setDesc(e.target.value)} required />
-      <Input placeholder="Category" value={category} onChange={(e) => setCategory(e.target.value)} required />
+      <div className="relative">
+        <Input
+          ref={inputRef}
+          placeholder="Enter category"
+          value={category}
+          onChange={handleCategoryChange}
+          onFocus={() => setShowDropdown(true)}
+          onBlur={() => setTimeout(() => setShowDropdown(false), 200)} // ✅ Prevents premature closing
+        />
+        {showDropdown && filteredCategories.length > 0 && (
+          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-md max-h-40 overflow-y-auto">
+            {filteredCategories.map((cat) => (
+              <div
+                key={cat}
+                className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                onMouseDown={(e) => {
+                  e.preventDefault(); // ✅ Prevents blur before selection
+                  handleCategorySelect(cat);
+                }}
+              >
+                {cat}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <Input type="number" placeholder="Price (Tokens)" value={price} onChange={(e) => setPrice(e.target.value)} required />
 
       {/* Product Status Selector */}
