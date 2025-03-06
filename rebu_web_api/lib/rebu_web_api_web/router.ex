@@ -29,6 +29,9 @@ defmodule RebuWebApiWeb.Router do
 
   scope "/affiliate", RebuWebApiWeb do
     pipe_through [:api, :auth, :affiliate]
+    # referral code
+    get "/referral-code", AffiliateController, :get_referral_code
+
 
     # Affiliate
     get "/", AffiliateController, :get

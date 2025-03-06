@@ -74,6 +74,7 @@ defmodule RebuWebApi.Accounts do
 
     %User{}
     |> User.registration_changeset(attrs)
+    |> Ecto.Changeset.put_assoc(:affiliate, attrs["affiliate"])
     |> Repo.insert()
   end
 
@@ -103,7 +104,7 @@ defmodule RebuWebApi.Accounts do
 
   def update_user(%User{} = user, attrs) do
     user
-    |> User.registration_changeset(attrs)
+    |> User.update_changeset(attrs)
     |> Repo.update()
   end
 
@@ -307,5 +308,9 @@ defmodule RebuWebApi.Accounts do
         select: %{id: u.id, email: u.email}
 
     Repo.all(query)
+  end
+
+  def get_affiliate_by_referral_code(code)do
+    Repo.get_by(Accounts.Affiliate, referral_Code: code)
   end
 end

@@ -58,6 +58,26 @@ defmodule RebuWebApi.Accounts.User do
     |> AccountChangesetHelpers.validate_password()
   end
 
+  def update_changeset(user, attrs) do
+    user
+    |> cast(attrs, [
+      :first_name,
+      :last_name,
+      :email,
+      :token_balance,
+      :password,
+      :role,
+      :date_joined,
+      :solana_pub_key
+    ])
+    |> validate_required([
+      :first_name,
+      :last_name
+    ])
+    |> validate_inclusion(:role, [:user])
+    |> AccountChangesetHelpers.validate_email()
+  end
+
   # def role_changeset(user, attrs) do
   #   user
   #   |> cast(attrs, [:role])

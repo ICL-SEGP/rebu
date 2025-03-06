@@ -52,6 +52,9 @@ defmodule RebuWebApiWeb.UserController do
   end
 
   def manual_create_user(conn, %{"user" => user_params}) do
+    affiliate = Guardian.Plug.current_resource(conn)
+    user_params = Map.put(user_params, "affiliate", affiliate)
+
     with {:ok, user} <- Accounts.register_user(user_params) do
       conn
       |> put_status(:created)

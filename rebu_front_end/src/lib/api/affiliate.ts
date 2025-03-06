@@ -34,6 +34,22 @@ export function getAffiliateProfile(token: string): Promise<Affiliate> {
     .then(toAffiliate);
 }
 
+export function getReferralCode(token: string) {
+  return fetch(`${API_BASE_URL}/affiliate/referral-code`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Failed to fetch referral code: ${response.statusText}`);
+      }
+      return response.json();
+    })
+}
+
 export function updateAffiliateProfile(token: string): Promise<Affiliate> {
   return fetch(`${API_BASE_URL}/affiliate`, {
     method: "PATCH",
@@ -133,7 +149,7 @@ export function createOffer(token: string, newOffer: Offer): Promise<Offer> {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({offer: humps.decamelizeKeys(newOffer)}),
+    body: JSON.stringify({ offer: humps.decamelizeKeys(newOffer) }),
   })
     .then((response) => {
       if (!response.ok) {
@@ -256,7 +272,7 @@ export function affiliateCreateUser(
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(humps.decamelizeKeys(newUser)),
+    body: JSON.stringify({ user: humps.decamelizeKeys(newUser) }),
   })
     .then((response) => {
       if (!response.ok) {
@@ -297,7 +313,7 @@ export function affiliateUpdateUserDetails(
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(humps.decamelizeKeys(updatedUser)),
+    body: JSON.stringify({ user: humps.decamelizeKeys(updatedUser) }),
   })
     .then((response) => {
       if (!response.ok) {

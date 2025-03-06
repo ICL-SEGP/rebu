@@ -182,6 +182,8 @@ export function toUser(user: any): User {
 
 export function toAffiliate(affiliate: any): Affiliate {}
 
+
+
 export function toOrder(order: any): Order {
   order = humps.camelizeKeys(order);
 
@@ -207,7 +209,7 @@ export function toOrder(order: any): Order {
 }
 
 export function toOfferIds(offers: Offer[]) {
-  return offers.map((offer) => offer.id)
+  return offers.map((offer) => offer.id);
 }
 
 export function toOffer(offer: any): Offer {

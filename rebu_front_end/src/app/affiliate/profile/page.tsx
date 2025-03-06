@@ -1,14 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { ClipboardCopy } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Affiliate, AffiliateBalance, Role } from "@/types/app";
 import { Input } from "@/components/ui/forms/input";
 import { Button } from "@/components/ui/helpers/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/helpers/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/modals/dialog";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/helpers/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/modals/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { UserIcon } from "@heroicons/react/24/solid"; // Using an icon for profile image placeholder
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { getReferralCode } from "@/lib/api/affiliate";
+import { useSession } from "next-auth/react";
+import { useQuery } from "@tanstack/react-query";
 
 // Dummy affiliate data for UI testing
 const dummyAffiliate: Affiliate = {
@@ -30,13 +44,22 @@ const dummyBalance: AffiliateBalance = {
 };
 
 export default function AffiliateProfile() {
+  const { data: session } = useSession();
   const [affiliate, setAffiliate] = useState<Affiliate>(dummyAffiliate);
   const [balance, setBalance] = useState<AffiliateBalance>(dummyBalance);
   const [editing, setEditing] = useState(false);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<Affiliate>>(dummyAffiliate);
-  const [passwordData, setPasswordData] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
-  const [showPassword, setShowPassword] = useState({ current: false, new: false, confirm: false });
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [showPassword, setShowPassword] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
   const { toast } = useToast();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,6 +98,41 @@ export default function AffiliateProfile() {
     } catch (error) {
       console.error("Error updating password:", error);
       toast({ title: "Failed to update password", variant: "destructive" });
+    }
+  };
+
+  const [referralCode, setReferralCode] = useState({});
+
+  const {
+    status,
+    error,
+    data: code,
+  } = useQuery({
+    queryKey: ["referral-code"],
+    queryFn: () => getReferralCode(session!.accessToken),
+  });
+
+  useEffect(() => {
+    if (code) {
+      setReferralCode(code);
+      console.log(code);
+    }
+  }, [code]);
+
+  const generateReferralLink = (code: any): string => {
+    return `${window.location.origin}/register?affiliate_code=${code}`;
+  };
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(generateReferralLink(referralCode.referral_code));
+      toast({ title: "Referral link copied to clipboard!" });
+    } catch (err) {
+      toast({
+        title: "Failed to copy link!",
+        description: "Please copy manually.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -132,7 +190,21 @@ export default function AffiliateProfile() {
             )}
           </div>
           <div className="mt-4">
-            <Button variant="outline" onClick={() => setPasswordModalOpen(true)}>Change Password</Button>
+            <Button
+              variant="outline"
+              onClick={() => setPasswordModalOpen(true)}
+            >
+              Change Password
+            </Button>
+          </div>
+          <div>
+            <Button
+              className="w-full mt-5 bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2"
+              onClick={copyToClipboard}
+            >
+              <ClipboardCopy size={16} />
+              Copy Rebu referral to Clipboard
+            </Button>
           </div>
         </div>
       </CardContent>
@@ -144,23 +216,37 @@ export default function AffiliateProfile() {
             <DialogTitle>Update Password</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            {["currentPassword", "newPassword", "confirmPassword"].map((field, index) => (
-              <div key={index} className="relative">
-                <Input
-                  name={field}
-                  type={showPassword[field as keyof typeof showPassword] ? "text" : "password"}
-                  placeholder={field.replace("Password", " password")}
-                  onChange={handlePasswordChange}
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-2 flex items-center"
-                  onClick={() => togglePasswordVisibility(field as "current" | "new" | "confirm")}
-                >
-                  {showPassword[field as keyof typeof showPassword] ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
-                </button>
-              </div>
-            ))}
+            {["currentPassword", "newPassword", "confirmPassword"].map(
+              (field, index) => (
+                <div key={index} className="relative">
+                  <Input
+                    name={field}
+                    type={
+                      showPassword[field as keyof typeof showPassword]
+                        ? "text"
+                        : "password"
+                    }
+                    placeholder={field.replace("Password", " password")}
+                    onChange={handlePasswordChange}
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-2 flex items-center"
+                    onClick={() =>
+                      togglePasswordVisibility(
+                        field as "current" | "new" | "confirm"
+                      )
+                    }
+                  >
+                    {showPassword[field as keyof typeof showPassword] ? (
+                      <EyeSlashIcon className="w-5 h-5" />
+                    ) : (
+                      <EyeIcon className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+              )
+            )}
             <div className="flex justify-end">
               <Button onClick={handleChangePassword}>Save</Button>
             </div>
