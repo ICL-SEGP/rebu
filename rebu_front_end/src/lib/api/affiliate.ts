@@ -133,7 +133,7 @@ export function createOffer(token: string, newOffer: Offer): Promise<Offer> {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(humps.decamelizeKeys(newOffer)),
+    body: JSON.stringify({offer: humps.decamelizeKeys(newOffer)}),
   })
     .then((response) => {
       if (!response.ok) {
@@ -173,7 +173,7 @@ export function updateOffer(
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(humps.decamelizeKeys(updatedOffer)),
+    body: JSON.stringify({ offer: humps.decamelizeKeys(updatedOffer) }),
   })
     .then((response) => {
       if (!response.ok) {

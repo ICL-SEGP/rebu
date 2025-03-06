@@ -52,12 +52,8 @@ defmodule RebuWebApiWeb.OfferController do
     |> json(offer)
   end
 
-  def update(conn, %{"offers" => offer_params, "id" => id}) do
+  def update(conn, %{"offer" => offer_params, "id" => id}) do
     offer = Sales.get_offer!(id)
-
-    if not offer do
-      raise ErrorResponse.NotFound
-    end
 
     {:ok, offer} = Sales.update_offer(offer, offer_params)
 

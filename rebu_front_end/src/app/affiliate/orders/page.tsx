@@ -282,7 +282,10 @@ function OrderSection({
   const handleSave = async () => {
     if (!tempOrder) return;
 
-    if (JSON.stringify(tempOrder) === JSON.stringify(tempOrderCopy)) return;
+    if (JSON.stringify(tempOrder) === JSON.stringify(tempOrderCopy)) {
+      handleCancelEdit(tempOrder);
+      return;
+    }
 
     if (
       !window.confirm(`Are you sure you want to update Order #${tempOrder.id}?`)
@@ -509,6 +512,7 @@ function OrderSection({
                           size="icon"
                           variant="success"
                           onClick={handleSave}
+                          className="bg-green-100"
                         >
                           <Check size={16} />
                         </Button>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Card,
   CardContent,
@@ -21,24 +21,44 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/modals/dialog";
 import { Label } from "@/components/ui/forms/label";
 import { Input } from "@/components/ui/forms/input";
 import { Textarea } from "@/components/ui/forms/textarea";
-import { Trash2, Pencil, PlusCircle } from "lucide-react";
+import { Trash2, Pencil, PlusCircle, CalendarIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { API_BASE_URL } from "@/lib/constants";
 import { useQuery } from "@tanstack/react-query";
-import { getAffiliateOffers } from "@/lib/api/affiliate";
+import {
+  createOffer,
+  getAffiliateOffers,
+  updateOffer,
+} from "@/lib/api/affiliate";
 import { getAllOffers } from "@/lib/api/user";
 import { Offer, OfferStatus, OrderStatus } from "@/types/app";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/shadcn/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/forms/popover";
+import { Calendar } from "@/components/ui/helpers/calendar";
+import { format } from "date-fns";
+import clsx from "clsx";
 
 export default function OffersPage() {
   const [offers, setOffers] = useState<Offer[]>([]);
-  const [selectedOffer, setSelectedOffer] = useState<Offer>();
+  const [selectedOffer, setSelectedOffer] = useState<Offer | null>();
   const { data: session } = useSession();
   const [searchQuery, setSearchQuery] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const {
     status,
@@ -52,121 +72,130 @@ export default function OffersPage() {
   useEffect(() => {
     if (offersList) {
       setOffers(offersList);
+      console.log(offersList);
     }
   }, [offersList]);
-
-
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
 
-  // Filtered offers based on search
-  const filteredOffers = offers.filter(
-    (offer) =>
-      offer.affiliateLink.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      offer.desc.toLowerCase().includes(searchQuery.toLowerCase())
+  const [statusFilter, setStatusFilter] = useState<OfferStatus>(
+    OfferStatus.ALL
   );
+
+  const handleFilterStatus = (status: OfferStatus) => {
+    setStatusFilter(status);
+  };
+
+  // Filtered offers based on search
+  const filteredOffers = useMemo(() => {
+    return offers.filter((offer) => {
+      const matchesSearch =
+        offer.affiliateLink.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        offer.desc.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesStatus =
+        statusFilter === OfferStatus.ALL || offer.status === statusFilter;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [offers, searchQuery, statusFilter]);
 
   // Open edit modal
   const handleEditOffer = (offer: Offer) => {
     setSelectedOffer(offer);
-    setIsDialogOpen(true);
+    setOpen(true);
   };
 
   // Save edited offer
-  const handleSaveOffer = async () => {
-    if (selectedOffer) {
-      try {
-        console.log("selected", selectedOffer);
+  const handleCreateOffer = async () => {
+    console.log(selectedOffer);
+    if (!selectedOffer) return;
 
-        const res = await fetch(`${API_BASE_URL}/api/affiliate/offers`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.accessToken}`,
-          },
-          body: JSON.stringify(selectedOffer),
-        });
+    if (
+      !window.confirm(
+        `Are you sure you want to create Offer #${selectedOffer.id}?`
+      )
+    ) {
+      return;
+    }
 
-        if (!res.ok) throw new Error(`Failed to create offer`);
+    try {
+      const createdOffer = await createOffer(
+        session!.accessToken,
+        selectedOffer
+      );
 
-        fetchOffers(); // Refetch offers after successful operation
-        setIsDialogOpen(false); // Close the dialog
-      } catch (error) {
-        console.error("Error saving offer:", error);
-      }
+      console.log(createdOffer);
+
+      setOffers((prevOffers: Offer[]) => [createdOffer, ...prevOffers]);
+
+      setSelectedOffer(null);
+      setOpen(false);
+    } catch (error) {
+      console.error("Failed to create order:", error);
     }
   };
 
   const handleUpdateOffer = async () => {
-    if (selectedOffer) {
-      try {
-        const res = await fetch(
-          `${API_BASE_URL}/api/affiliate/offers/${selectedOffer.id}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${session.accessToken}`,
-            },
-            body: JSON.stringify(selectedOffer),
-          }
-        );
+    console.log(selectedOffer);
+    if (!selectedOffer) return;
 
-        if (!res.ok) throw new Error(`Failed toupdate offer`);
+    if (
+      !window.confirm(
+        `Are you sure you want to update Offer #${selectedOffer.id}?`
+      )
+    ) {
+      return;
+    }
 
-        fetchOffers(); // Refetch offers after successful operation
-        setIsDialogOpen(false); // Close the dialog
-      } catch (error) {
-        console.error("Error saving offer:", error);
-      }
+    try {
+      const updatedOffer = await updateOffer(
+        session!.accessToken,
+        selectedOffer
+      );
+
+      console.log(updatedOffer);
+
+      setOffers((prevOffers: Offer[]) =>
+        prevOffers.map((offer) =>
+          offer.id === selectedOffer.id ? selectedOffer : offer
+        )
+      );
+
+      setOpen(false);
+    } catch (error) {
+      console.error("Failed to update order:", error);
     }
   };
 
   // Delete offer
   const handleDeleteOffer = (id: number) => {
-    if (window.confirm(`Are you sure you want to delete Offer #${id}?`)) {
-      setOffers(offers.filter((offer) => offer.id !== id));
-      deleteOffer(id);
-    }
+    // if (window.confirm(`Are you sure you want to delete Offer #${id}?`)) {
+    //   setOffers(offers.filter((offer) => offer.id !== id));
+    //   deleteOffer(id);
+    // }
   };
 
-  const deleteOffer = async (id) => {
-    try {
-      const res = await fetch(
-        `<span class="math-inline">\{API\_BASE\_URL\}/api/offers/</span>{id}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.accessToken}`,
-          },
-        }
-      );
+  // const deleteOffer = async (id) => {
+  //   try {
+  //     const res = await fetch(
+  //       `<span class="math-inline">\{API\_BASE\_URL\}/api/offers/</span>{id}`,
+  //       {
+  //         method: "DELETE",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${session.accessToken}`,
+  //         },
+  //       }
+  //     );
 
-      if (!res.ok) throw new Error("Failed to delete offer");
-    } catch (error) {
-      console.error("Error deleting offer:", error);
-    }
-  };
-
-  // Open create offer modal
-  const handleCreateOffer = () => {
-    setSelectedOffer({
-      id: 0, // 0 indicates a new offer
-      desc: "",
-      affiliate_link: "",
-      offer_started: new Date().toISOString().split("T")[0],
-      offer_end: new Date().toISOString().split("T")[0],
-      status: "scheduled",
-      rebate_percentage: "",
-      item_cost: "", // Initialize item cost
-    });
-    setIsDialogOpen(true);
-  };
-
-
+  //     if (!res.ok) throw new Error("Failed to delete offer");
+  //   } catch (error) {
+  //     console.error("Error deleting offer:", error);
+  //   }
+  // };
 
   const scheduledOffers = filteredOffers.filter(
     (offer) => offer.status === OfferStatus.SCHEDULED
@@ -175,7 +204,7 @@ export default function OffersPage() {
     (offer) => offer.status === OfferStatus.EXPIRED
   );
   const activeOffers = filteredOffers.filter(
-    (offer) => offer.status === OfferStatus.EXPIRED
+    (offer) => offer.status === OfferStatus.ACTIVE
   );
 
   return (
@@ -190,44 +219,32 @@ export default function OffersPage() {
           onChange={handleSearch}
           className="w-1/3"
         />
-        <Button className="flex items-center gap-2" onClick={handleCreateOffer}>
-          <PlusCircle size={18} /> Add New Offer
-        </Button>
+        <Select
+          value={statusFilter}
+          onValueChange={(value) => handleFilterStatus(value as OfferStatus)}
+        >
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent defaultValue={"all"}>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="scheduled">Scheduled</SelectItem>
+            <SelectItem value="expired">Expired</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* Offers Table */}
-      {scheduledOffers.length > 0 && (
-        <OfferSection
-          title="Scheduled Offers"
-          offers={scheduledOffers}
-          borderColor="border-orange-500"
-          handleEditOffer={handleEditOffer}
-          handleDeleteOffer={handleDeleteOffer}
-        />
-      )}
-
-      {activeOffers.length > 0 && (
-        <OfferSection
-          title="Active Offers"
-          offers={activeOffers}
-          borderColor="border-green-500"
-          handleEditOffer={handleEditOffer}
-          handleDeleteOffer={handleDeleteOffer}
-        />
-      )}
-
-      {expiredOffers.length > 0 && (
-        <OfferSection
-          title="Expired Offers"
-          offers={expiredOffers}
-          borderColor="border-red-500"
-          handleEditOffer={handleEditOffer}
-          handleDeleteOffer={handleDeleteOffer}
-        />
-      )}
-
-      {/* Edit/Create Offer Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button
+            variant="outline"
+            className="mt-6 w-full"
+            onClick={() => setSelectedOffer(null)}
+          >
+            <PlusCircle size={18} /> New Order
+          </Button>
+        </DialogTrigger>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
@@ -294,31 +311,45 @@ export default function OffersPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label>Offer Starts</Label>
-                <Input
-                  type="date"
-                  name="offer_started"
-                  value={
-                    selectedOffer?.offerStart.toISOString().split("T")[0] ||
-                    new Date().toISOString().split("T")[0]
-                  }
-                  onChange={(e) =>
-                    setSelectedOffer({
-                      ...selectedOffer!,
-                      offerStart: new Date(e.target.value),
-                    })
-                  }
-                  className={`w-full p-2 border rounded ${
-                    selectedOffer?.status === OfferStatus.SCHEDULED &&
-                    !selectedOffer?.offerStart
-                      ? "border-red-500"
-                      : "border-gray-300"
-                  }`}
-                  min={
-                    selectedOffer?.status === OfferStatus.SCHEDULED
-                      ? new Date().toISOString().split("T")[0]
-                      : undefined
-                  }
-                />
+                <Popover modal={true}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={clsx(
+                        "w-full justify-start text-left font-normal",
+                        selectedOffer?.status === OfferStatus.SCHEDULED &&
+                          !selectedOffer?.offerStart
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      )}
+                    >
+                      {selectedOffer?.offerStart
+                        ? format(selectedOffer.offerStart, "PPP")
+                        : "Pick a date"}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="start"
+                    forceMount
+                    className="z-[9999] w-auto p-0 bg-white shadow-lg"
+                  >
+                    <Calendar
+                      mode="single"
+                      selected={selectedOffer?.offerStart}
+                      onSelect={(date) =>
+                        setSelectedOffer({
+                          ...selectedOffer!,
+                          offerStart: date ?? new Date(),
+                        })
+                      }
+                      disabled={(date) =>
+                        selectedOffer?.status === OfferStatus.SCHEDULED &&
+                        date < new Date()
+                      }
+                    />
+                  </PopoverContent>
+                </Popover>
                 {selectedOffer?.status === OfferStatus.SCHEDULED &&
                   !selectedOffer?.offerStart && (
                     <p className="text-xs text-red-600 mt-1">
@@ -397,13 +428,46 @@ export default function OffersPage() {
             </div>
             <Button
               className="w-full"
-              onClick={selectedOffer?.id ? handleUpdateOffer : handleSaveOffer}
+              onClick={
+                selectedOffer?.id ? handleUpdateOffer : handleCreateOffer
+              }
             >
               {selectedOffer?.id ? "Update Offer" : "Add Offer"}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Offers Table */}
+      {scheduledOffers.length > 0 && (
+        <OfferSection
+          title="Scheduled Offers"
+          offers={scheduledOffers}
+          borderColor="border-orange-500"
+          handleEditOffer={handleEditOffer}
+          handleDeleteOffer={handleDeleteOffer}
+        />
+      )}
+
+      {activeOffers.length > 0 && (
+        <OfferSection
+          title="Active Offers"
+          offers={activeOffers}
+          borderColor="border-green-500"
+          handleEditOffer={handleEditOffer}
+          handleDeleteOffer={handleDeleteOffer}
+        />
+      )}
+
+      {expiredOffers.length > 0 && (
+        <OfferSection
+          title="Expired Offers"
+          offers={expiredOffers}
+          borderColor="border-red-500"
+          handleEditOffer={handleEditOffer}
+          handleDeleteOffer={handleDeleteOffer}
+        />
+      )}
     </div>
   );
 }
@@ -437,7 +501,7 @@ function OfferSection({
               <TableHead>Offer end</TableHead>
               <TableHead>Affiliate Link</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead>Edit</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -446,8 +510,12 @@ function OfferSection({
                 <TableCell>{offer.desc}</TableCell>
                 <TableCell>{offer.rebatePercentage}</TableCell>
                 <TableCell>{offer.itemCost}</TableCell>
-                <TableCell>{offer.offerStart.toISOString().split("T")[0]}</TableCell>
-                <TableCell>{offer.offerEnd.toISOString().split("T")[0]}</TableCell>
+                <TableCell>
+                  {offer.offerStart.toISOString().split("T")[0]}
+                </TableCell>
+                <TableCell>
+                  {offer.offerEnd.toISOString().split("T")[0]}
+                </TableCell>
                 <TableCell>
                   <a
                     href={offer.affiliateLink}
@@ -467,13 +535,13 @@ function OfferSection({
                   >
                     <Pencil size={16} />
                   </Button>
-                  <Button
+                  {/* <Button
                     variant="destructive"
                     size="icon"
                     onClick={() => handleDeleteOffer(offer.id)}
                   >
                     <Trash2 size={16} />
-                  </Button>
+                  </Button> */}
                 </TableCell>
               </TableRow>
             ))}

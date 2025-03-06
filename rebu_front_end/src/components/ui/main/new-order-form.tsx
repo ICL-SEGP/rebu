@@ -25,7 +25,7 @@ import {
   PopoverTrigger,
 } from "@radix-ui/react-popover";
 import { API_BASE_URL } from "@/lib/constants";
-import { Check } from "lucide-react";
+import { Check, PlusCircle } from "lucide-react";
 import { Offer, Order, OrderStatus } from "@/types/app";
 import {
   affiliateCreateOrder,
@@ -93,28 +93,20 @@ export default function NewOrderForm({
     setLoading(true);
 
     try {
-      console.log(selectedUser);
-      console.log(newOrder);
-
       const createdOrder = await affiliateCreateOrder(
         session!.accessToken,
         selectedUser?.id,
         newOrder
       );
 
-      console.log("created", createdOrder);
-
       // Update orders list
       setOrders((prevOrders) => [createdOrder, ...prevOrders]);
 
       // Reset form & close modal
       setNewOrder({
-        user: "",
-        offer: "",
-        amount: "",
-        status: "in_progress",
-        date: new Date(),
-        offers: [],
+        totalRebateAmount: "",
+        status: OrderStatus.COMPLETED,
+        orderDate: new Date(),
       });
       setOpen(false);
       alert("Order created successfully!");
@@ -157,7 +149,7 @@ export default function NewOrderForm({
     <Dialog open={open} onOpenChange={setOpen} modal={false}>
       <DialogTrigger asChild>
         <Button variant="outline" className="mt-6 w-full">
-          + New Order
+          <PlusCircle size={18} /> New Order
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg p-6 ">
