@@ -1,5 +1,5 @@
-import Marketplace from "@/components/marketplace/marketplace";
+import MarketplaceSelect from "@/components/marketplace/select";
 
 export default function UserMarketplacePage() {
-  return <Marketplace />;
+  return <MarketplaceSelect />;
 }

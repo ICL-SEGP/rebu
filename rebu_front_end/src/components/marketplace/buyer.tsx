@@ -76,7 +76,7 @@ const fetchProducts = async () => {
   }
 };
 
-export default function Marketplace() {
+export default function BuyerMarketplace() {
   const { data : session } = useSession();
   const [search, setSearch] = useState("");
   const [filteredCategory, setFilteredCategory] = useState<string | null>(null);

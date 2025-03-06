@@ -1,5 +1,5 @@
 import ProductPage from "@/components/marketplace/product";
 
-export default function AffiliateMarketplaceProductPage() {
+export default function UserMarketplaceProductPage() {
   return <ProductPage />;
 }
