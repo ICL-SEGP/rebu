@@ -1,0 +1,5 @@
+Owner account: CSWoyRACpM1tFJaCAZGKqytMjCXrT6iWJgkgpPHRZCPx
+Mint account: mntSPLHmrFAELUiNxDC31Nm44TofrAs7VXBknPoqiBY
+User account: 6nyYhkrgDfb3f1eVCaAjTPoPkVRxx5sev9tzr5f1mCDY
+Owner token account: 6WCJGk3u4WAavJbEvQFY2x9Y4YVWcGm4gBgpEcBWLdJY
+User token account: FAuE48G4Z5JA9vbtPkVPYYbHpDQuJ5cvZbtCByqMMkih

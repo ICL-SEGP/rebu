@@ -1,20 +1,24 @@
 #![allow(clippy::result_large_err)]
 
-use anchor_lang::prelude::*; 
-use anchor_spl::{ 
-    token_interface::{ Mint, TokenAccount, TokenInterface }, 
-    // associated_token::AssociatedToken,
+use anchor_lang::prelude::*;
+
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token_interface::{ 
+        self, Mint, TokenAccount, 
+        TokenInterface, TransferChecked,
+    },
 };
 
-use crate::{ ANCHOR_DISCRIMINATOR, ProductListing, RebuError };
+use crate::{ ProductListing, PurchaseReceipt, ANCHOR_DISCRIMINATOR, RebuError };
 
 #[derive(Accounts)]
 #[instruction(id: u64)]
-pub struct AddListing<'info> {
+pub struct MakePurchase<'info> {
 
-    /// Affiliate
+    /// Customer
     #[account(mut)]
-    signer: Signer<'info>,
+    customer: Signer<'info>,
 
     /// Rebu mint
     #[account(mut)]
@@ -26,40 +30,90 @@ pub struct AddListing<'info> {
     /// ATA of seller 
     #[account(
         mut,
-        associated_token::mint = mint,
-        associated_token::authority = seller,
+        // associated_token::mint = mint,
+        // associated_token::authority = seller,
     )] 
     seller_ata: InterfaceAccount<'info, TokenAccount>,
 
+    /// ATA of customer 
     #[account(
-        init, 
-        payer = signer,
-        space = ANCHOR_DISCRIMINATOR + ProductListing::INIT_SPACE,
+        mut
+        // associated_token::mint = mint,
+        // associated_token::authority = customer,
+    )] 
+    customer_ata: InterfaceAccount<'info, TokenAccount>,
+
+    #[account(
+        mut,
+        // has_one = seller,
         seeds = [
             b"product".as_ref(), b"listing".as_ref(), 
             seller.key().as_ref(), 
             id.to_le_bytes().as_ref()
         ],
-        bump,
+        bump = product_listing.bump,
     )]
     product_listing: Account<'info, ProductListing>,
 
-    // associated_token_program: Program<'info, AssociatedToken>,
+    #[account(
+        init, 
+        payer = customer,
+        space = ANCHOR_DISCRIMINATOR + PurchaseReceipt::INIT_SPACE,
+        // has_one = customer,
+        seeds = [
+            b"product".as_ref(), b"purchase".as_ref(),
+            seller.key().as_ref(),
+            id.to_le_bytes().as_ref(),
+            customer.key().as_ref()
+        ],
+        bump,
+    )]
+    product_purchase: Account<'info, PurchaseReceipt>, // TODO
+
+    associated_token_program: Program<'info, AssociatedToken>,
     token_program: Interface<'info, TokenInterface>,
     system_program: Program<'info, System>,
 }
 
-pub fn save_listing(ctx: Context<AddListing>, id: u64, stock: u64, price: u64) -> Result<()> {
-    require!(stock > 0 && price > 0, RebuError::InvalidListing);
+pub fn decrement_stock(ctx: Context<MakePurchase>, _id: u64) -> Result<()> {
+    require!(ctx.accounts.product_listing.stock > 0, RebuError::OutOfStock);
 
-    ctx.accounts.product_listing.set_inner(
-        ProductListing {
+    let product_listing = &mut ctx.accounts.product_listing;
+    product_listing.stock -= 1;
+
+    // if product_listing.stock == 0 {
+    //     product_listing.close(ctx.accounts.seller.to_account_info())?;
+    // }
+    msg!("Stock decreased");
+    Ok(())
+}
+
+pub fn transfer_tokens(ctx: &Context<MakePurchase>, _id: u64) -> Result<()> {
+    let cpi_accounts = TransferChecked {
+        from: ctx.accounts.customer_ata.to_account_info().clone(),
+        mint: ctx.accounts.mint.to_account_info().clone(),
+        to: ctx.accounts.seller_ata.to_account_info().clone(),
+        authority: ctx.accounts.customer.to_account_info(),
+    };
+
+    let cpi_program = ctx.accounts.token_program.to_account_info();
+    let cpi_context = CpiContext::new(cpi_program, cpi_accounts);
+    let amount = ctx.accounts.product_listing.price;
+    token_interface::transfer_checked(cpi_context, amount, ctx.accounts.mint.decimals)?;
+    msg!("Tokens transfered");
+    Ok(())
+}
+
+pub fn save_purchase(ctx: Context<MakePurchase>, id: u64) -> Result<()> {
+    ctx.accounts.product_purchase.set_inner(
+        PurchaseReceipt {
             seller: ctx.accounts.seller.key(),
-            mint: ctx.accounts.mint.key(),
-            id,
-            stock,
-            price,
-            bump: ctx.bumps.product_listing,
+            customer: ctx.accounts.customer.key(),
+            product_id: ctx.accounts.product_listing.id,
+            bump: ctx.bumps.product_purchase,
         });
+    decrement_stock(ctx, id)?;
+
+    msg!("Purchase saved");
     Ok(())
 }
