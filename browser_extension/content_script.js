@@ -1,5 +1,6 @@
 (function() {
-  chrome.storage.local.get({loggedIn: false, affiliate_product: "Nothing", redirected: false, trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing", flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}}, (result) => {
+  
+  chrome.storage.local.get({domain_name_1: "Nothing", domain_name_2: "Nothing", loggedIn: false, affiliate_product: "Nothing", redirected: false, trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing", flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}}, (result) => {
     if (!result.loggedIn)
     if (!result.trackingEnabled) return;
     if (!result.flags["affiliate_link_detected"] && check_for_offer(window.location.href)) {
@@ -7,19 +8,26 @@
       chrome.storage.local.set({trackLog: [{url: "Affiliate link clicked " + window.location.href, type:"start", timestamp: new Date().toISOString()}] });
       chrome.storage.local.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": false, "item_confirmed": false}});
       chrome.storage.local.set({affiliate_product: document.body.innerText})
+      chrome.storage.local.set({domain_name_1: getDomainFromHref(window.location.href)})
       console.log(window.location.href);
     }
     if (result.redirected) {
       chrome.storage.local.set({affiliate_product: document.body.innerText, redirected: false});
     }
-
-
-    checkForPurchaseConfirmation(result.affiliate_product);
+    const val = getDomainFromHref(window.location.href)
+    console.log(val);
+    if (val === result.domain_name_1 || val === result.domain_name_2) {
+      checkForPurchaseConfirmation(result.affiliate_product);
+    }
     
     // Set up a MutationObserver to catch dynamic changes in the page.
     const observer = new MutationObserver((mutations) => {
       // If a mutation adds new content, check again.
-      checkForPurchaseConfirmation(result.affiliate_product);
+      const val = getDomainFromHref(window.location.href)
+      console.log(val);
+      if (val === result.domain_name_1 || val === result.domain_name_2) {
+        checkForPurchaseConfirmation(result.affiliate_product);
+      }
     });
     
     // Observe the body for changes in its subtree.
@@ -249,7 +257,7 @@ async function check_correct_product(product1, product2) {
     You are an AI assistant that analyzes inner text webpages to verify if any product on a purchase confirmation page matches any product on an initial affiliate link page. Follow these steps:
 
     1. **Extract Product Details from the Affiliate Link Page:**
-      - Analyze the inner text and identify all product's product name, brand, model, and any unique identifiers (e.g., SKU, ASIN).
+      - Analyze the inner text and identify all product's product name, brand, model, price, and any unique identifiers (e.g., SKU, ASIN).
       - Ignore irrelevant content like ads, navigation, or unrelated text.
 
     2. **Extract Product Details from the Confirmation Page:**
@@ -258,7 +266,7 @@ async function check_correct_product(product1, product2) {
 
     3. **Compare the Products:**
       - Compare each product from the affiliate link page with each product on the confirmation page.
-      - If **any product** on the confirmation page matches any product on the affiliate link exactly (based on name, brand, model, and unique identifiers), respond with 'YES'.
+      - If **any product** on the confirmation page matches any product on the affiliate link exactly (based on name, brand, model, price, and unique identifiers), respond with 'YES'.
       - If no products match, respond with 'NO'.
 
     4. **Output Format:**
@@ -314,4 +322,13 @@ async function check_correct_product(product1, product2) {
 function reset_variables() {
   chrome.storage.local.set({offers:[], redirected: false, redirectUrl: "Nothing", url: "Nothing", trackLog: [], flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}});
 }
-  
+
+function getDomainFromHref(href) {
+  try {
+    const url = new URL(href);
+    return url.hostname;
+  } catch (e) {
+    console.error("Invalid URL:", href);
+    return null;
+  }
+}

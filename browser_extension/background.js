@@ -35,10 +35,11 @@ chrome.webRequest.onBeforeRedirect.addListener(
         // You can process or store details.url (original) and details.redirectUrl (new URL)
         let redirectUrl = details["redirectUrl"]
         let url = details["url"]
-        let offer = {redirectUrl: url}
+        
         if (check_for_offer(url)) {
           chrome.storage.local.set({redirected: true, redirectUrl: redirectUrl, url: url, flags: {"affiliate_link_detected": true, "confirmation_page_reached": false, "item_confirmed": false}})
-          chrome.storage.local.set({ trackLog: [{url: "Affiliate link clicked " + redirectUrl, type:"start", timestamp: new Date().toISOString()}] })
+          chrome.storage.local.set({ trackLog: [{url: "Affiliate link clicked " + redirectUrl, type:"start", timestamp: new Date().toISOString()}] });
+          chrome.storage.local.set({domain_name_1: getDomainFromHref(url), domain_name_2: getDomainFromHref(redirectUrl)});
         }
       }
     })
@@ -187,3 +188,22 @@ async function check_for_offer(url) {
   }
 }
 
+function getDomainFromHref(href) {
+  try {
+    const url = new URL(href);
+    return url.hostname;
+  } catch (e) {
+    console.error("Invalid URL:", href);
+    return null;
+  }
+}
+
+function getDomainFromHref(href) {
+  try {
+    const url = new URL(href);
+    return url.hostname;
+  } catch (e) {
+    console.error("Invalid URL:", href);
+    return null;
+  }
+}
