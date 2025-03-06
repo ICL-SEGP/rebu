@@ -1,5 +1,6 @@
 (function() {
-  chrome.storage.local.get({loggedIn: false, affiliate_product: "Nothing", redirected: false, trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing", flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}}, (result) => {
+  
+  chrome.storage.local.get({domain_name_1: "Nothing", domain_name_2: "Nothing", loggedIn: false, affiliate_product: "Nothing", redirected: false, trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing", flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}}, (result) => {
     if (!result.loggedIn)
     if (!result.trackingEnabled) return;
     if (!result.flags["affiliate_link_detected"] && check_for_offer(window.location.href)) {
@@ -7,19 +8,26 @@
       chrome.storage.local.set({trackLog: [{url: "Affiliate link clicked " + window.location.href, type:"start", timestamp: new Date().toISOString()}] });
       chrome.storage.local.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": false, "item_confirmed": false}});
       chrome.storage.local.set({affiliate_product: document.body.innerText})
+      chrome.storage.local.set({domain_name_1: getDomainFromHref(window.location.href)})
       console.log(window.location.href);
     }
     if (result.redirected) {
       chrome.storage.local.set({affiliate_product: document.body.innerText, redirected: false});
     }
-
-
-    checkForPurchaseConfirmation(result.affiliate_product);
+    const val = getDomainFromHref(window.location.href)
+    console.log(val);
+    if (val === result.domain_name_1 || val === result.domain_name_2) {
+      checkForPurchaseConfirmation(result.affiliate_product);
+    }
     
     // Set up a MutationObserver to catch dynamic changes in the page.
     const observer = new MutationObserver((mutations) => {
       // If a mutation adds new content, check again.
-      checkForPurchaseConfirmation(result.affiliate_product);
+      const val = getDomainFromHref(window.location.href)
+      console.log(val);
+      if (val === result.domain_name_1 || val === result.domain_name_2) {
+        checkForPurchaseConfirmation(result.affiliate_product);
+      }
     });
     
     // Observe the body for changes in its subtree.
@@ -243,7 +251,7 @@ async function check_correct_product_deepseek(product1, product2) {
 }
 
 async function check_correct_product(product1, product2) {
-  const apiKey = "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"; // Replace with your actual API key
+  const apiKey = "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"; // Replace with your actual API key
   console.log("Check called");
   const prompt = `
     You are an AI assistant that analyzes inner text webpages to verify if any product on a purchase confirmation page matches any product on an initial affiliate link page. Follow these steps:
@@ -314,4 +322,13 @@ async function check_correct_product(product1, product2) {
 function reset_variables() {
   chrome.storage.local.set({offers:[], redirected: false, redirectUrl: "Nothing", url: "Nothing", trackLog: [], flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}});
 }
-  
+
+function getDomainFromHref(href) {
+  try {
+    const url = new URL(href);
+    return url.hostname;
+  } catch (e) {
+    console.error("Invalid URL:", href);
+    return null;
+  }
+}
