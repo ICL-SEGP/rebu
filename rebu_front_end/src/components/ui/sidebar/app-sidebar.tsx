@@ -24,20 +24,40 @@ import { Button } from "@/components/ui/helpers/button";
 import WalletSolana from "../solana/solana-wallet-management";
 
 const affiliateNavItems = [
-  { title: "Dashboard", url: "/affiliate/dashboard" },
-  { title: "Users", url: "/affiliate/users" },
-  { title: "Offers", url: "/affiliate/offers" },
-  { title: "Orders", url: "/affiliate/orders" },
-  { title: "Marketplace", url: "/affiliate/marketplace"},
-  { title: "Purchase History", url: "/affiliate/marketplace/purchaseHistory"},
+  {
+    title: "Bussiness Management",
+    items: [
+      { title: "Dashboard", url: "/affiliate/dashboard" },
+      { title: "Users", url: "/affiliate/users" },
+      { title: "Offers", url: "/affiliate/offers" },
+      { title: "Orders", url: "/affiliate/orders" },
+    ],
+  },
+  {
+    title: "Shop & Sell",
+    items: [
+      { title: "Marketplace", url: "/affiliate/marketplace"},
+       { title: "Purchase History", url: "/affiliate/marketplace/purchaseHistory"},
+    ],
+  },
 ];
 
 const userNavItems = [
-  { title: "Dashboard", url: "/user/dashboard" },
-  { title: "Offers", url: "/user/offers" },
-  { title: "Orders", url: "/user/orders" },
-  { title: "Marketplace", url: "/user/marketplace" },
-  { title: "Purchase History", url: "/user/marketplace/purchaseHistory"},
+  {
+  title: "Offer Activity",
+    items: [
+      { title: "Dashboard", url: "/user/dashboard" },
+      { title: "Offers", url: "/user/offers" },
+      { title: "Orders", url: "/user/orders" },
+    ],
+  },
+  {
+    title: "Shop & Sell",
+    items: [
+      { title: "Marketplace", url: "/user/marketplace" },
+      { title: "Purchase History", url: "/user/marketplace/purchaseHistory"},
+    ],
+  },
 ];
 
 function navItems(session: any) {
@@ -45,18 +65,28 @@ function navItems(session: any) {
   const navItems =
     session!.user.role === "affiliate" ? affiliateNavItems : userNavItems;
 
-  // 2) Render the sidebar
+  // 2) Render the sidebar with sectioned groups
   return (
     <SidebarMenu>
-      {navItems.map((item) => (
-        <SidebarMenuItem key={item.title}>
-          <SidebarMenuButton asChild>
-            <a href={item.url}>{item.title}</a>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
+      {navItems.map((section) => (
+        <SidebarGroup key={section.title}>
+          {/* More subtle Section Title */}
+          <div className="text-xs font-medium text-gray-500 px-2 py-1 tracking-wide">
+            {section.title}
+          </div>
+          <SidebarGroupContent>
+            {section.items.map((item) => (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton asChild>
+                  <a href={item.url}>{item.title}</a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarGroupContent>
+        </SidebarGroup>
       ))}
     </SidebarMenu>
-  );
+  );  
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
