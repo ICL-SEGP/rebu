@@ -108,61 +108,56 @@ function reset_variables() {
 async function check_for_offer(url) {
   return true;
   try {
-      // Retrieve token from Chrome storage
-      const token = await new Promise((resolve) => {
-          chrome.storage.local.get(["token"], (result) => {
-              resolve(result.token || null);
-          });
-      });
+      chrome.storage.local.get({token: "Nothing"}, async (result) => {
+        if (result.token === "Nothing") {
+            console.error("No authentication token found in Chrome storage.");
+            return false;
+        }
 
-      if (!token) {
-          console.error("No authentication token found in Chrome storage.");
-          return false;
-      }
+        // Fetch offers from API
+        const response = await fetch("http://18.201.163.141:4000/offers", { 
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json", 
+                "Authorization": `Bearer ${result.token}`,
+            }
+        });
 
-      // Fetch offers from API
-      const response = await fetch("http://18.201.163.141:4000/offers", { 
-          method: "GET",
-          headers: {
-              "Content-Type": "application/json", 
-              "Authorization": `Bearer ${token}`,
-          }
-      });
+        // Check response status
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
 
-      // Check response status
-      if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-      }
+        const data = await response.json();
+        
+        // Ensure the data structure is valid
+        if (!Array.isArray(data)) {
+            console.error("Unexpected API response format:", data);
+            return false;
+        }
 
-      const data = await response.json();
-      
-      // Ensure the data structure is valid
-      if (!Array.isArray(data)) {
-          console.error("Unexpected API response format:", data);
-          return false;
-      }
+        // Get the current date
+        const currentDate = new Date();
 
-      // Get the current date
-      const currentDate = new Date();
-
-      // Find a matching active offer
-      const found = data.find(offer => {
+        const found = data.filter(offer => {
           const offerStart = new Date(offer.offer_start);
           const offerEnd = new Date(offer.offer_end);
           
-          return url.includes(offer.affiliate_link) && 
+          return url.includes(offer.affiliate_link) &&
                  offer.status === "active" &&
                  offerStart <= currentDate &&
                  offerEnd >= currentDate;
+        });
+
+        if (found) {
+            console.log("Matched active offer:", found);
+            chrome.storage.local.set({offers: found})
+            return true;
+        }
+
+        console.log("No matching active offer found.");
+        return false;
       });
-
-      if (found) {
-          console.log("Matched active offer:", found);
-          return true;
-      }
-
-      console.log("No matching active offer found.");
-      return false;
   } catch (error) {
       console.error("Error fetching or processing data:", error);
       return false;

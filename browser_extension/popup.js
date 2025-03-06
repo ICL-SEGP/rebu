@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const data = { success: true }; // Simulated response
 
       if (data.success) {
-        chrome.storage.sync.set({ loggedIn: true, username }, function () {
+        chrome.storage.sync.set({ loggedIn: true, token /*Insert token*/ }, function () {
           messageDisplay.innerText = "Login successful!";
           // Switch to "Status" tab
           switchTab("status");
