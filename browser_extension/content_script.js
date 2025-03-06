@@ -243,7 +243,7 @@ async function check_correct_product_deepseek(product1, product2) {
 }
 
 async function check_correct_product(product1, product2) {
-  const apiKey = "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"; // Replace with your actual API key
+  const apiKey = "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"; // Replace with your actual API key
   console.log("Check called");
   const prompt = `
     You are an AI assistant that analyzes inner text webpages to verify if any product on a purchase confirmation page matches any product on an initial affiliate link page. Follow these steps:

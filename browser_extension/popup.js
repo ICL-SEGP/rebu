@@ -70,31 +70,48 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     }
   }
+
   function displayOffers(offers) {
-    offersDiv.innerHTML = "";
+    offersDiv.innerHTML = ""; // Resets content safely
     if (offers.length === 0) {
       offersDiv.textContent = "No offers available";
     } else {
-      // Create an unordered list to hold the offers
       const ul = document.createElement("ul");
       offers.forEach(offer => {
         const li = document.createElement("li");
-        // Create a button for the offer
         const btn = document.createElement("button");
+        
+        // ========== DOM INJECTION FIXES ==========
+        // 1. Sanitize affiliate link
+        let sanitizedLink = "#";
+        if (typeof offer.affiliate_link === "string" && 
+            (offer.affiliate_link.startsWith("http://") || 
+             offer.affiliate_link.startsWith("https://"))) {
+          sanitizedLink = offer.affiliate_link;
+        }
+
+        // 2. Safe textContent usage
         btn.textContent = `${offer.desc} - $${offer.itemCost} (${offer.status})`;
-        // Add a custom class to style the button
         btn.classList.add("offer-button");
-        // When the button is clicked, open the affiliate link in a new tab
+
+        // 3. Visual indicator for invalid links
+        if (sanitizedLink === "#") {
+          btn.classList.add("invalid-link");
+          btn.disabled = true;
+          btn.title = "Invalid affiliate link";
+        }
+
+        // 4. Use sanitized link
         btn.addEventListener("click", () => {
-          window.open(offer.affiliate_link, "_blank");
+          window.open(sanitizedLink, "_blank");
         });
+
         li.appendChild(btn);
         ul.appendChild(li);
       });
       offersDiv.appendChild(ul);
     }
   }
-  
 
   // ========== INITIAL LOAD ==========
   // 1) Check if user is already logged in
