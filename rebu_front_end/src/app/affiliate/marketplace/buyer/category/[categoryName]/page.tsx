@@ -1,5 +1,0 @@
-import CategoryPage from "@/components/marketplace/category";
-
-export default function AffiliateMarketplaceCategoryPage() {
-  return <CategoryPage />;
-}

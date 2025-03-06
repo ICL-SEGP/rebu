@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/helpers/button";
 import { Table, TableHead, TableHeader, TableRow, TableCell, TableBody } from "@/components/ui/tables/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/modals/dialog";
 import { useRouter } from "next/navigation";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/helpers/card";
 
 const PurchaseHistory = () => {
   const { data: session } = useSession();
@@ -34,6 +35,33 @@ const PurchaseHistory = () => {
         sellerId: 456,
         productId: 789,
         totalAmount: 49.99,
+        orderDate: "",
+        status: OrderStatus.COMPLETED,
+      },
+      {
+        id: 2,
+        buyerId: 124,
+        sellerId: 454,
+        productId: 7894,
+        totalAmount: 49.99,
+        orderDate: "",
+        status: OrderStatus.COMPLETED,
+      },
+      {
+        id: 5,
+        buyerId: 1253,
+        sellerId: 4556,
+        productId: 7589,
+        totalAmount: 495.99,
+        orderDate: "",
+        status: OrderStatus.COMPLETED,
+      },
+      {
+        id: 26,
+        buyerId: 164,
+        sellerId: 4546,
+        productId: 78964,
+        totalAmount: 496.99,
         orderDate: "",
         status: OrderStatus.COMPLETED,
       },
@@ -69,30 +97,39 @@ const PurchaseHistory = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Purchase History</h1>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Product</TableHead>
-            <TableHead>Amount</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {purchases.map((purchase) => (
-            <TableRow key={purchase.id}>
-              <TableCell>{purchase.productId}</TableCell>
-              <TableCell>${purchase.totalAmount.toFixed(2)}</TableCell>
-              <TableCell>{purchase.status}</TableCell>
-              <TableCell>
-                <Button onClick={() => handleOpenModal(purchase)}>View Details</Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <Card className="shadow-md border border-gray-200">
+        <CardHeader className="p-4 border-b">
+          <CardTitle className="text-xl font-bold">Purchase History</CardTitle>
+        </CardHeader>
+        <CardContent className="p-4">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-b">
+                <TableHead>Product</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {purchases.map((purchase) => (
+                <TableRow key={purchase.id}>
+                  <TableCell>{purchase.productId}</TableCell>
+                  <TableCell>${purchase.totalAmount.toFixed(2)}</TableCell>
+                  <TableCell>{purchase.status}</TableCell>
+                  <TableCell className="text-right">
+                    <Button onClick={() => handleOpenModal(purchase)} className="bg-black text-white">
+                      View Details
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
+      {/* Purchase Details Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent>
           <DialogHeader>
@@ -108,7 +145,7 @@ const PurchaseHistory = () => {
               <div className="text-sm text-gray-600">
                 <p><strong>Price:</strong> {productDetails.price} token</p>
                 <p><strong>Seller ID:</strong> {productDetails.sellerId}</p>
-                <p><strong>Purchase Date:</strong> {new Date(selectedPurchase.orderDate).toDateString()}</p>
+                <p><strong>Purchase Date:</strong> {selectedPurchase.orderDate ? new Date(selectedPurchase.orderDate).toDateString() : "N/A"}</p>
                 <p><strong>Status:</strong> {selectedPurchase.status}</p>
               </div>
               <a href={productDetails.fileUrl} download className="block">

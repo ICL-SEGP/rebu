@@ -1,5 +1,0 @@
-import BuyerMarketplace from "@/components/marketplace/buyer";
-
-export default function AffiliateBuyerMarketplacePage() {
-  return <BuyerMarketplace />;
-}
