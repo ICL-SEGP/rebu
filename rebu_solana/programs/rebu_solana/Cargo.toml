@@ -8,10 +8,6 @@ edition = "2021"
 crate-type = ["cdylib", "lib"]
 name = "rebu_solana"
 
-# [[bin]]
-# name = "rebu_solana"
-# path = "./tests/rebu_solana.rs"
-
 [features]
 default = []
 cpi = ["no-entrypoint"]

@@ -28,6 +28,16 @@ pub struct CreateToken<'info> {
     )]
     pub mint_account: InterfaceAccount<'info, Mint>,
 
+    #[account(
+        mut,
+        seeds = [
+            b"rebu",
+            b"vault",
+        ],
+        bump,
+    )]
+    vault: SystemAccount<'info>,
+
     pub token_program: Program<'info, Token2022>,
     pub system_program: Program<'info, System>,
 }
@@ -84,4 +94,32 @@ pub fn init_mint(ctx: Context<CreateToken>, uri: String) -> Result<()> {
         uri,
     )?;
     Ok(())
+}
+
+#[derive(Accounts)] 
+#[instruction(amount: u64)] 
+pub struct SendSol<'info> {
+
+    #[account(mut, signer)] /// CHECK 
+    pub buyer: AccountInfo<'info>,
+    
+    /// CHECK 
+    pub vault_authority: AccountInfo<'info>,
+    
+    /// CHECK 
+    #[account( 
+        init, 
+        payer = buyer, 
+        seeds = [b"seed"], 
+        space=32 + 32 + 32, 
+        bump, 
+    )] 
+    pub vault_account: Account<'info, LockAccount>,
+    pub system_program: Program<'info, System>,
+}
+
+#[account] 
+pub struct LockAccount { 
+    pub buyer: Pubkey, 
+    pub amount: u64, 
 }

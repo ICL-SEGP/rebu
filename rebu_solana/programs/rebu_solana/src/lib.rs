@@ -24,7 +24,7 @@ pub mod rebu_solana {
     }
 
     pub fn mint_rebu_to(ctx: Context<MintRebuTo>, rebu_amount: u64, sol_amount: u64) -> Result<()> {
-        instructions::rebu_mint::mint_rebu::mint_to(&ctx, rebu_amount)?;
+        instructions::rebu_mint::mint_rebu::mint_rebu(&ctx, rebu_amount)?;
         instructions::rebu_mint::mint_rebu::deposit_sol(ctx, sol_amount)
     } 
 
