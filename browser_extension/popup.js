@@ -164,23 +164,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Simulate an API call (replace with your real login logic)
     try {
-      // const response = await fetch(`http://18.201.163.141:4000/api/login`, {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({
-      //     email: username,
-      //     password: password,
-      //   }),
-      // });
-      // console.log(response);
-      console.log("HELLOOOOOOOOO");
-      await new Promise(resolve => setTimeout(resolve, 500)); // Fake network delay
-      const data = { success: true }; // Simulated response
-
-      if (data.success) {
-        chrome.storage.sync.set({ loggedIn: true, token:"Nothing" /*Insert token*/ }, function () {
+      const response = await fetch(`http://18.201.163.141:4000/sign-in`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: username,
+          password: password,
+        }),
+      });
+      console.log(response);      
+      const statusCode = response.status;
+      console.log(statusCode);
+      const data = await response.json();
+      console.log(data)
+      
+      if (statusCode === 200) {
+        chrome.storage.sync.set({ loggedIn: true, token: data.token/*Insert token*/ }, function () {
           messageDisplay.innerText = "Login successful!";
-          // Switch to "Status" tab
           switchTab("status");
         });
       } else {
@@ -190,6 +190,7 @@ document.addEventListener('DOMContentLoaded', function () {
       messageDisplay.innerText = "Login failed IDK";
       console.error("Login error:", error);
     }
+    
   });
 
   // Logout
