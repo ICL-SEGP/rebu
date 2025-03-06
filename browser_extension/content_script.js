@@ -257,7 +257,7 @@ async function check_correct_product(product1, product2) {
     You are an AI assistant that analyzes inner text webpages to verify if any product on a purchase confirmation page matches any product on an initial affiliate link page. Follow these steps:
 
     1. **Extract Product Details from the Affiliate Link Page:**
-      - Analyze the inner text and identify all product's product name, brand, model, and any unique identifiers (e.g., SKU, ASIN).
+      - Analyze the inner text and identify all product's product name, brand, model, price, and any unique identifiers (e.g., SKU, ASIN).
       - Ignore irrelevant content like ads, navigation, or unrelated text.
 
     2. **Extract Product Details from the Confirmation Page:**
@@ -266,7 +266,7 @@ async function check_correct_product(product1, product2) {
 
     3. **Compare the Products:**
       - Compare each product from the affiliate link page with each product on the confirmation page.
-      - If **any product** on the confirmation page matches any product on the affiliate link exactly (based on name, brand, model, and unique identifiers), respond with 'YES'.
+      - If **any product** on the confirmation page matches any product on the affiliate link exactly (based on name, brand, model, price, and unique identifiers), respond with 'YES'.
       - If no products match, respond with 'NO'.
 
     4. **Output Format:**
