@@ -24,7 +24,7 @@ export const WalletButton = dynamic(async () => (await import('@solana/wallet-ad
 export function SolanaProvider({ children }: { children: ReactNode }) {
 
   const network = WalletAdapterNetwork.Devnet;
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+  const endpoint = useMemo(() => "http://localhost:8899", [network]);
 
   const onError = useCallback((error: WalletError) => {
     console.error(error)
