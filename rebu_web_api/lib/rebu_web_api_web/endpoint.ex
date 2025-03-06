@@ -14,7 +14,7 @@ defmodule RebuWebApiWeb.Endpoint do
   plug CORSPlug,
     # 🔥 Allow frontend origin
     origin: "*",
-    methods: ["GET", "POST", "OPTIONS", "PUT","PATCH", "DELETE"],
+    methods: ["GET", "POST", "OPTIONS", "PUT", "PATCH", "DELETE"],
     headers: ["Authorization", "Content-Type"],
     expose: ["Authorization"],
     credentials: true

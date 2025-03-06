@@ -14,13 +14,9 @@ defmodule RebuWebApi.Auth.AccountPlugs do
     # else
     #   user_id = Plug.Conn.fetch_session(conn)
 
-
-
     #   if user_id == nil, do: raise(RebuWebApi.Auth.ErrorResponse.Unauthorized)
 
     #   user = Accounts.get_user!(user_id)
-
-
 
     #   cond do
     #     user && user_id -> assign(conn, :user, user)

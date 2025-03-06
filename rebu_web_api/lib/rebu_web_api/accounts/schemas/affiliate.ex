@@ -13,7 +13,8 @@ defmodule RebuWebApi.Accounts.Affiliate do
              :inserted_at,
              :updated_at,
              :solana_pub_key
-           ], except: [:token_balance, :revenue]}
+           ],
+           except: [:token_balance, :revenue]}
 
   schema "affiliates" do
     field :first_name, :string
@@ -31,11 +32,12 @@ defmodule RebuWebApi.Accounts.Affiliate do
     has_many :offers, RebuWebApi.Sales.Offer
     has_many :users, RebuWebApi.Accounts.User
 
-    has_many :uploads, RebuWebApi.Uploads.Upload, foreign_key: :owner_id, where: [owner_type: :affiliate]
+    has_many :uploads, RebuWebApi.Uploads.Upload,
+      foreign_key: :owner_id,
+      where: [owner_type: :affiliate]
 
     timestamps(type: :utc_datetime)
   end
-
 
   def registration_changeset(user, attrs) do
     user

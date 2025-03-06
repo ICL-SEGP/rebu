@@ -15,7 +15,6 @@ alias RebuWebApi.Factory
 alias RebuWebApi.Sales
 alias RebuWebApi.Accounts
 
-
 IO.puts("Seeding database...")
 
 # Step 1: Create an Affiliate User
@@ -61,7 +60,6 @@ end)
 IO.puts("Orders created for all users, each linked to an offer by the affiliate.")
 
 offers = Factory.insert_list(10, :offer, affiliate: affiliate, status: :scheduled)
-
 
 IO.puts("Scheduled Future affiliate Orders.")
 

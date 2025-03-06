@@ -4,6 +4,7 @@ defmodule RebuWebApiWeb.AuthJSON do
   @doc """
   Returns auth success response with token.
   """
+
   # def user(%{user: user, token: token}) do
   #   %{user: user, token: token, mint: RebuWebApi.SolanaApi.get_mint_str()}
   # end

@@ -57,6 +57,4 @@ defmodule RebuWebApi.Sales.Offer do
       :item_cost
     ])
   end
-
-
 end
