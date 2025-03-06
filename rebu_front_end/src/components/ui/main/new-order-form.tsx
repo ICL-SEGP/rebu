@@ -1,36 +1,83 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogHeader, DialogFooter } from "@/components/ui/modals/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+  DialogHeader,
+  DialogFooter,
+} from "@/components/ui/modals/dialog";
 import { Button } from "@/components/ui/helpers/button";
 import { Input } from "@/components/ui/forms/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/forms/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/forms/select";
 import { Calendar } from "@/components/ui/helpers/calendar";
 import { format } from "date-fns";
-import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@radix-ui/react-popover";
 import { API_BASE_URL } from "@/lib/constants";
 import { Check } from "lucide-react";
+import { Offer, Order, OrderStatus } from "@/types/app";
+import {
+  affiliateCreateOrder,
+  affiliateGetUsersIdx,
+} from "@/lib/api/affiliate";
+import { useQuery } from "@tanstack/react-query";
+import { StackId } from "recharts/types/util/ChartUtils";
 
-export default function NewOrderForm({ setOrders }) {
-  const [offers, setOffers] = useState([]);
+export default function NewOrderForm({
+  setOrders,
+  offers,
+}: {
+  setOrders: any;
+  offers: Offer[];
+}) {
   const { data: session } = useSession();
-  if (!session) throw new Error("No user logged in.");
-
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState<{
+    email: string;
+    id: string;
+  }>();
+  const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
-  const [newOrder, setNewOrder] = useState({
-    user: "",
-    offer: "",
-    amount: "",
-    status: "in_progress",
-    date: new Date(),
-    offers: [],
+  const [newOrder, setNewOrder] = useState<any>({
+    totalRebateAmount: "",
+    status: OrderStatus.COMPLETED,
+    orderDate: new Date(),
   });
+
+  const { data: userList } = useQuery({
+    queryKey: ["affiliate-offers-idx"],
+    queryFn: () => affiliateGetUsersIdx(session!.accessToken),
+  });
+
+  useEffect(() => {
+    if (userList) {
+      setUsers(userList);
+    }
+  }, [userList]);
+
+  const filteredUsers = search
+    ? users.filter((user: { email: string; id: string }) =>
+        user.email.toLowerCase().includes(search.toLowerCase())
+      )
+    : users.slice(0, 5); // Show first 5 users initially
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   // Handle field changes
-  const handleChange = (field: keyof typeof newOrder, value: string | Date) => {
-    setNewOrder((prev) => ({ ...prev, [field]: value }));
+  const handleChange = (field: string, value: string | Date) => {
+    setNewOrder((prev: any) => ({ ...prev, [field]: value }));
     setError(""); // Clear error on change
   };
 
@@ -46,32 +93,14 @@ export default function NewOrderForm({ setOrders }) {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/affiliate/orders/create`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.accessToken}`,
-        },
-        body: JSON.stringify({
-          ...newOrder,
-          date: format(newOrder.date, "yyyy-MM-dd"), // Convert date to string format
-        }),
-      });
+      console.log(selectedUser);
+      console.log(newOrder);
 
-      console.log(response);
-
-      if (!response.ok) throw new Error("Failed to create order.");
-
-      const order = await response.json();
-
-      const createdOrder = {
-        id: order.id,
-        offers: order.offers.map((offer) => offer.id),
-        user: order.user?.email,
-        date: order.date,
-        status: order.status, // Renaming inserted_at to date
-        amount: parseFloat(order.total_rebate_amount).toFixed(2), // Convert to number
-      };
+      const createdOrder = await affiliateCreateOrder(
+        session!.accessToken,
+        selectedUser?.id,
+        newOrder
+      );
 
       console.log("created", createdOrder);
 
@@ -79,7 +108,14 @@ export default function NewOrderForm({ setOrders }) {
       setOrders((prevOrders) => [createdOrder, ...prevOrders]);
 
       // Reset form & close modal
-      setNewOrder({ user: "", offer: "", amount: "", status: "in_progress", date: new Date(), offers: [] });
+      setNewOrder({
+        user: "",
+        offer: "",
+        amount: "",
+        status: "in_progress",
+        date: new Date(),
+        offers: [],
+      });
       setOpen(false);
       alert("Order created successfully!");
     } catch (error) {
@@ -90,73 +126,104 @@ export default function NewOrderForm({ setOrders }) {
     }
   };
 
-  // const fetchOffers = async () => {
-  //   try {
-  //     const res = await fetch(`${API_BASE_URL}/api/offers`, {
-  //       method: "GET",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${session.accessToken}`,
-  //       },
-  //     });
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    }
 
-  //     if (!res.ok) throw new Error("Failed to fetch balance");
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
-  //     const offers = (await res.json()).data;
-
-  //     let fetchedOffers = await offers.map((offer) => ({
-  //       id: offer.id,
-  //       desc: offer.desc,
-  //       affiliate_link: offer.affiliate_link,
-  //       offer_started: offer.offer_start,
-  //       offer_end: offer.offer_end,
-  //       rebate_percentage: parseFloat(offer.rebate_percentage).toFixed(2),
-  //     }));
-
-  //     setOffers(fetchedOffers);
-  //   } catch (error) {
-  //     console.error("Error fetching orders:", error);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchOffers();
-  // }, []);
+  useEffect(() => {
+    if (open) {
+      setTimeout(() => {
+        document.activeElement?.blur();
+        setShowSuggestions(false);
+      }, 10);
+    }
+  }, [open]);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={setOpen} modal={false}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="mt-6 w-full">+ New Order</Button>
+        <Button variant="outline" className="mt-6 w-full">
+          + New Order
+        </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg p-6">
+      <DialogContent className="max-w-lg p-6 ">
         <DialogHeader>
           <DialogTitle>Create New Order</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            placeholder="User Email"
-            value={newOrder.user}
-            onChange={(e) => handleChange("user", e.target.value)}
-            required
-          />
+          <div ref={dropdownRef}>
+            <Input
+              type="text"
+              placeholder="Search user by email..."
+              value={search}
+              onFocus={() => setShowSuggestions(true)} // Show on focus
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setShowSuggestions(true); // Keep showing suggestions while typing
+              }}
+              autoFocus={false}
+              className="w-full p-2 border rounded-md"
+            />
+
+            {showSuggestions && (
+              <div className="absolute w-full bg-white border rounded-md shadow-md mt-1 max-h-40 overflow-y-auto z-50">
+                {filteredUsers.length > 0 ? (
+                  filteredUsers.map((user) => (
+                    <div
+                      key={user.id}
+                      className="p-2 cursor-pointer hover:bg-gray-100"
+                      onClick={() => {
+                        setSelectedUser(user);
+                        setSearch(user.email); // Set selected email in input
+                        setShowSuggestions(false); // Hide suggestions
+                        onSelect(user);
+                      }}
+                    >
+                      {user.email}
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-2 text-gray-500">No results found</div>
+                )}
+              </div>
+            )}
+          </div>
+
           <Input
             type="text"
             placeholder="Total Rebate Amount"
-            value={newOrder.amount}
-            onChange={(e) => handleChange("amount", e.target.value)}
+            value={newOrder.totalRebateAmount}
+            onChange={(e) => handleChange("totalRebateAmount", e.target.value)}
             required
           />
 
           {/* Status Dropdown */}
-          <Select value={newOrder.status} onValueChange={(value) => handleChange("status", value)}>
+          <Select
+            value={newOrder.status}
+            onValueChange={(value) => handleChange("status", value)}
+          >
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="in_progress">Pending</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="refunded">Refunded</SelectItem>
+            <SelectContent defaultValue={OrderStatus.COMPLETED}>
+              <SelectItem value={OrderStatus.PENDING}>Pending</SelectItem>
+              <SelectItem value={OrderStatus.COMPLETED}>Completed</SelectItem>
+              <SelectItem value={OrderStatus.CANCELED}>Refunded</SelectItem>
             </SelectContent>
           </Select>
 
@@ -166,44 +233,65 @@ export default function NewOrderForm({ setOrders }) {
 
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start text-left font-normal">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal"
+                >
                   {newOrder.offers && newOrder.offers.length > 0
                     ? `${newOrder.offers.length} offer(s) selected`
                     : "Select Offers"}
                 </Button>
               </PopoverTrigger>
-
-              <PopoverContent align="start" className="w-auto p-2 bg-white border rounded-lg shadow-lg">
+              <PopoverContent
+                align="start"
+                className="w-auto p-2 bg-white border rounded-lg shadow-lg"
+              >
                 <div className="flex flex-col space-y-2 max-h-60 overflow-y-auto p-2">
-                  {offers.map((offer) => {
-                    const isSelected = Array.isArray(newOrder.offers) && newOrder.offers.includes(offer.id);
+                  {Array.isArray(offers) && offers.length > 0 ? (
+                    offers.map((offer) => {
+                      const isSelected =
+                        Array.isArray(newOrder.offers) &&
+                        newOrder.offers.includes(offer.id);
 
-                    return (
-                      <div
-                        key={offer.id}
-                        className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-md cursor-pointer"
-                        onClick={() => {
-                          setNewOrder((prev) => ({
-                            ...prev,
-                            offers: isSelected
-                              ? prev.offers.filter((id) => id !== offer.id)
-                              : [...prev.offers, offer.id],
-                          }));
-                          setError(""); //clear error on offer select
-                        }}
-                      >
-                        {/* Checkbox UI */}
+                      return (
                         <div
-                          className={`w-5 h-5 border rounded-md flex items-center justify-center transition ${isSelected ? "bg-green-500 text-white" : "bg-white"}`}
+                          key={offer.id}
+                          className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-md cursor-pointer"
+                          onClick={() => {
+                            setNewOrder((prev) => ({
+                              ...prev,
+                              offers: isSelected
+                                ? prev.offers?.filter(
+                                    (id) => id !== offer.id
+                                  ) ?? []
+                                : [...(prev.offers ?? []), offer.id],
+                            }));
+                            setError(""); // Clear error on offer select
+                          }}
                         >
-                          {isSelected && <Check size={16} />}
-                        </div>
+                          {/* Checkbox UI */}
+                          <div
+                            className={`w-5 h-5 border rounded-md flex items-center justify-center transition ${
+                              isSelected
+                                ? "bg-green-500 text-white"
+                                : "bg-white"
+                            }`}
+                          >
+                            {isSelected && <Check size={16} />}
+                          </div>
 
-                        {/* Offer Title */}
-                        <span className="text-sm">Offer ID:{offer.id} {offer.desc} </span>
-                      </div>
-                    );
-                  })}
+                          {/* Offer Title */}
+                          <span className="text-sm">
+                            Offer ID: {offer.id} {offer.desc}
+                          </span>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-gray-500 text-center">
+                      No offers available
+                    </div>
+                  )}
                 </div>
               </PopoverContent>
             </Popover>
@@ -215,13 +303,22 @@ export default function NewOrderForm({ setOrders }) {
 
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start text-left font-normal">
-                  {newOrder.date ? format(newOrder.date, "dd MMM yyyy") : "Pick a date"}
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal"
+                >
+                  {newOrder.date
+                    ? format(newOrder.date, "dd MMM yyyy")
+                    : "Pick a date"}
                 </Button>
               </PopoverTrigger>
 
               {/* Fixes alignment + auto-close when date is selected */}
-              <PopoverContent align="center" side="bottom" className="w-auto p-2 bg-white border rounded-lg shadow-lg">
+              <PopoverContent
+                align="center"
+                side="bottom"
+                className="w-auto p-2 bg-white border rounded-lg shadow-lg"
+              >
                 <Calendar
                   mode="single"
                   selected={newOrder.date}
@@ -229,7 +326,7 @@ export default function NewOrderForm({ setOrders }) {
                     handleChange("date", date || new Date());
                     document.activeElement?.blur(); // Close popover when date is selected
                   }}
-                  className="rounded-md shadow-md w-full"
+                  initialFocus
                 />
               </PopoverContent>
             </Popover>
@@ -247,4 +344,7 @@ export default function NewOrderForm({ setOrders }) {
       </DialogContent>
     </Dialog>
   );
+}
+function getAffiliateOffersIdx(accessToken: string): any {
+  throw new Error("Function not implemented.");
 }

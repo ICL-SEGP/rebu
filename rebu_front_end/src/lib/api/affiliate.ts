@@ -227,6 +227,25 @@ export function affiliateGetUsers(token: string): Promise<User[]> {
     })
     .then((users) => users.map((user: any) => toUser(user)));
 }
+
+export function affiliateGetUsersIdx(token: string): Promise<any> {
+  return fetch(`${API_BASE_URL}/affiliate/users/idx`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch all Affiliate's user idxs: ${response.statusText}`
+      );
+    }
+
+    return response.json();
+  });
+}
+
 export function affiliateCreateUser(
   token: string,
   newUser: any
@@ -335,8 +354,8 @@ export function getAllLinkedOrders(token: string): Promise<Order[]> {
 
 export function affiliateCreateOrder(
   token: string,
-  userId: number,
-  newOrder: Order
+  userId: string,
+  newOrder: any
 ): Promise<Order> {
   return fetch(`${API_BASE_URL}/affiliate/orders/user/${userId}`, {
     method: "POST",
@@ -344,7 +363,7 @@ export function affiliateCreateOrder(
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(humps.decamelizeKeys(newOrder)),
+    body: JSON.stringify({ order: humps.decamelizeKeys(newOrder) }),
   })
     .then((response) => {
       if (!response.ok) {
@@ -381,7 +400,6 @@ export function affiliateUpdateOrder(
   token: string,
   updatedOrder: any
 ): Promise<Order> {
-
   return fetch(`${API_BASE_URL}/affiliate/orders/${updatedOrder.id}`, {
     method: "PATCH",
     headers: {
@@ -391,7 +409,7 @@ export function affiliateUpdateOrder(
     body: JSON.stringify({ order: humps.decamelizeKeys(updatedOrder) }),
   })
     .then((response) => {
-      console.log(response)
+      console.log(response);
       if (!response.ok) {
         throw new Error(
           `Failed to update order ${updatedOrder.id}: ${response.statusText}`

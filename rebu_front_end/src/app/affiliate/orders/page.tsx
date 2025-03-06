@@ -38,6 +38,7 @@ import { Offer, Order, OrderStatus, Role, toOfferIds } from "@/types/app";
 import { useQuery } from "@tanstack/react-query";
 import {
   affiliateCancelOrder,
+  affiliateGetUsersIdx,
   affiliateUpdateOrder,
   getAffiliateOffers,
   getAllLinkedOrders,
@@ -66,7 +67,6 @@ export default function OrdersPage() {
     if (ordersList) {
       ordersList.sort((a, b) => b.orderDate.getTime() - a.orderDate.getTime());
       setOrders(ordersList);
-      console.log(orders);
     }
   }, [ordersList]);
 
@@ -169,7 +169,6 @@ export default function OrdersPage() {
   return (
     <div className="space-y-6 p-6l">
       <h1 className="text-2xl font-bold">Manage Orders</h1>
-
       {/* Search & Filter */}
       <div className="flex gap-4">
         <Input
@@ -194,9 +193,7 @@ export default function OrdersPage() {
           </SelectContent>
         </Select>
       </div>
-
-      <NewOrderForm setOrders={setOrders} />
-
+      <NewOrderForm setOrders={setOrders} offers={offers} />
       {completedOrders.length > 0 && (
         <OrderSection
           title="Completed Orders"
@@ -208,8 +205,7 @@ export default function OrdersPage() {
           offers={offers}
         />
       )}
-
-      {/* Orders Sections
+      Orders Sections
       {pendingOrders.length > 0 && (
         <OrderSection
           title="Pending Orders"
@@ -221,7 +217,6 @@ export default function OrdersPage() {
           offers={offers}
         />
       )}
-
       {refundedOrders.length > 0 && (
         <OrderSection
           title="Refunded Orders"
@@ -232,7 +227,7 @@ export default function OrdersPage() {
           setOrders={setOrders}
           offers={offers}
         />
-      )} */}
+      )}
     </div>
   );
 }
@@ -284,25 +279,6 @@ function OrderSection({
     setTempOrderCopy(order);
   };
 
-  // Save Order Update
-  // const handleSave = () => {
-  //   if (!tempOrder) return;
-  //   if (
-  //     !window.confirm(
-  //       `Are you sure you want to update Order #${tempOrder.id} ?`
-  //     )
-  //   ) {
-  //     return;
-  //   }
-
-  //   setOrders((prevOrders: Order[]) =>
-  //     prevOrders.map((order) => (order.id === tempOrder.id ? tempOrder : order))
-  //   );
-  //   setSelectedOrderId(null);
-  //   console.log(tempOrder)
-  //   const res = affiliateUpdateOrder(session!.accessToken, tempOrder): Promse<Order>;
-  // };
-
   const handleSave = async () => {
     if (!tempOrder) return;
 
@@ -315,8 +291,11 @@ function OrderSection({
     }
 
     try {
-      const updateOrder = {...tempOrder, offers: toOfferIds(tempOrder.offers)}
-      console.log(tempOrder)
+      const updateOrder = {
+        ...tempOrder,
+        offers: toOfferIds(tempOrder.offers),
+      };
+
       const updatedOrder = await affiliateUpdateOrder(
         session!.accessToken,
         updateOrder
@@ -329,21 +308,10 @@ function OrderSection({
       );
 
       setSelectedOrderId(null);
-      console.log("Updated Order:", updatedOrder);
     } catch (error) {
       console.error("Failed to update order:", error);
     }
   };
-
-  // Delete Order
-  // const handleDeleteOrder = (id: number) => {
-  //   if (window.confirm(`Are you sure you want to delete Order #${id}?`)) {
-  //     setOrders((prevOrders: Order[]) =>
-  //       prevOrders.filter((order) => order.id !== id)
-  //     );
-  //     affiliateCancelOrder(session!.accessToken, id);
-  //   }
-  // };
 
   useEffect(() => {
     if (selectedOrderId) {
@@ -366,6 +334,7 @@ function OrderSection({
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-100">
+              <TableHead>Order ID</TableHead>
               <TableHead>User</TableHead>
               <TableHead>Offer</TableHead>
               <TableHead>Rebate</TableHead>
@@ -378,7 +347,8 @@ function OrderSection({
             {orders?.length > 0 ? (
               orders.map((order) => (
                 <TableRow key={order.id}>
-                  <TableCell>{order.user.id}</TableCell>
+                  <TableCell>{order.id}</TableCell>
+                  <TableCell>{order.user.email}</TableCell>
 
                   <TableCell>
                     {selectedOrderId === order.id ? (
@@ -433,13 +403,6 @@ function OrderSection({
 
                                         const previousOffers =
                                           prev.offers || []; // ✅ Ensure prev.offers is always an array
-                                        console.log(offer);
-                                        console.log("selected", isSelected);
-                                        console.log(
-                                          "prev offers",
-                                          previousOffers
-                                        );
-
                                         const updatedOffers = isSelected
                                           ? previousOffers.filter(
                                               (o) => o.id != offer.id
@@ -447,11 +410,6 @@ function OrderSection({
                                           : [...previousOffers, offer].sort(
                                               (a, b) => a.id - b.id
                                             ); // ✅ Add & sort
-
-                                        console.log(
-                                          "updated offers",
-                                          updatedOffers
-                                        );
 
                                         return {
                                           ...prev,

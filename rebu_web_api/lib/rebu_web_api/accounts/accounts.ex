@@ -299,4 +299,12 @@ defmodule RebuWebApi.Accounts do
     query = from u in User, where: u.affiliate_id == ^affiliate_id
     Repo.all(query)
   end
+
+  def get_affiliate_linked_users_idx(affiliate_id) do
+  query = from u in User,
+    where: u.affiliate_id == ^affiliate_id,
+    select: %{id: u.id, email: u.email}
+
+  Repo.all(query)
+end
 end

@@ -42,6 +42,15 @@ defmodule RebuWebApiWeb.UserController do
     |> json(users)
   end
 
+  def get_linked_users_idx(conn, _params) do
+    affiliate = Guardian.Plug.current_resource(conn)
+
+    users = Accounts.get_affiliate_linked_users_idx(affiliate.id)
+
+    conn
+    |> json(users)
+  end
+
   def manual_create_user(conn, %{"user" => user_params}) do
     with {:ok, user} <- Accounts.register_user(user_params) do
       conn

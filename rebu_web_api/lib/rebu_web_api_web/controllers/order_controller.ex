@@ -140,7 +140,7 @@ defmodule RebuWebApiWeb.OrderController do
     |> render("order.json", order: order)
   end
 
-  def affiliate_create(conn, %{"order" => order_params, "user_id" => user_id}) do
+  def affiliate_create(conn, %{"order" => order_params, "id" => user_id}) do
     affiliate = Guardian.Plug.current_resource(conn)
     user = Accounts.get_user!(user_id)
 
@@ -148,7 +148,7 @@ defmodule RebuWebApiWeb.OrderController do
       raise ErrorResponse.Unauthorized
     end
 
-    {:ok, order} = Sales.create_order(Map.put(order_params, :user, user))
+    {:ok, order} = Sales.create_order(Map.put(order_params, "user", user), order_params["offers"])
 
     conn
     |> json(order)

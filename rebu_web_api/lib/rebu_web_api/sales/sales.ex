@@ -211,6 +211,22 @@ defmodule RebuWebApi.Sales do
     |> Repo.insert()
   end
 
+  def create_order(attrs, offerIds) do
+    check_completed_and_mint(attrs)
+
+    offer_ids = Map.get(attrs, "offers", [])
+    # Fetch Offer structs
+    offers = Repo.all(from(o in Offer, where: o.id in ^offer_ids))
+
+    dbg(attrs)
+
+    %Order{}
+    |> Order.changeset(attrs)
+    |> Ecto.Changeset.put_assoc(:offers, offers)
+    |> Ecto.Changeset.put_assoc(:user, attrs["user"])
+    |> Repo.insert()
+  end
+
   def new_order(attrs \\ %{}) do
     # Convert string keys to atoms
 
@@ -396,7 +412,7 @@ defmodule RebuWebApi.Sales do
       join: offer in Offer,
       on: offer.id == order_offer.offer_id,
       where: offer.affiliate_id == ^affiliate_id,
-      select: order,
+      distinct: true,
       preload: [:offers, :user]
     )
     |> Repo.all()
@@ -410,6 +426,7 @@ defmodule RebuWebApi.Sales do
       join: offer in Offer,
       on: offer.id == order_offer.offer_id,
       where: offer.affiliate_id == ^affiliate_id,
+      distinct: true,
       preload: [:offers]
     )
     |> Repo.all()

@@ -48,6 +48,7 @@ defmodule RebuWebApiWeb.Router do
 
     # users
     get "/users", UserController, :get_linked_users
+    get "/users/idx", UserController, :get_linked_users_idx
     post "/users", UserController, :manual_create_user
     get "/users/:id", UserController, :get
     patch "/users/:id", UserController, :update
