@@ -16,7 +16,7 @@ config :logger, level: :info
 
 # config :rebu_web_api, RebuWebApi.SolanaApi,
 #   crate: :solana_api,
-#   load_from: {:rebu_api_web, "priv/native/libsolana_api.so"}
+#   load_from: {:rebu_web_api, "priv/native/libsolana_api.so"}
 
 # config :rustler,
 #   rustler_crates: [

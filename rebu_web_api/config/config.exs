@@ -13,6 +13,8 @@ config :rebu_web_api, RebuWebApi.Auth.Guardian,
   issuer: "rebu_web_api",
   secret_key: "aBaKJGLEf/MGhpgOaVOidvypHHIRHeY9S0xlYW7ita7GeAylQCWTqRqgWX+ZwRzU"
 
+config :rebu_web_api, RebuWebApi.Repo, start_apps_before_migration: [:logger]
+
 # config :rustler,
 #   rustler_crates: [
 #     solana_api: [

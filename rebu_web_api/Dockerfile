@@ -18,13 +18,41 @@ ARG DEBIAN_VERSION=bullseye-20250113-slim
 ARG BUILDER_IMAGE="hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}"
 ARG RUNNER_IMAGE="debian:${DEBIAN_VERSION}"
 
-FROM rust:1.85.0-bullseye as rust_builder
-# install build dependencies
+# FROM rust:1.85.0-bullseye as rust_builder
+# # install build dependencies
+# RUN apt-get update -y && apt-get install -y build-essential git \
+#   && apt-get clean && rm -f /var/lib/apt/lists/*_*
+
+# WORKDIR /app
+# COPY native/solana_api ./
+# RUN cargo build --release
+
+
+FROM rust:1.85.0-bullseye AS rust_builder
+
+# Install build dependencies
 RUN apt-get update -y && apt-get install -y build-essential git \
-  && apt-get clean && rm -f /var/lib/apt/lists/*_*
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY native/solana_api ./
+
+# Step 1: Copy only dependency files first (ensures cache is used when no changes in dependencies)
+COPY native/solana_api/Cargo.toml native/solana_api/Cargo.lock ./
+
+# Step 2: Create a temporary "dummy" Rust project to allow dependency prefetching
+RUN mkdir src && echo "fn main() {}" > src/main.rs
+
+# Step 3: Fetch dependencies (this will be cached unless Cargo.toml/Cargo.lock changes)
+RUN cargo fetch
+
+# # Step 4: Now copy the rest of the source code (invalidates cache only if actual code changes)
+# COPY native/solana_api ./
+
+# Step 4: Copy only source files (ensures cache is only invalidated if Rust files actually change)
+COPY native/solana_api/src ./src
+COPY native/solana_api/idls ./idls
+
+# Step 5: Build the Rust project (only runs when the above step changes)
 RUN cargo build --release
 
 
