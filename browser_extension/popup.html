@@ -6,7 +6,6 @@
   <title>Affiliate Tracker</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
     :root {
       --primary: #000000;
       --primary-hover: #1a1a1a;
@@ -27,13 +26,11 @@
       --shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
     }
-
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-
     body {
       font-family: 'Inter', -apple-system, sans-serif;
       background-color: var(--background);
@@ -41,13 +38,11 @@
       min-width: 380px;
       line-height: 1.5;
     }
-
     .container {
       width: 380px;
       margin: 0 auto;
       padding: 20px;
     }
-
     .header {
       padding: 0 0 20px 0;
       margin-bottom: 20px;
@@ -55,18 +50,15 @@
       flex-direction: column;
       gap: 4px;
     }
-
     .header h1 {
       font-size: 20px;
       font-weight: 600;
       color: var(--primary);
     }
-
     .header p {
       font-size: 14px;
       color: var(--text-secondary);
     }
-
     /* Tabs */
     .tabs {
       display: flex;
@@ -76,7 +68,6 @@
       border-radius: var(--radius-md);
       gap: 4px;
     }
-
     .tabs button {
       flex: 1;
       padding: 8px 16px;
@@ -89,37 +80,30 @@
       border-radius: var(--radius-sm);
       transition: all 0.2s ease;
     }
-
     .tabs button:hover {
       color: var(--text);
       background: rgba(0, 0, 0, 0.03);
     }
-
     .tabs button.active {
       color: white;
       background: var(--primary);
     }
-
     /* Tab Content */
     .tab-content {
       display: none;
     }
-
     .tab-content.active {
       display: block;
       animation: fadeIn 0.2s ease;
     }
-
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(4px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
     /* Form elements */
     .form-group {
       margin-bottom: 20px;
     }
-
     label {
       display: block;
       margin-bottom: 6px;
@@ -127,7 +111,6 @@
       font-weight: 500;
       color: var(--text);
     }
-
     input {
       width: 100%;
       padding: 10px 12px;
@@ -137,16 +120,13 @@
       outline: none;
       transition: all 0.2s ease;
     }
-
     input:hover {
       border-color: #B0B7C3;
     }
-
     input:focus {
       border-color: var(--blue);
       box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
     }
-
     /* Buttons */
     button {
       padding: 10px 16px;
@@ -159,63 +139,52 @@
       text-align: center;
       transition: all 0.2s ease;
     }
-
     .btn-primary {
       background-color: var(--primary);
       color: white;
     }
-
     .btn-primary:hover {
       background-color: var(--primary-hover);
       transform: translateY(-1px);
       box-shadow: var(--shadow);
     }
-
     /* Updated: Make the "btn-blue" button black */
     .btn-blue {
       background-color: #000000; /* black */
       color: white;
     }
-
     .btn-blue:hover {
       background-color: #1a1a1a; /* slightly lighter black for hover */
       transform: translateY(-1px);
       box-shadow: var(--shadow);
     }
-
     .btn-outline {
       background-color: var(--background);
       border: 1.5px solid var(--border);
       color: var(--text);
     }
-
     .btn-outline:hover {
       background-color: var(--surface);
       transform: translateY(-1px);
     }
-
     .btn-danger {
       background-color: var(--background);
       border: 1.5px solid var(--border);
       color: var(--danger);
     }
-
     .btn-danger:hover {
       background-color: var(--danger-light);
       border-color: var(--danger);
       transform: translateY(-1px);
     }
-
     .button-group {
       display: flex;
       gap: 12px;
       margin-bottom: 20px;
     }
-
     .button-group button {
       flex: 1;
     }
-
     /* Status indicators */
     .status-list {
       display: flex;
@@ -223,7 +192,6 @@
       gap: 12px;
       margin-bottom: 24px;
     }
-
     .status-item {
       display: flex;
       align-items: center;
@@ -232,12 +200,10 @@
       border-radius: var(--radius-md);
       transition: all 0.2s ease;
     }
-
     .status-item:hover {
       transform: translateY(-1px);
       box-shadow: var(--shadow);
     }
-
     .status-indicator {
       width: 10px;
       height: 10px;
@@ -247,12 +213,10 @@
       position: relative;
       transition: all 0.3s ease;
     }
-
     .status-indicator.active {
       background-color: var(--success);
       box-shadow: 0 0 0 4px var(--success-light);
     }
-
     .status-indicator.active::after {
       content: "";
       position: absolute;
@@ -261,12 +225,10 @@
       border: 2px solid var(--success);
       opacity: 0.5;
     }
-
     .status-text {
       font-size: 14px;
       font-weight: 500;
     }
-
     /* Permission Status */
     #permissionStatus {
       margin: 20px 0;
@@ -277,7 +239,6 @@
       color: var(--text);
       border-left: 3px solid var(--primary);
     }
-
     /* Log area */
     #log {
       max-height: 200px;
@@ -290,13 +251,11 @@
       margin-bottom: 20px;
       color: var(--text);
     }
-
     #log:empty::before {
       content: "No events tracked.";
       color: var(--text-secondary);
       font-style: italic;
     }
-
     /* Conversion badge */
     #conversionBadge {
       display: none;
@@ -310,12 +269,10 @@
       font-weight: 500;
       animation: slideIn 0.3s ease;
     }
-
     @keyframes slideIn {
       from { transform: translateY(-10px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
     }
-
     /* Message text */
     #message {
       margin-top: 16px;
@@ -324,15 +281,12 @@
       text-align: center;
       min-height: 20px;
     }
-
     .message-error {
       color: var(--danger);
     }
-
     .message-success {
       color: var(--success);
     }
-
     /* Scrollbar */
     ::-webkit-scrollbar {
       width: 8px;
@@ -362,6 +316,7 @@
       <button id="tab-login" class="active">Login</button>
       <button id="tab-status">Status</button>
       <button id="tab-logs">Logs</button>
+      <button id="tab-offers">Offers</button>
     </div>
 
     <!-- LOGIN TAB -->
@@ -394,17 +349,12 @@
           <span class="status-text">Item Confirmed</span>
         </div>
       </div>
-
       <div id="permissionStatus"></div>
-
       <div class="button-group">
-        <!-- Now it's black instead of blue -->
         <button id="enableTracking" class="btn-blue">Enable Tracking</button>
         <button id="disableTracking" class="btn-outline">Disable Tracking</button>
       </div>
-
       <button id="logout" class="btn-danger">Sign out</button>
-
       <div id="conversionBadge">Conversion Complete!</div>
     </div>
 
@@ -413,9 +363,13 @@
       <div id="log"></div>
       <button id="clearLog" class="btn-danger">Clear Log</button>
     </div>
-  </div>
 
-  <!-- Your extension logic -->
+    <!-- OFFERS TAB -->
+    <div id="content-offers" class="tab-content">
+      <p>Offers content goes here.</p>
+      <!-- You can add code to list or manage affiliate offers here -->
+    </div>
+  </div>
   <script src="popup.js"></script>
 </body>
 </html>

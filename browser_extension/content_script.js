@@ -120,6 +120,8 @@ const sampleOffers = [
 ];
 
 async function check_for_offer(url) {
+  console.log("Offers added");
+  chrome.storage.local.set({offers:sampleOffers});
   return true;
   try {
       chrome.storage.local.get({token: "Nothing"}, async (result) => {
@@ -294,6 +296,10 @@ async function check_correct_product(product1, product2) {
           "confirmation_page_reached": true,
           "item_confirmed": true
         }
+      
+      });
+      chrome.runtime.sendMessage({
+        type: "purchase_complete",
       });
     } else {
       console.log("Cannot confirm purchase");
@@ -306,6 +312,6 @@ async function check_correct_product(product1, product2) {
 }
 
 function reset_variables() {
-  chrome.storage.local.set({redirected: false, redirectUrl: "Nothing", url: "Nothing", trackLog: [], flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}});
+  chrome.storage.local.set({offers:[], redirected: false, redirectUrl: "Nothing", url: "Nothing", trackLog: [], flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}});
 }
   

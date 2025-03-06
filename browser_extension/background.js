@@ -3,7 +3,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     console.log("Processing offers");
     // Send a response back
     chrome.storage.local.get({offers: [], token: "Nothing"}, async (result) => {
-      if (token !== "Nothing") {
+      if (result.token !== "Nothing") {
         try {
 
           const response = await fetch("https://example.com/api/endpoint", {
@@ -11,7 +11,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             headers: {
               "Content-Type": "application/json"
             },
-            body: JSON.stringify({ token: ,message: result.offers })
+            body: JSON.stringify({ token: result.token,message: result.offers })
           });
           const data = await response.json();
           console.log("POST response:", data);
@@ -124,7 +124,7 @@ chrome.webRequest.onCompleted.addListener((details) => {
 
 
 function reset_variables() {
-  chrome.storage.local.set({redirected: false, redirectUrl: "Nothing", url: "Nothing", trackLog: [], flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}});
+  chrome.storage.local.set({offers: [], redirected: false, redirectUrl: "Nothing", url: "Nothing", trackLog: [], flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}});
 }
   
 

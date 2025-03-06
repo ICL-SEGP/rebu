@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const confirmationStatus = document.getElementById("confirmation_page");
   const purchaseStatus = document.getElementById("item_detected");
   const conversionBadge = document.getElementById("conversionBadge");
+  const offersDiv = document.getElementById('content-offers');
 
   // Login elements
   const usernameInput = document.getElementById("username");
@@ -42,6 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function updatePermissionStatus(enabled) {
     permissionStatus.textContent = enabled ? "Tracking Enabled" : "Tracking Disabled";
     fetchLog();
+    fetchOffers();
   }
 
   // Fetch & display logs
@@ -49,6 +51,11 @@ document.addEventListener('DOMContentLoaded', function () {
     chrome.storage.local.get({ trackLog: [] }, function (result) {
       displayLog(result.trackLog);
     });
+  }
+  function fetchOffers() {
+    chrome.storage.local.get({offers: []}, function (result) {
+      displayOffers(result.offers);
+    })
   }
 
   function displayLog(log) {
@@ -63,6 +70,31 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     }
   }
+  function displayOffers(offers) {
+    offersDiv.innerHTML = "";
+    if (offers.length === 0) {
+      offersDiv.textContent = "No offers available";
+    } else {
+      // Create an unordered list to hold the offers
+      const ul = document.createElement("ul");
+      offers.forEach(offer => {
+        const li = document.createElement("li");
+        // Create a button for the offer
+        const btn = document.createElement("button");
+        btn.textContent = `${offer.desc} - $${offer.itemCost} (${offer.status})`;
+        // Add a custom class to style the button
+        btn.classList.add("offer-button");
+        // When the button is clicked, open the affiliate link in a new tab
+        btn.addEventListener("click", () => {
+          window.open(offer.affiliate_link, "_blank");
+        });
+        li.appendChild(btn);
+        ul.appendChild(li);
+      });
+      offersDiv.appendChild(ul);
+    }
+  }
+  
 
   // ========== INITIAL LOAD ==========
   // 1) Check if user is already logged in
@@ -107,12 +139,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Disable tracking
   disableTracking.addEventListener('click', function () {
-    chrome.storage.local.set({
-      trackingEnabled: false,
-      redirectUrl: "Nothing",
-      url: "Nothing",
-      trackLog: []
-    }, function () {
+    chrome.storage.local.set({redirected: false, redirectUrl: "Nothing", url: "Nothing", trackLog: [], flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}}
+    , function () {
       updatePermissionStatus(false);
     });
   });
@@ -150,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const data = { success: true }; // Simulated response
 
       if (data.success) {
-        chrome.storage.sync.set({ loggedIn: true, token /*Insert token*/ }, function () {
+        chrome.storage.sync.set({ loggedIn: true, token:"Nothing" /*Insert token*/ }, function () {
           messageDisplay.innerText = "Login successful!";
           // Switch to "Status" tab
           switchTab("status");
@@ -167,6 +195,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // Logout
   logoutButton.addEventListener("click", async () => {
     // Clear loggedIn state
+    chrome.storage.local.set({offers: [], redirected: false, redirectUrl: "Nothing", url: "Nothing", trackLog: [], flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}})
     chrome.storage.sync.set({ loggedIn: false, username: "" }, function () {
       messageDisplay.innerText = "You have been logged out.";
       // Switch back to login tab 
@@ -176,6 +205,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Listen for storage changes (update flags/logs in real time)
   chrome.storage.onChanged.addListener((changes, areaName) => {
+    console.log(changes)
     if (areaName === "local") {
       if (changes.flags) {
         const newFlags = changes.flags.newValue;
@@ -189,6 +219,9 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       if (changes.trackLog) {
         displayLog(changes.trackLog.newValue || []);
+      }
+      if (changes.offers) {
+        displayOffers(changes.offers.newValue || []);
       }
     }
   });
