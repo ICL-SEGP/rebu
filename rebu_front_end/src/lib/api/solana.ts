@@ -30,8 +30,8 @@ const SYSTEM_PROGRAM_ID: PublicKey = new PublicKey(
 );
 
 const DEVNET = {
-  name: "local",
-  endpoint: "http://localhost:8899",
+  name: "devnet",
+  endpoint: "https://api.devnet.solana.com",
 };
 
 export function getSolanaProgram(

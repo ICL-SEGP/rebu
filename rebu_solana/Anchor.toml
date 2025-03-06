@@ -12,5 +12,5 @@ rebu_solana = "5b8N346ZbwB3PbpYthoUTLtrdw9qpbKue52S1bDCBter"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "Devnet"
 wallet = "~/.config/solana/id.json"
