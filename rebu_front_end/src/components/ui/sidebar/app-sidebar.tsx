@@ -28,7 +28,8 @@ const affiliateNavItems = [
   { title: "Users", url: "/affiliate/users" },
   { title: "Offers", url: "/affiliate/offers" },
   { title: "Orders", url: "/affiliate/orders" },
-  { title: "Marketplace", url: "/affiliate/marketplace"}
+  { title: "Marketplace", url: "/affiliate/marketplace"},
+  { title: "Purchase History", url: "/affiliate/marketplace/purchaseHistory"},
 ];
 
 const userNavItems = [
@@ -36,6 +37,7 @@ const userNavItems = [
   { title: "Offers", url: "/user/offers" },
   { title: "Orders", url: "/user/orders" },
   { title: "Marketplace", url: "/user/marketplace" },
+  { title: "Purchase History", url: "/user/marketplace/purchaseHistory"},
 ];
 
 function navItems(session: any) {

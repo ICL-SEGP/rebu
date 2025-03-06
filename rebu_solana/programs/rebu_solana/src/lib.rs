@@ -13,7 +13,7 @@ pub use constants::*;
 pub use error::*;
 
 
-declare_id!("3BjmHpjppF39NVDJbL4UG7pD6tV75fLHMuh7aZU4f2Qc");
+declare_id!("5b8N346ZbwB3PbpYthoUTLtrdw9qpbKue52S1bDCBter");
 
 #[program]
 pub mod rebu_solana {
