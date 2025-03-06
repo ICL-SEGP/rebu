@@ -1,19 +1,26 @@
 defmodule RebuWebApiWeb.AffiliateJSON do
-  alias RebuWebApiWeb.JSONHelpers
+  use JsonView
 
-  def get_users(%{users: users}) do
-    %{users: Enum.map(users, &JSONHelpers.serialize_schema/1)}
-  end
+  # define which fields return without modifying
+  @fields [
+    :id,
+    :first_name,
+    :last_name,
+    :email,
+    :role,
+    :inserted_at,
+    :updated_at,
+    :solana_pub_key
+  ]
+  # define which fields that need to format or calculate, you have to define `render_field/2` below
+  @relationships [
+    offers: RebuWebApiWeb.OfferJSON,
+    users: RebuWebApiWeb.UserJSON,
+    uploads: RebuWebApWeb.UploadJSON
+  ]
 
-  def get_orders(%{orders: orders}) do
-    Enum.map(orders, &JSONHelpers.serialize_schema/1)
-  end
-
-  def get_offers(%{offers: offers}) do
-    Enum.map(offers, &JSONHelpers.serialize_schema/1)
-  end
-
-  def order(%{order: order}) do
-    RebuWebApiWeb.OrderJSON.serialize_order(order)
+  def render("affiliate.json", %{affiliate: affiliate}) do
+    # 1st way if `use JsonView`
+    render_json(affiliate, @fields, [], @relationships)
   end
 end

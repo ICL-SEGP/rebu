@@ -38,8 +38,6 @@ defmodule RebuWebApiWeb.UserController do
 
     users = Accounts.get_affiliate_linked_users(affiliate.id)
 
-    dbg(users)
-
     conn
     |> json(users)
   end

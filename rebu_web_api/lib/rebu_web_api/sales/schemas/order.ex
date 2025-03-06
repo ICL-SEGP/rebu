@@ -7,12 +7,11 @@ defmodule RebuWebApi.Sales.Order do
              :id,
              :status,
              :total_rebate_amount,
-             :order_date,
-             :offers
+             :order_date
            ]}
 
   schema "orders" do
-    field :status, Ecto.Enum, values: [:pending, :refunded, :completed], default: :pending
+    field :status, Ecto.Enum, values: [:pending, :cancelled, :completed], default: :pending
     field :total_rebate_amount, :decimal
     field :order_date, :date
 
@@ -30,17 +29,32 @@ defmodule RebuWebApi.Sales.Order do
   def changeset(order, attrs) do
     order
     |> cast(attrs, [:status, :total_rebate_amount, :order_date])
-    |> validate_inclusion(:status, [:pending, :refunded, :completed])
+    |> validate_inclusion(:status, [:pending, :cancelled, :completed])
     |> validate_required([:status, :total_rebate_amount])
   end
 
   def status_changeset(user, attrs) do
     user
     |> cast(attrs, [:status])
-    |> validate_inclusion(:status, [:pending, :refunded, :completed])
+    |> validate_inclusion(:status, [:pending, :cancelled, :completed])
     |> case do
       %{changes: %{status: _}} = changeset -> changeset
       %{} = changeset -> add_error(changeset, :name, "invalid option")
+    end
+  end
+
+  defimpl Jason.Encoder, for: RebuWebApi.Sales.Order do
+    def encode(order, opts) do
+      order
+      |> Map.from_struct()
+      |> Map.drop([:__meta__, :__struct__]) # ✅ Removes Ecto metadata
+      |> Map.update(:offers, nil, fn offers ->
+        case offers do
+          %Ecto.Association.NotLoaded{} -> nil  # ✅ Removes offers if not preloaded
+          _ -> offers
+        end
+      end)
+      |> Jason.Encode.map(opts)
     end
   end
 end

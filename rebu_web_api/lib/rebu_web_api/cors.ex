@@ -6,7 +6,7 @@ defmodule RebuWebApi.CORS do
   def call(conn, _opts) do
     conn
     |> put_resp_header("access-control-allow-origin", "http://localhost:3000")
-    |> put_resp_header("access-control-allow-methods", "GET, POST, PUT, DELETE, OPTIONS")
+    |> put_resp_header("access-control-allow-methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS")
     |> put_resp_header(
       "access-control-allow-headers",
       "Origin, Content-Type, Accept, Authorization"

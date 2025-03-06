@@ -12,6 +12,9 @@
 
 alias RebuWebApi.Repo
 alias RebuWebApi.Factory
+alias RebuWebApi.Sales
+alias RebuWebApi.Accounts
+
 
 IO.puts("Seeding database...")
 

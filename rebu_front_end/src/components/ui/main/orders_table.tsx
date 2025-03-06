@@ -28,46 +28,46 @@ import { Slider } from "@/components/ui/shadcn/slider";
 import { Badge } from "@/components/ui/helpers/badge";
 import { Order, Offer, OrderStatus } from "@/types/app";
 
-const statusOptions = {
-  Cancelled: { position: 0, color: "text-red-500", label: "Tokens Cancelled" },
-  Pending: {
-    position: 50,
-    color: "text-orange-500",
-    label: "Tokens in Escrow",
-  },
-  Completed: {
-    position: 100,
-    color: "text-green-500",
-    label: "Tokens Released",
-  },
-};
+// const statusOptions = {
+//   Cancelled: { position: 0, color: "text-red-500", label: "Tokens Cancelled" },
+//   Pending: {
+//     position: 50,
+//     color: "text-orange-500",
+//     label: "Tokens in Escrow",
+//   },
+//   Completed: {
+//     position: 100,
+//     color: "text-green-500",
+//     label: "Tokens Released",
+//   },
+// };
 
-const defaultStatus = {
-  position: 50,
-  color: "text-gray-500",
-  label: "Unknown Status",
-};
+// const defaultStatus = {
+//   position: 50,
+//   color: "text-gray-500",
+//   label: "Unknown Status",
+// };
 
-const orders = [
-  {
-    id: 1,
-    status: "In Progress",
-    date: "2025-02-06",
-    totalRebateAmount: "62.39",
-  },
-  {
-    id: 2,
-    status: "Completed",
-    date: "2025-02-08",
-    totalRebateAmount: "159.23",
-  },
-  {
-    id: 3,
-    status: "Refunded",
-    date: "2025-02-10",
-    totalRebateAmount: "179.38",
-  },
-];
+// const orders = [
+//   {
+//     id: 1,
+//     status: "In Progress",
+//     date: "2025-02-06",
+//     totalRebateAmount: "62.39",
+//   },
+//   {
+//     id: 2,
+//     status: "Completed",
+//     date: "2025-02-08",
+//     totalRebateAmount: "159.23",
+//   },
+//   {
+//     id: 3,
+//     status: "Refunded",
+//     date: "2025-02-10",
+//     totalRebateAmount: "179.38",
+//   },
+// ];
 
 export default function OrderTable({orders}: {orders: Order[]}) {
   const [selectedOrder, setSelectedOrder] = useState<Order>();

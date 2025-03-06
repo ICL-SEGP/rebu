@@ -13,7 +13,7 @@ defmodule RebuWebApi.Sales.Offer do
              :offer_start,
              :offer_end,
              :affiliate_id,
-             :inserted_at,
+             :inserted_at
            ]}
 
   schema "offers" do
@@ -27,7 +27,7 @@ defmodule RebuWebApi.Sales.Offer do
 
     belongs_to :affiliate, RebuWebApi.Accounts.Affiliate
 
-    many_to_many :order, RebuWebApi.Sales.Order,
+    many_to_many :orders, RebuWebApi.Sales.Order,
       join_through: "offers_orders",
       on_delete: :delete_all,
       on_replace: :delete
@@ -57,4 +57,6 @@ defmodule RebuWebApi.Sales.Offer do
       :item_cost
     ])
   end
+
+
 end

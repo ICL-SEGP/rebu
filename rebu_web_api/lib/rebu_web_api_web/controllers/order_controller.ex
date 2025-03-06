@@ -100,10 +100,10 @@ defmodule RebuWebApiWeb.OrderController do
   def affiliate_get_orders(conn, _params) do
     affiliate = Guardian.Plug.current_resource(conn)
 
-    {:ok, orders} = Sales.get_all_orders_for_affiliate(affiliate.id)
+    orders = Sales.get_all_orders_for_affiliate(affiliate.id)
 
     conn
-    |> json(orders)
+    |> render("order.json", orders: orders)
   end
 
   def affiliate_get(conn, %{"id" => id}) do
@@ -115,35 +115,29 @@ defmodule RebuWebApiWeb.OrderController do
     end
 
     conn
-    |> json(order)
+    |> render("order.json", order: order)
   end
 
-  def affiliate_update(conn, %{"order" => order_params, "id" => id}) do
+  def affiliate_update(conn, %{"id" => id, "order" => order_params}) do
     affiliate = Guardian.Plug.current_resource(conn)
     order = Sales.get_order!(id)
 
-    if not (order.offer.affiliate_id == affiliate.id) do
-      raise ErrorResponse.Unauthorized
-    end
+    dbg(order_params)
 
     {:ok, order} = Sales.update_order(order, order_params)
 
     conn
-    |> json(order)
+    |> render("order.json", order: order)
   end
 
   def affiliate_cancel(conn, %{"id" => id}) do
     affiliate = Guardian.Plug.current_resource(conn)
     order = Sales.get_order!(id)
 
-    if not (order.offer.affiliate_id == affiliate.id) do
-      raise ErrorResponse.Unauthorized
-    end
-
     {:ok, order} = Sales.update_order(order, %{status: :cancelled})
 
     conn
-    |> json(order)
+    |> render("order.json", order: order)
   end
 
   def affiliate_create(conn, %{"order" => order_params, "user_id" => user_id}) do

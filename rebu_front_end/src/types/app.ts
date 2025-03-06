@@ -4,19 +4,21 @@ export enum Role {
   AFFILIATE = "affiliate",
   USER = "user",
   ADMIN = "admin",
-  ALL = "all"
+  ALL = "all",
 }
 
 export enum OrderStatus {
   PENDING = "pending",
   COMPLETED = "completed",
-  CANCELED = "canceled",
+  CANCELED = "cancelled",
+  ALL = "all",
 }
 
 export enum OfferStatus {
   EXPIRED = "expired",
   ACTIVE = "active",
   SCHEDULED = "scheduled",
+  ALL = "all",
 }
 
 export interface User {
@@ -50,7 +52,7 @@ export type AffiliateBalance = {
 
 export interface Order {
   id: number;
-  userId: string;
+  user: User;
   totalRebateAmount: string;
   status: OrderStatus;
   orderDate: Date;
@@ -186,7 +188,8 @@ export function toOrder(order: any): Order {
   order.id = Number(order.id);
   order.totalRebateAmount = parseFloat(order.totalRebateAmount).toFixed(2);
   order.orderDate = new Date(order.orderDate);
-  order.offers = order.offers.map((offer: any) => toOffer(offer));
+  order.offers = order.offers?.map((offer: any) => toOffer(offer)) || [];
+  order.user = order.user ? toUser(order.user) : null;
 
   switch (order.status) {
     case "pending":
@@ -201,6 +204,10 @@ export function toOrder(order: any): Order {
   }
 
   return order;
+}
+
+export function toOfferIds(offers: Offer[]) {
+  return offers.map((offer) => offer.id)
 }
 
 export function toOffer(offer: any): Offer {

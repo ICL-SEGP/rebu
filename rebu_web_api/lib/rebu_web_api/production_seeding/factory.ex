@@ -2,6 +2,7 @@ defmodule RebuWebApi.Factory do
   use ExMachina.Ecto, repo: RebuWebApi.Repo
 
   alias RebuWebApi.Sales.{Offer, Order}
+  alias RebuWebApi.Sales
   alias RebuWebApi.Accounts.User
   alias RebuWebApi.Accounts.Affiliate
 
@@ -166,9 +167,9 @@ defmodule RebuWebApi.Factory do
     # Decide final status based on how old the order is
     status =
       if Timex.diff(now, order_date, :days) > 14 do
-        Enum.random([:completed, :refunded])
+        Enum.random([:completed, :cancelled])
       else
-        Enum.random([:pending, :completed, :refunded])
+        Enum.random([:pending, :completed, :cancelled])
       end
 
     attrs = Map.drop(attrs, [:offers])

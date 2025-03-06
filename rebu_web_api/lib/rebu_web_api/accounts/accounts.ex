@@ -228,7 +228,7 @@ defmodule RebuWebApi.Accounts do
         :completed ->
           %{acc | tokens: acc.tokens + Decimal.to_float(order.total_rebate_amount)}
 
-        :refunded ->
+        :cancelled ->
           %{acc | rescinded: acc.rescinded + Decimal.to_float(order.total_rebate_amount)}
       end
     end)

@@ -251,9 +251,11 @@ defmodule RebuWebApi.Sales do
   def update_order(%Order{} = order, attrs) do
     check_completed_and_mint(attrs)
 
-    offer_ids = Map.get(attrs, :offers, [])
+    offer_ids = Map.get(attrs, "offers", [])
+    dbg(offer_ids)
     # Fetch Offer structs
     offers = Repo.all(from(o in Offer, where: o.id in ^offer_ids))
+    dbg(offers)
 
     order
     |> Order.changeset(attrs)
@@ -317,7 +319,7 @@ defmodule RebuWebApi.Sales do
 
   def process_order_refund(%Order{} = order) do
     order
-    |> Order.status_changeset(%{status: :refunded})
+    |> Order.status_changeset(%{status: :cancelled})
     |> Repo.update()
   end
 
@@ -341,7 +343,7 @@ defmodule RebuWebApi.Sales do
           # Total rebate for refunded orders
           sum(
             fragment(
-              "CASE WHEN ? = 'refunded' THEN ? ELSE 0 END",
+              "CASE WHEN ? = 'cancelled' THEN ? ELSE 0 END",
               o.status,
               o.total_rebate_amount
             )
@@ -349,7 +351,7 @@ defmodule RebuWebApi.Sales do
           # Count of completed orders
           count(fragment("CASE WHEN ? = 'completed' THEN 1 ELSE NULL END", o.status)),
           # Count of refunded orders
-          count(fragment("CASE WHEN ? = 'refunded' THEN 1 ELSE NULL END", o.status))
+          count(fragment("CASE WHEN ? = 'cancelled' THEN 1 ELSE NULL END", o.status))
         },
         # Group by month
         group_by: [
@@ -360,7 +362,7 @@ defmodule RebuWebApi.Sales do
 
     Repo.all(query)
     |> Enum.map(fn {month, month_name, total_orders, completed_rebate, rescinded_tokens,
-                    completed_orders, refunded_orders} ->
+                    completed_orders, cancelled_orders} ->
       {month,
        %{
          month: month_name,
@@ -368,7 +370,7 @@ defmodule RebuWebApi.Sales do
          total_tokens_rebate_completed: completed_rebate || Decimal.new(0),
          total_rescinded_tokens: rescinded_tokens || Decimal.new(0),
          completed_orders: completed_orders,
-         refunded_orders: refunded_orders
+         cancelled_orders: cancelled_orders
        }}
     end)
     # Convert to a map for easy lookup
@@ -389,12 +391,13 @@ defmodule RebuWebApi.Sales do
 
   def get_all_orders_for_affiliate(affiliate_id) do
     from(order in Order,
-      join: order_offer in "offer_orders",
+      join: order_offer in "offers_orders",
       on: order_offer.order_id == order.id,
       join: offer in Offer,
       on: offer.id == order_offer.offer_id,
       where: offer.affiliate_id == ^affiliate_id,
-      select: order
+      select: order,
+      preload: [:offers, :user]
     )
     |> Repo.all()
   end
@@ -402,12 +405,12 @@ defmodule RebuWebApi.Sales do
   def get_all_orders_for_user_for_affiliate(affiliate_id, user_id) do
     from(order in Order,
       where: order.user_id == ^user_id,
-      join: order_offer in "offer_orders",
+      join: order_offer in "offers_orders",
       on: order_offer.order_id == order.id,
       join: offer in Offer,
       on: offer.id == order_offer.offer_id,
       where: offer.affiliate_id == ^affiliate_id,
-      select: order
+      preload: [:offers]
     )
     |> Repo.all()
   end

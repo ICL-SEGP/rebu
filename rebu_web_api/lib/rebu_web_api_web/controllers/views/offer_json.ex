@@ -1,17 +1,27 @@
 defmodule RebuWebApiWeb.OfferJSON do
-  alias RebuWebApiWeb.JSONHelpers
+  use JsonView
 
-  @doc """
-  Renders a list of offers.
-  """
-  def offers(%{offers: offers}) do
-    Enum.map(offers, &JSONHelpers.serialize_schema/1)
-  end
+  # define which fields return without modifying
+  @fields [
+    :id,
+    :desc,
+    :affiliate_link,
+    :rebate_percentage,
+    :item_cost,
+    :status,
+    :offer_start,
+    :offer_end,
+    :affiliate_id,
+    :inserted_at
+  ]
+  # define which fields that need to format or calculate, you have to define `render_field/2` below
+  @relationships [
+    orders: RebuWebApiWeb.OrderJSON,
+    affiliate: RebuWebApiWeb.AffiliateJSON
+  ]
 
-  @doc """
-  Renders a single offer.
-  """
-  def show(%{offer: offer}) do
-    %{data: JSONHelpers.serialize_schema(offer)}
+  def render("offer.json", %{offer: offer}) do
+    # 1st way if `use JsonView`
+    render_json(offer, @fields, [], @relationships)
   end
 end

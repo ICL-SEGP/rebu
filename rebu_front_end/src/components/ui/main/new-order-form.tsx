@@ -90,38 +90,38 @@ export default function NewOrderForm({ setOrders }) {
     }
   };
 
-  const fetchOffers = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/offers`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.accessToken}`,
-        },
-      });
+  // const fetchOffers = async () => {
+  //   try {
+  //     const res = await fetch(`${API_BASE_URL}/api/offers`, {
+  //       method: "GET",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${session.accessToken}`,
+  //       },
+  //     });
 
-      if (!res.ok) throw new Error("Failed to fetch balance");
+  //     if (!res.ok) throw new Error("Failed to fetch balance");
 
-      const offers = (await res.json()).data;
+  //     const offers = (await res.json()).data;
 
-      let fetchedOffers = await offers.map((offer) => ({
-        id: offer.id,
-        desc: offer.desc,
-        affiliate_link: offer.affiliate_link,
-        offer_started: offer.offer_start,
-        offer_end: offer.offer_end,
-        rebate_percentage: parseFloat(offer.rebate_percentage).toFixed(2),
-      }));
+  //     let fetchedOffers = await offers.map((offer) => ({
+  //       id: offer.id,
+  //       desc: offer.desc,
+  //       affiliate_link: offer.affiliate_link,
+  //       offer_started: offer.offer_start,
+  //       offer_end: offer.offer_end,
+  //       rebate_percentage: parseFloat(offer.rebate_percentage).toFixed(2),
+  //     }));
 
-      setOffers(fetchedOffers);
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-    }
-  };
+  //     setOffers(fetchedOffers);
+  //   } catch (error) {
+  //     console.error("Error fetching orders:", error);
+  //   }
+  // };
 
-  useEffect(() => {
-    fetchOffers();
-  }, []);
+  // useEffect(() => {
+  //   fetchOffers();
+  // }, []);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
