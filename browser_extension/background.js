@@ -1,3 +1,29 @@
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "purchase_complete") {
+    console.log("Processing offers");
+    // Send a response back
+    chrome.storage.local.get({offers: [], token: "Nothing"}, async (result) => {
+      if (token !== "Nothing") {
+        try {
+
+          const response = await fetch("https://example.com/api/endpoint", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ token: ,message: result.offers })
+          });
+          const data = await response.json();
+          console.log("POST response:", data);
+        } catch (error) {
+          console.error("Error sending POST request:", error);
+        }
+      }
+    })
+  }
+});
+
+
 // If affiliate link is a redirect line, stores affiliate link and the link to which a redirection is done
 chrome.webRequest.onBeforeRedirect.addListener(
   (details) => {
@@ -48,10 +74,6 @@ chrome.webNavigation.onCommitted.addListener((details) => {
         // Mark this tab's navigation as manual.
         reset_variables();
         manualNavigationDetected[details.tabId] = details.url;
-        chrome.runtime.sendMessage({
-          type: "manual_url_change",
-          data: { url: details.url }
-        });
       }
     }
   });

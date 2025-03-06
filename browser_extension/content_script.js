@@ -227,6 +227,9 @@ async function check_correct_product_deepseek(product1, product2) {
       console.log("DeepSeek Response:", reply);
       if (reply === "YES") {
         chrome.storage.local.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": true, "item_confirmed": true}});
+        chrome.runtime.sendMessage({
+          type: "purchase_complete",
+        });
       } else {
         console.log("Cannot confirm purchase");
       }
