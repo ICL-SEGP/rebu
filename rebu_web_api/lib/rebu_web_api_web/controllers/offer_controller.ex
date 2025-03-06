@@ -30,7 +30,7 @@ defmodule RebuWebApiWeb.OfferController do
     |> json(offers)
   end
 
-  def create(conn, %{"offers" => offer_params}) do
+  def create(conn, %{"offer" => offer_params}) do
     affiliate = Guardian.Plug.current_resource(conn)
 
     {:ok, offer} = Sales.create_offer(affiliate, offer_params)

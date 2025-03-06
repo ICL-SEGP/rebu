@@ -31,7 +31,7 @@ defmodule RebuWebApi.Release.Seeder do
   end
 
   @spec eval_seed(Ecto.Repo.t(), String.t()) :: any()
-  defp eval_seed(repo, filename) do
+  defp eval_seed(_repo, filename) do
     seeds_file = get_path("repo", filename)
 
     Logger.info("Looking for seeds file at: #{seeds_file}")
