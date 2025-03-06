@@ -1,23 +1,375 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Tracker Settings</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Affiliate Tracker</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 10px; }
-    button { margin: 5px; padding: 5px 10px; }
-    #log { margin-top: 10px; max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 5px; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    :root {
+      --primary: #000000;
+      --primary-hover: #1a1a1a;
+      --blue: #0066FF;
+      --blue-hover: #0052CC;
+      --success: #00A651;
+      --success-light: rgba(0, 166, 81, 0.1);
+      --danger: #FF3B30;
+      --danger-light: rgba(255, 59, 48, 0.1);
+      --background: #FFFFFF;
+      --surface: #F8FAFB;
+      --border: #E5E9EB;
+      --text: #1A1D1F;
+      --text-secondary: #6C7275;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background-color: var(--background);
+      color: var(--text);
+      min-width: 380px;
+      line-height: 1.5;
+    }
+    .container {
+      width: 380px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      padding: 0 0 20px 0;
+      margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .header h1 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    .header p {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    /* Tabs */
+    .tabs {
+      display: flex;
+      margin-bottom: 24px;
+      background: var(--surface);
+      padding: 4px;
+      border-radius: var(--radius-md);
+      gap: 4px;
+    }
+    .tabs button {
+      flex: 1;
+      padding: 8px 16px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
+    }
+    .tabs button:hover {
+      color: var(--text);
+      background: rgba(0, 0, 0, 0.03);
+    }
+    .tabs button.active {
+      color: white;
+      background: var(--primary);
+    }
+    /* Tab Content */
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* Form elements */
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--border);
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    input:hover {
+      border-color: #B0B7C3;
+    }
+    input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+    }
+    /* Buttons */
+    button {
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      width: 100%;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+    /* Updated: Make the "btn-blue" button black */
+    .btn-blue {
+      background-color: #000000; /* black */
+      color: white;
+    }
+    .btn-blue:hover {
+      background-color: #1a1a1a; /* slightly lighter black for hover */
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+    .btn-outline {
+      background-color: var(--background);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover {
+      background-color: var(--surface);
+      transform: translateY(-1px);
+    }
+    .btn-danger {
+      background-color: var(--background);
+      border: 1.5px solid var(--border);
+      color: var(--danger);
+    }
+    .btn-danger:hover {
+      background-color: var(--danger-light);
+      border-color: var(--danger);
+      transform: translateY(-1px);
+    }
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .button-group button {
+      flex: 1;
+    }
+    /* Status indicators */
+    .status-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .status-item {
+      display: flex;
+      align-items: center;
+      padding: 12px;
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      transition: all 0.2s ease;
+    }
+    .status-item:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+    .status-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 12px;
+      background-color: var(--border);
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    .status-indicator.active {
+      background-color: var(--success);
+      box-shadow: 0 0 0 4px var(--success-light);
+    }
+    .status-indicator.active::after {
+      content: "";
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 2px solid var(--success);
+      opacity: 0.5;
+    }
+    .status-text {
+      font-size: 14px;
+      font-weight: 500;
+    }
+    /* Permission Status */
+    #permissionStatus {
+      margin: 20px 0;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      font-size: 14px;
+      color: var(--text);
+      border-left: 3px solid var(--primary);
+    }
+    /* Log area */
+    #log {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1.5px solid var(--border);
+      padding: 12px;
+      background: var(--surface);
+      font-size: 13px;
+      border-radius: var(--radius-md);
+      margin-bottom: 20px;
+      color: var(--text);
+    }
+    #log:empty::before {
+      content: "No events tracked.";
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+    /* Conversion badge */
+    #conversionBadge {
+      display: none;
+      background: var(--success);
+      color: white;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      margin-top: 20px;
+      text-align: center;
+      font-weight: 500;
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+      from { transform: translateY(-10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    /* Message text */
+    #message {
+      margin-top: 16px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-align: center;
+      min-height: 20px;
+    }
+    .message-error {
+      color: var(--danger);
+    }
+    .message-success {
+      color: var(--success);
+    }
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--surface);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D1D5DB;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #9CA3AF;
+    }
   </style>
 </head>
 <body>
-  <h2>Tracking Permission</h2>
-  <div id="permissionStatus"></div>
-  <button id="enableTracking">Enable Tracking</button>
-  <button id="disableTracking">Disable Tracking</button>
-  
-  <h2>Tracked Events</h2>
-  <div id="log"></div>
-  <button id="clearLog">Clear Log</button>
+  <div class="container">
+    <div class="header">
+      <h1>Affiliate Tracker</h1>
+      <p>Monitor and track affiliate purchases</p>
+    </div>
 
+    <!-- Tabs -->
+    <div class="tabs">
+      <button id="tab-login" class="active">Login</button>
+      <button id="tab-status">Status</button>
+      <button id="tab-logs">Logs</button>
+      <button id="tab-offers">Offers</button>
+    </div>
+
+    <!-- LOGIN TAB -->
+    <div id="content-login" class="tab-content active">
+      <div class="form-group">
+        <label for="username">Email or mobile phone number</label>
+        <input type="text" id="username" placeholder="Enter your email">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password">
+      </div>
+      <button id="login" class="btn-primary">Sign in</button>
+      <p id="message"></p>
+    </div>
+
+    <!-- STATUS TAB -->
+    <div id="content-status" class="tab-content">
+      <div class="status-list">
+        <div class="status-item">
+          <span class="status-indicator" id="affiliate_link_pressed"></span>
+          <span class="status-text">Affiliate Link Clicked</span>
+        </div>
+        <div class="status-item">
+          <span class="status-indicator" id="confirmation_page"></span>
+          <span class="status-text">Confirmation Reached</span>
+        </div>
+        <div class="status-item">
+          <span class="status-indicator" id="item_detected"></span>
+          <span class="status-text">Item Confirmed</span>
+        </div>
+      </div>
+      <div id="permissionStatus"></div>
+      <div class="button-group">
+        <button id="enableTracking" class="btn-blue">Enable Tracking</button>
+        <button id="disableTracking" class="btn-outline">Disable Tracking</button>
+      </div>
+      <button id="logout" class="btn-danger">Sign out</button>
+      <div id="conversionBadge">Conversion Complete!</div>
+    </div>
+
+    <!-- LOGS TAB -->
+    <div id="content-logs" class="tab-content">
+      <div id="log"></div>
+      <button id="clearLog" class="btn-danger">Clear Log</button>
+    </div>
+
+    <!-- OFFERS TAB -->
+    <div id="content-offers" class="tab-content">
+      <p>Offers content goes here.</p>
+      <!-- You can add code to list or manage affiliate offers here -->
+    </div>
+  </div>
   <script src="popup.js"></script>
 </body>
 </html>
