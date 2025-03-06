@@ -119,7 +119,7 @@ defmodule RebuWebApiWeb.OrderController do
   end
 
   def affiliate_update(conn, %{"id" => id, "order" => order_params}) do
-    affiliate = Guardian.Plug.current_resource(conn)
+    _affiliate = Guardian.Plug.current_resource(conn)
     order = Sales.get_order!(id)
 
     dbg(order_params)
@@ -131,7 +131,7 @@ defmodule RebuWebApiWeb.OrderController do
   end
 
   def affiliate_cancel(conn, %{"id" => id}) do
-    affiliate = Guardian.Plug.current_resource(conn)
+    _affiliate = Guardian.Plug.current_resource(conn)
     order = Sales.get_order!(id)
 
     {:ok, order} = Sales.update_order(order, %{status: :cancelled})

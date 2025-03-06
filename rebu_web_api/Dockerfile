@@ -18,7 +18,7 @@ ARG DEBIAN_VERSION=bullseye-20250113-slim
 ARG BUILDER_IMAGE="hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}"
 ARG RUNNER_IMAGE="debian:${DEBIAN_VERSION}"
 
-FROM rust:1.85.0 as rust_builder
+FROM rust:1.85.0-bullseye as rust_builder
 # install build dependencies
 RUN apt-get update -y && apt-get install -y build-essential git \
   && apt-get clean && rm -f /var/lib/apt/lists/*_*
@@ -30,18 +30,20 @@ RUN cargo build --release
 
 FROM ${BUILDER_IMAGE} AS elixir_builder
 
+ENV RUSTLER_NO_COMPILE=1
+
 ENV ERL_FLAGS="+JPperf true"
 
 # install build dependencies
 RUN apt-get update -y && apt-get install -y build-essential git \
-    && apt-get clean && rm -f /var/lib/apt/lists/*_*
+  && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
 # prepare build dir
 WORKDIR /app
 
 # install hex + rebar
 RUN mix local.hex --force && \
-    mix local.rebar --force
+  mix local.rebar --force
 
 # set build ENV
 ENV MIX_ENV="prod"
@@ -83,31 +85,38 @@ RUN mix release
 # the compiled release and other runtime necessities
 FROM ${RUNNER_IMAGE} AS runner
 
+# Install dependencies needed for SOPS/Age and general runtime
 RUN apt-get update -y && \
-  apt-get install -y libstdc++6 openssl libncurses5 locales ca-certificates \
-  && apt-get clean && rm -f /var/lib/apt/lists/*_*
+  apt-get install -y libstdc++6 openssl libncurses5 locales ca-certificates wget && \
+  apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Set the locale
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
-
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
+# Install SOPS (download the pre-built binary)
+RUN wget -qO /usr/local/bin/sops https://github.com/mozilla/sops/releases/download/v3.7.3/sops-v3.7.3.linux && \
+  chmod +x /usr/local/bin/sops
+
+# Install Age (download the pre-built binary archive, extract and copy)
+RUN wget -qO age.tar.gz https://github.com/FiloSottile/age/releases/download/v1.2.0/age-v1.2.0-linux-amd64.tar.gz && \
+  tar -xzf age.tar.gz && \
+  cp age/age /usr/local/bin/ && \
+  cp age/age-keygen /usr/local/bin/ && \
+  chmod +x /usr/local/bin/age /usr/local/bin/age-keygen && \
+  rm -rf age age.tar.gz
+
 WORKDIR "/app"
 RUN chown nobody /app
 
-# set runner ENV
+# set runner environment variable
 ENV MIX_ENV="prod"
 
-# Only copy the final release from the build stage
+# Copy the final release from the build stage
 COPY --from=elixir_builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/rebu_web_api ./
 
 USER nobody
-
-# If using an environment that doesn't automatically reap zombie processes, it is
-# advised to add an init process such as tini via `apt-get install`
-# above and adding an entrypoint. See https://github.com/krallin/tini for details
-# ENTRYPOINT ["/tini", "--"]
 
 CMD ["/app/bin/server"]

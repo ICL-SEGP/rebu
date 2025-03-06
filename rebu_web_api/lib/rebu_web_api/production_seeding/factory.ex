@@ -2,7 +2,6 @@ defmodule RebuWebApi.Factory do
   use ExMachina.Ecto, repo: RebuWebApi.Repo
 
   alias RebuWebApi.Sales.{Offer, Order}
-  alias RebuWebApi.Sales
   alias RebuWebApi.Accounts.User
   alias RebuWebApi.Accounts.Affiliate
 

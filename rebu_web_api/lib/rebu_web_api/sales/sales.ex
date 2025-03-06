@@ -211,7 +211,7 @@ defmodule RebuWebApi.Sales do
     |> Repo.insert()
   end
 
-  def create_order(attrs, offerIds) do
+  def create_order(attrs, _offerIds) do
     check_completed_and_mint(attrs)
 
     offer_ids = Map.get(attrs, "offers", [])

@@ -8,17 +8,24 @@ import Config
 config :rebu_web_api, RebuWebApiWeb.Endpoint,
   cache_static_manifest: "priv/static/cache_manifest.json"
 
-
 # Disable Swoosh Local Memory Storage
 config :swoosh, local: false
 
 # Do not print debug messages in production
 config :logger, level: :info
 
-config :rebu_web_api, RebuWebApi.SolanaApi,
-  crate: :solana_api,
-  skip_compilation?: true,
-  load_from: {:rebu_api_web, "priv/native/libsolana_api.so"}
+# config :rebu_web_api, RebuWebApi.SolanaApi,
+#   crate: :solana_api,
+#   load_from: {:rebu_api_web, "priv/native/libsolana_api.so"}
+
+# config :rustler,
+#   rustler_crates: [
+#     solana_api: [
+#       path: "native/solana_api",
+#       mode: :precompiled,
+#       precompiled_path: "priv/native/libsolana_api.so"
+#     ]
+#   ]
 
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.

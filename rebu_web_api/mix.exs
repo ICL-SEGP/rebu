@@ -17,7 +17,8 @@ defmodule RebuWebApi.MixProject do
               SopsConfigProvider,
               %{
                 app_name: :rebu_web_api,
-                secret_file_path: "priv/secrets/elixir-secrets.enc.yaml"
+                secret_file_path: "priv/secrets/elixir-secrets.enc.yaml",
+                env_variables: [{"SOPS_AGE_KEY_FILE", "priv/secrets/sops-key.txt"}]
               }
             }
           ]
@@ -25,6 +26,8 @@ defmodule RebuWebApi.MixProject do
       ]
     ]
   end
+
+
 
   # Configuration for the OTP application.
   #
@@ -75,7 +78,7 @@ defmodule RebuWebApi.MixProject do
       {:bcrypt_elixir, "~> 3.2"},
       {:styler, "~> 1.3", only: [:dev, :test], runtime: false},
       {:cors_plug, "~> 3.0"},
-      {:sops_config_provider, "~> 0.2.1"},
+      {:sops_config_provider, git: "https://github.com/AJReade/flexi_sops_config_provider.git"},
       {:faker, "~> 0.18.0"},
       {:ex_machina, "~> 2.7.0"},
       {:rustler, "~> 0.36.1"},

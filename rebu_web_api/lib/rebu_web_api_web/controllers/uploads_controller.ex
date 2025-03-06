@@ -2,9 +2,12 @@ defmodule RebuWebApiWeb.UploadsController do
   use RebuWebApiWeb, :controller
   alias ExAws.S3
   alias RebuWebApi.Uploads
+  alias RebuWebApi.Accounts
 
   @file_bucket "rebu-files"
   @image_bucket "rebu-images"
+
+  _ = @file_bucket
 
   def gen_presigned_url(conn, %{"type" => "image"} = params) do
     # Ensure filenames are unique (use UUIDs if needed)
@@ -37,19 +40,19 @@ defmodule RebuWebApiWeb.UploadsController do
   end
 
   # only for sending files purchased not images
-  defp generate_presigned_download_url(file_key) do
-    # Generate a signed GET URL that expires in 1 hour
-    {:ok, url} =
-      S3.presigned_url(
-        ExAws.Config.new(:s3),
-        :get,
-        @file_bucket,
-        file_key,
-        expires_in: 3600
-      )
+  # defp generate_presigned_download_url(file_key) do
+  #   # Generate a signed GET URL that expires in 1 hour
+  #   {:ok, url} =
+  #     S3.presigned_url(
+  #       ExAws.Config.new(:s3),
+  #       :get,
+  #       @file_bucket,
+  #       file_key,
+  #       expires_in: 3600
+  #     )
 
-    url
-  end
+  #   url
+  # end
 
   def create(conn, %{"upload" => upload_params}) do
     user = Guardian.Plug.current_resource(conn)

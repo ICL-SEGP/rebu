@@ -10,6 +10,8 @@ defmodule RebuWebApi.Emails do
     {"Geonwoo", "geonwoo.park20@imperial.ac.uk"}
   ]
 
+  _ = @group
+
   def welcome(recipients) do
     recipients
     |> Enum.map(fn {name, email} ->

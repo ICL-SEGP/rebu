@@ -30,7 +30,7 @@ defmodule RebuWebApiWeb.AuthController do
     end
   end
 
-  def password_reset(conn, %{"password" => password, "new_password" => new_password}) do
+  def password_reset(conn, %{"password" => password, "new_password" => _new_password}) do
     user = Guardian.Plug.current_resource(conn)
 
     with true <- Bcrypt.verify_pass(password, user.hashed_password) do

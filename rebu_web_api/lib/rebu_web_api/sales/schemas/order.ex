@@ -42,19 +42,4 @@ defmodule RebuWebApi.Sales.Order do
       %{} = changeset -> add_error(changeset, :name, "invalid option")
     end
   end
-
-  defimpl Jason.Encoder, for: RebuWebApi.Sales.Order do
-    def encode(order, opts) do
-      order
-      |> Map.from_struct()
-      |> Map.drop([:__meta__, :__struct__]) # ✅ Removes Ecto metadata
-      |> Map.update(:offers, nil, fn offers ->
-        case offers do
-          %Ecto.Association.NotLoaded{} -> nil  # ✅ Removes offers if not preloaded
-          _ -> offers
-        end
-      end)
-      |> Jason.Encode.map(opts)
-    end
-  end
 end
