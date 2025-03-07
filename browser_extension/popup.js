@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // 2. Safe textContent usage
-        btn.textContent = `${offer.desc} - $${offer.itemCost} (${offer.status})`;
+        btn.textContent = `${offer.desc} - $${offer.item_cost} (${offer.status}), ${offer.affiliate_link}`;
         btn.classList.add("offer-button");
 
         // 3. Visual indicator for invalid links
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // ========== INITIAL LOAD ==========
   // 1) Check if user is already logged in
-  chrome.storage.sync.get({ loggedIn: false, username: "" }, function (syncResult) {
+  chrome.storage.local.get({ loggedIn: false, username: "" }, function (syncResult) {
     if (syncResult.loggedIn) {
       // Switch to status tab immediately
       messageDisplay.innerText = `Welcome back, ${syncResult.username}!`;
@@ -193,10 +193,11 @@ document.addEventListener('DOMContentLoaded', function () {
       const statusCode = response.status;
       console.log(statusCode);
       const data = await response.json();
-      console.log(data)
+      console.log(data);
+      console.log(data.token);
       
       if (statusCode === 200) {
-        chrome.storage.sync.set({ loggedIn: true, token: data.token/*Insert token*/ }, function () {
+        chrome.storage.local.set({ loggedIn: true, token: data.token, username: data.user.first_name, user: data.user}, function () {
           messageDisplay.innerText = "Login successful!";
           switchTab("status");
         });
@@ -214,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function () {
   logoutButton.addEventListener("click", async () => {
     // Clear loggedIn state
     chrome.storage.local.set({offers: [], redirected: false, redirectUrl: "Nothing", url: "Nothing", trackLog: [], flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}})
-    chrome.storage.sync.set({ loggedIn: false, username: "" }, function () {
+    chrome.storage.local.set({ loggedIn: false, username: "" }, function () {
       messageDisplay.innerText = "You have been logged out.";
       // Switch back to login tab 
       switchTab("login");
