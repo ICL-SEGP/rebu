@@ -51,9 +51,9 @@ pub struct AddListing<'info> {
     system_program: Program<'info, System>,
 }
 
-pub fn add_product_listing(ctx: Context<AddListing>, id: u64, stock: u64, price: u64) -> Result<()> {
+pub fn add_product_listing(ctx: Context<AddListing>, id: u64, stock: u64, price: f64) -> Result<()> {
     msg!("Got to this point, stock: {}, price: {}", stock, price);
-    require!(stock > 0 && price > 0, RebuError::InvalidListing);
+    require!(stock > 0 && price > 0.0, RebuError::InvalidListing);
 
     ctx.accounts.product_listing.set_inner(
         ProductListing {
@@ -61,7 +61,7 @@ pub fn add_product_listing(ctx: Context<AddListing>, id: u64, stock: u64, price:
             mint: ctx.accounts.mint.key(),
             id,
             stock,
-            price: price * 10u64.pow(ctx.accounts.mint.decimals as u32),
+            price: price * 10u64.pow(ctx.accounts.mint.decimals as u32) as f64,
             bump: ctx.bumps.product_listing,
         });
     Ok(())

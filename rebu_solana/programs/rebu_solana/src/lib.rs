@@ -23,21 +23,21 @@ pub mod rebu_solana {
         instructions::rebu_mint::create_rebu_mint::init_mint(ctx, uri)
     }
 
-    pub fn mint_rebu_to(ctx: Context<MintRebuTo>, amount: u64) -> Result<()> {
+    pub fn mint_rebu_to(ctx: Context<MintRebuTo>, amount: f64) -> Result<()> {
         instructions::rebu_mint::mint_rebu::mint_rebu(&ctx, amount)?;
         instructions::rebu_mint::mint_rebu::deposit_sol(ctx, amount)
     } 
 
-    pub fn burn_rebu(ctx: Context<BurnRebu>, amount: u64) -> Result<()> {
+    pub fn burn_rebu(ctx: Context<BurnRebu>, amount: f64) -> Result<()> {
         instructions::rebu_mint::burn_rebu::burn_tokens(&ctx, amount)?;
         instructions::rebu_mint::burn_rebu::withdraw_sol(ctx, amount)
     } 
 
-    pub fn add_listing(ctx: Context<AddListing>, id: u64, stock: u64, price: u64) -> Result<()> {
+    pub fn add_listing(ctx: Context<AddListing>, id: u64, stock: u64, price: f64) -> Result<()> {
         instructions::make_listing::add_product_listing(ctx, id, stock, price)
     }
 
-    pub fn modify_listing(ctx: Context<ModifyListing>, id: u64, stock: u64, price: u64) -> Result<()> {
+    pub fn modify_listing(ctx: Context<ModifyListing>, id: u64, stock: u64, price: f64) -> Result<()> {
         instructions::modify_listing::modify_product_listing(ctx, id, stock, price)
     }
 

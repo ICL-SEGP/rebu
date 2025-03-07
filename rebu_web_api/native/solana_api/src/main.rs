@@ -1,5 +1,5 @@
-// mod api_funcs;
-// use api_funcs::*;
+mod api_funcs;
+use api_funcs::*;
 
 
 // use anchor_client::{
@@ -85,11 +85,11 @@ fn main() {
 
     // println!("Verifying: {:?}", result);
 
-    // let folder_path = "/home/astrobyte/personalProjects/segp/rebu/token-info/.config/solana/";
-    // let owner_path = format!("{}{}", folder_path, "owner_keypair.json");
+    let folder_path = "/home/astrobyte/personalProjects/segp/rebu/token-info/.config/solana/";
+    let owner_path = format!("{}{}", folder_path, "owner_keypair.json");
 
-    // let owner = get_keypair_from_file(&owner_path);
-    // println!("Owner account: {:?}", &owner.get_pubkey());
+    let owner = get_keypair_from_file(&owner_path);
+    println!("Owner account: {:?}", &owner.get_pubkey());
 
     // let new_user = Keypair::new();
     // println!("New user: {:?}", &new_user.get_pubkey());
