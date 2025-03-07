@@ -36,8 +36,8 @@ const affiliateNavItems = [
   {
     title: "Shop & Sell",
     items: [
-      { title: "Marketplace", url: "/affiliate/marketplace"},
-       { title: "Purchase History", url: "/affiliate/marketplace/purchaseHistory"},
+      { title: "Marketplace", url: "/marketplace/select"},
+       { title: "Purchase History", url: "/marketplace/purchaseHistory"},
     ],
   },
 ];
@@ -54,8 +54,8 @@ const userNavItems = [
   {
     title: "Shop & Sell",
     items: [
-      { title: "Marketplace", url: "/user/marketplace" },
-      { title: "Purchase History", url: "/user/marketplace/purchaseHistory"},
+      { title: "Marketplace", url: "/marketplace/select" },
+      { title: "Purchase History", url: "/marketplace/purchaseHistory"},
     ],
   },
 ];
