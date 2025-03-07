@@ -3,9 +3,10 @@
 
 
 // use anchor_client::{
-//     solana_client::rpc_client::RpcClient,
-//     solana_sdk::{
-//         commitment_config::CommitmentConfig, signature::Keypair,
+    // solana_client::rpc_client::RpcClient,
+    // solana_sdk::{
+        // commitment_config::CommitmentConfig, 
+//         signature::Keypair,
 //     },
 // };
 
@@ -83,5 +84,32 @@ fn main() {
     // );
 
     // println!("Verifying: {:?}", result);
+
+    // let folder_path = "/home/astrobyte/personalProjects/segp/rebu/token-info/.config/solana/";
+    // let owner_path = format!("{}{}", folder_path, "owner_keypair.json");
+
+    // let owner = get_keypair_from_file(&owner_path);
+    // println!("Owner account: {:?}", &owner.get_pubkey());
+
+    // let new_user = Keypair::new();
+    // println!("New user: {:?}", &new_user.get_pubkey());
+
+
+    // // let result = init_mint(owner.to_base58_string());
+    // let result = mint_rebu(
+    //     owner.to_base58_string(), 
+    //     new_user.get_pubkey().to_string(), 
+    //     3, 
+    //     true
+    // );
+
+    // println!("Result: {:?}", result);
+
+    // let result = burn_rebu(
+    //     new_user.to_base58_string(), 
+    //     3, 
+    // );
+
+    // println!("Result: {:?}", result);
 
 }

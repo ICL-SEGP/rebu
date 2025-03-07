@@ -36,6 +36,8 @@ use rebu_solana::client::{accounts, args};
 
 const LAMPORTS_PER_SOL: f64 = 1_000_000_000.0;
 
+const MINT_URI: &str = "https://raw.githubusercontent.com/ICL-SEGP/rebu-token-info/refs/heads/main/token_metadata.json";
+
 pub trait PublicKey {
     fn get_pubkey(&self) -> Pubkey;
 }
@@ -47,6 +49,7 @@ impl PublicKey for Keypair {
 }
 
 pub fn new_rpc_client() -> RpcClient {
+    // RpcClient::new("http://127.0.0.1:8899")
     RpcClient::new("https://api.devnet.solana.com")
 }
 
@@ -86,12 +89,26 @@ pub fn get_token_account(user_pubkey: &Pubkey, mint_pubkey: &Pubkey) -> Pubkey {
 }
 
 pub fn mint_str() -> String {
-    "mntSPLHmrFAELUiNxDC31Nm44TofrAs7VXBknPoqiBY".to_string()
+    Pubkey::find_program_address(
+        &[
+            b"rebu123".as_ref(),
+            b"mint".as_ref(),
+        ], 
+        &rebu_solana::ID)
+        .0
+        .to_string()
 }
 
 #[rustler::nif]
 pub fn mint_str() -> String {
-    "mntSPLHmrFAELUiNxDC31Nm44TofrAs7VXBknPoqiBY".to_string()
+    Pubkey::find_program_address(
+        &[
+            b"rebu123".as_ref(),
+            b"mint".as_ref(),
+        ], 
+        &rebu_solana::ID)
+        .0
+        .to_string()
 }
 
 #[rustler::nif]
@@ -323,39 +340,69 @@ pub fn get_user_token_balance(user_pubkey: String) -> u64 {
     amount.ui_amount.expect("Something went wrong when getting user ui amount balance.") as u64
 }
 
+pub fn init_mint(owner_keypair: String) -> Result<(), String> {
+
+    let owner_keypair = &get_keypair_from_str(owner_keypair);
+
+    let mint = get_pubkey_from_str(&mint_str());
+
+    let (vault, _) = Pubkey::find_program_address(
+        &[
+            b"rebu123".as_ref(),
+            b"vault".as_ref(),
+        ], 
+        &rebu_solana::ID);
+
+    let provider = Client::new(Cluster::Devnet, Rc::new(owner_keypair));
+    let program = provider
+        .program(rebu_solana::ID)
+        .map_err(|_| "Error: rebu_solana could not be loaded as a client program.".to_string())?;
+
+    let create_token_ix = program
+        .request()
+        .signer(owner_keypair)
+        .accounts(accounts::CreateToken {
+            payer: program.payer(),
+            mint,
+            vault,
+            token_program: spl_token_2022::ID,
+            system_program: system_program::ID,
+        })
+        .args(args::CreateToken {
+            uri: MINT_URI.to_string(),
+        });
+
+    let rt = Runtime::new().expect("Error when creating tokio runtime.");
+    let _transaction: Signature = { rt.block_on(async { 
+        create_token_ix
+            .send()
+            .await 
+            .map_err(|e| format!("Error: Mint initialization. {}", e))
+    })?};
+
+    Ok(())
+}
+
 #[rustler::nif]
 pub fn mint_tokens_to_user(
     owner_keypair: String, user_pubkey: String, 
     amount: u64, is_new_user: bool,
 ) -> Result<(), String> {
 
-    let mint_pubkey = mint_str();
-    let rpc_client = &new_rpc_client();
     let owner_keypair = &get_keypair_from_str(owner_keypair);
-    let mint_pubkey = &get_pubkey_from_str(&mint_pubkey);
     let user_pubkey = &get_pubkey_from_str(&user_pubkey);
-    
-    let user_ata_pubkey = get_token_account(user_pubkey, mint_pubkey);
 
-    let mint_instruction = spl_token_2022::instruction::mint_to(
-        &spl_token_2022::ID,
-        &mint_pubkey,
-        &user_ata_pubkey,
-        &owner_keypair.pubkey(),
-        &[&owner_keypair.pubkey()],
-        amount * LAMPORTS_PER_SOL as u64,
-    ).expect("Something went wrong with mint instruction.");
+    let mint = get_pubkey_from_str(&mint_str());
 
-    let instrs = if !is_new_user {
-        vec![mint_instruction]
-    } else {
-        let create_ata_instruction = create_associated_token_account(
-            &owner_keypair.pubkey(),
-            user_pubkey,
-            mint_pubkey,
-            &spl_token_2022::ID,
-        );
+    let (vault, _) = Pubkey::find_program_address(
+        &[
+            b"rebu123".as_ref(),
+            b"vault".as_ref(),
+        ], 
+        &rebu_solana::ID);
 
+    if is_new_user {
+        let rpc_client = new_rpc_client();
         let airdrop_amount = 500_000_000; // 0.5 SOL
         let signature = rpc_client
             .request_airdrop(user_pubkey, airdrop_amount)
@@ -363,25 +410,98 @@ pub fn mint_tokens_to_user(
 
         while !rpc_client.confirm_transaction(&signature).unwrap() {}
 
-        vec![create_ata_instruction, mint_instruction]
-    };
+        let mint_transaction = Transaction::new_signed_with_payer(
+            &[create_associated_token_account(
+                &owner_keypair.pubkey(),
+                user_pubkey,
+                &mint,
+                &spl_token_2022::ID,
+            )],
+            Some(&owner_keypair.pubkey()),
+            &[&owner_keypair],
+            rpc_client.get_latest_blockhash().expect("Something went wrong with getting blockhash.")
+        );
+        
+        rpc_client
+            .send_and_confirm_transaction_with_spinner(&mint_transaction)
+            .expect("Something went wrong in comfirming the transaction.");
+        println!("Created account");
+    }
 
-    let mint_transaction = Transaction::new_signed_with_payer(
-        &instrs,
-        Some(&owner_keypair.pubkey()),
-        &[&owner_keypair],
-        rpc_client.get_latest_blockhash().expect("Something went wrong with getting blockhash.")
-    );
+    let provider = Client::new(Cluster::Localnet, Rc::new(owner_keypair));
+    let program = provider
+        .program(rebu_solana::ID)
+        .map_err(|_| "Error: rebu_solana could not be loaded as a client program.".to_string())?;
 
-    println!("Mint Transaction: {:?}", &mint_transaction);
+    let mint_token_ix = program
+        .request()
+        .signer(owner_keypair)
+        .accounts(accounts::MintRebuTo {
+            signer: program.payer(),
+            mint,
+            recipient: get_token_account(user_pubkey, &mint),
+            vault,
+            token_program: spl_token_2022::ID,
+            system_program: system_program::ID,
+        })
+        .args(args::MintRebuTo {
+            amount: amount,
+        });
 
-    rpc_client
-        .send_and_confirm_transaction_with_spinner(&mint_transaction)
-        .expect("Something went wrong in comfirming the transaction.");
+    let rt = Runtime::new().expect("Error when creating tokio runtime.");
+    let _transaction: Signature = { rt.block_on(async { 
+        mint_token_ix
+            .send()
+            .await 
+            .map_err(|e| format!("Error: Mint initialization. {}", e))
+    })?};
 
     Ok(())
 }
 
+pub fn burn_rebu(user_keypair: String, amount: u64) -> Result<(), String> {
+
+    let user_keypair = &get_keypair_from_str(user_keypair);
+
+    let mint = get_pubkey_from_str(&mint_str());
+
+    let (vault, _) = Pubkey::find_program_address(
+        &[
+            b"rebu123".as_ref(),
+            b"vault".as_ref(),
+        ], 
+        &rebu_solana::ID);
+
+    let provider = Client::new(Cluster::Localnet, Rc::new(user_keypair));
+    let program = provider
+        .program(rebu_solana::ID)
+        .map_err(|_| "Error: rebu_solana could not be loaded as a client program.".to_string())?;
+
+    let burn_token_ix = program
+        .request()
+        .signer(user_keypair)
+        .accounts(accounts::BurnRebu {
+            signer: program.payer(),
+            mint,
+            token_account: get_token_account(&user_keypair.pubkey(), &mint),
+            vault,
+            token_program: spl_token_2022::ID,
+            system_program: system_program::ID,
+        })
+        .args(args::BurnRebu {
+            amount: amount,
+        });
+
+    let rt = Runtime::new().expect("Error when creating tokio runtime.");
+    let _transaction: Signature = { rt.block_on(async { 
+        burn_token_ix
+            .send()
+            .await 
+            .map_err(|e| format!("Error: Burning . {}", e))
+    })?};
+
+    Ok(())
+}
 
 mod atoms {
     rustler::atoms! {
