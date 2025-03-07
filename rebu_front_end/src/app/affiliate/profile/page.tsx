@@ -48,6 +48,7 @@ export default function AffiliateProfile() {
   const [affiliate, setAffiliate] = useState<Affiliate>(dummyAffiliate);
   const [balance, setBalance] = useState<AffiliateBalance>(dummyBalance);
   const [editing, setEditing] = useState(false);
+  const [passwordsMatch, setPasswordsMatch] = useState(true);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<Affiliate>>(dummyAffiliate);
   const [passwordData, setPasswordData] = useState({
@@ -67,7 +68,14 @@ export default function AffiliateProfile() {
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    const updatedPasswords = { ...passwordData, [name]: value };
+    setPasswordData(updatedPasswords);
+  
+    // Validate passwords match
+    if (name === "newPassword" || name === "confirmPassword") {
+      setPasswordsMatch(updatedPasswords.newPassword === updatedPasswords.confirmPassword);
+    }
   };
 
   const togglePasswordVisibility = (field: "current" | "new" | "confirm") => {
@@ -87,7 +95,7 @@ export default function AffiliateProfile() {
   };
 
   const handleChangePassword = async () => {
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
+    if (!passwordsMatch) {
       toast({ title: "Passwords do not match", variant: "destructive" });
       return;
     }
@@ -100,6 +108,7 @@ export default function AffiliateProfile() {
       toast({ title: "Failed to update password", variant: "destructive" });
     }
   };
+  
 
   const [referralCode, setReferralCode] = useState({});
 
@@ -248,7 +257,7 @@ export default function AffiliateProfile() {
               )
             )}
             <div className="flex justify-end">
-              <Button onClick={handleChangePassword}>Save</Button>
+              <Button onClick={handleChangePassword} disabled={!passwordsMatch}>Save</Button>
             </div>
           </div>
         </DialogContent>

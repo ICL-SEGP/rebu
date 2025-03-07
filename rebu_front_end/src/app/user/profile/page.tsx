@@ -34,6 +34,7 @@ export default function UserProfile() {
   const [user, setUser] = useState<User>(dummyUser);
   const [balance, setBalance] = useState<UserBalance>(dummyBalance);
   const [editing, setEditing] = useState(false);
+  const [passwordsMatch, setPasswordsMatch] = useState(true);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<User>>(dummyUser);
   const [passwordData, setPasswordData] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
@@ -45,7 +46,14 @@ export default function UserProfile() {
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    const updatedPasswords = { ...passwordData, [name]: value };
+    setPasswordData(updatedPasswords);
+  
+    // Validate passwords match
+    if (name === "newPassword" || name === "confirmPassword") {
+      setPasswordsMatch(updatedPasswords.newPassword === updatedPasswords.confirmPassword);
+    }
   };
 
   const togglePasswordVisibility = (field: "current" | "new" | "confirm") => {
@@ -65,7 +73,7 @@ export default function UserProfile() {
   };
 
   const handleChangePassword = async () => {
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
+    if (!passwordsMatch) {
       toast({ title: "Passwords do not match", variant: "destructive" });
       return;
     }
@@ -163,7 +171,7 @@ export default function UserProfile() {
               </div>
             ))}
             <div className="flex justify-end">
-              <Button onClick={handleChangePassword}>Save</Button>
+              <Button onClick={handleChangePassword} disabled={!passwordsMatch}>Save</Button>
             </div>
           </div>
         </DialogContent>
