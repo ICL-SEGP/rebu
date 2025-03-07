@@ -3,14 +3,14 @@
 [features]
 resolution = true
 skip-lint = false
-seeds = true
+
 
 [programs.localnet]
-rebu_solana = "3BjmHpjppF39NVDJbL4UG7pD6tV75fLHMuh7aZU4f2Qc"
+rebu_solana = "5b8N346ZbwB3PbpYthoUTLtrdw9qpbKue52S1bDCBter"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "Devnet"
 wallet = "~/.config/solana/id.json"

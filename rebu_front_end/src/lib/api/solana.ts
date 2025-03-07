@@ -1,9 +1,9 @@
 import humps from "humps";
 import { API_BASE_URL } from "../constants";
 
-import { AnchorProvider, BN, Program } from "@coral-xyz/anchor";
-import { Cluster, clusterApiUrl, Keypair, PublicKey } from "@solana/web3.js";
-import RebuSolanaIDLJson from "@/../target/IDL/solanaIDL.json";
+import * as anchor  from "@coral-xyz/anchor";
+import { Cluster, clusterApiUrl, Keypair, PublicKey, SystemProgram } from "@solana/web3.js";
+import RebuSolanaIDLJson from "@/../target/idl/solanaIDL.json";
 import type { RebuSolanaIDL } from "@/types/solanaIDL";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useTransactionToast } from "@/components/ui/solana/account-data-access";
@@ -11,7 +11,7 @@ import { useAnchorProvider } from "@/components/ui/solana/solana-provider";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
-import { getAssociatedTokenAddress } from "@solana/spl-token";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
 
 export { RebuSolanaIDL, RebuSolanaIDLJson };
 
@@ -31,109 +31,150 @@ const SYSTEM_PROGRAM_ID: PublicKey = new PublicKey(
 
 const DEVNET = {
   name: "devnet",
-  endpoint: clusterApiUrl("devnet"),
-  network: "devnet",
+  endpoint: "https://api.devnet.solana.com",
 };
 
-// export function getSolanaProgram(
-//   provider: AnchorProvider,
-//   address?: PublicKey
-// ) {
-//   return new Program(
-//     {
-//       ...RebuSolanaIDLJson,
-//       address: address ? address.toBase58() : RebuSolanaIDLJson.address,
-//     } as RebuSolanaIDL,
-//     provider
-//   );
-// }
+export function getSolanaProgram(
+  provider: anchor.AnchorProvider,
+  address?: PublicKey
+) {
+  return new anchor.Program(
+    {
+      ...RebuSolanaIDLJson,
+      address: address ? address.toBase58() : RebuSolanaIDLJson.address,
+    } as RebuSolanaIDL,
+    provider
+  );
+}
 
-// // This is a helper function to get the program ID for the TestAppSolana program depending on the cluster.
-// export function getSolanaProgramId() {
-//   return REBU_SOLANA_PROGRAM_ID;
-// }
+// This is a helper function to get the program ID for the TestAppSolana program depending on the cluster.
+export function getSolanaProgramId() {
+  return REBU_SOLANA_PROGRAM_ID;
+}
 
-// function test() {}
+function test() {}
 
-// function makePurchase(seller, productId, gg) {
-//   const { connection } = useConnection();
+export function useMakePurchase() {
+  const { connection } = useConnection();
+  const provider = useAnchorProvider();
+  const { publicKey, signTransaction } = useWallet();
+  const { data: session } = useSession();
+  const transactionToast = useTransactionToast();
+  const programId = getSolanaProgramId();
+  const program = getSolanaProgram(provider, programId);
 
-//   const provider = useAnchorProvider();
-//   const programId = getSolanaProgramId();
-//   const program = getSolanaProgram(provider, programId);
+  console.log("START")
 
-//   const { data: session } = useSession();
+  const mutation = useMutation({
+    mutationKey: ["rebuSolana", "makePurchase", { DEVNET }],
+    mutationFn: async ({ seller_str, productId }: { seller_str: string; productId: number }) => {
+      console.log("GOT HERE: 1")
+      
+      if (!publicKey || !signTransaction) {
+        console.log("GOT HERE: :(")
 
-//   const getProgramAccount = useQuery({
-//     queryKey: ["get-program-account", { DEVNET }],
-//     queryFn: () => connection.getParsedAccountInfo(programId),
-//   });
+        toast.error("Please connect your wallet.");
+        throw new Error("Wallet not connected.");
+      }
 
-//   const accounts = useQuery({
-//     queryKey: ["rebuSolana", "all", { DEVNET }],
-//     queryFn: () => program.account.productListing.all(),
-//   });
+      console.log("GOT HERE: :)")
 
-//   const intBuffer = new BN(productId).toArrayLike(Buffer, "le", 8);
 
-//   const [productListingPDA, _bumpListing] = PublicKey.findProgramAddressSync(
-//     [
-//       Buffer.from("product"),
-//       Buffer.from("listing"),
-//       seller.toBuffer(),
-//       intBuffer,
-//     ],
-//     programId
-//   );
+      const seller = new PublicKey(seller_str);
+      const intBuffer = new anchor.BN(productId) //.toArrayLike(Buffer, "le", 8);
 
-//   const { publicKey } = useWallet();
+      console.log("GOT HERE: 2")
 
-//   const [productPurchasePDA, _bumpPurchase] = PublicKey.findProgramAddressSync(
-//     [
-//       Buffer.from("product"),
-//       Buffer.from("purchase"),
-//       seller.toBuffer(),
-//       intBuffer,
-//       publicKey!.toBuffer(),
-//     ],
-//     programId
-//   );
 
-//   // In an async function or inside your mutationFn as async
-//   // In an async function or inside your mutationFn as async
-//   const customerAta = await getAssociatedTokenAddress(
-//     session!.mint,
-//     publicKey!
-//   );
-//   const sellerAta = await getAssociatedTokenAddress(session!.mint, seller!);
+      const [productListingPDA] = PublicKey.findProgramAddressSync(
+        [
+          Buffer.from("product"), 
+          Buffer.from("listing"), 
+          seller.toBuffer(), 
+          intBuffer],
+        programId
+      );
+      console.log("GOT HERE 3")
 
-//   const transactionToast = useTransactionToast();
-//   useMutation({
-//     mutationKey: ["rebuSolana", "makePurchase", { DEVNET }],
-//     mutationFn: (keypair: Keypair) =>
-//       program.methods
-//         .makePurchase(productId)
-//         .accounts({
-//           customer: publicKey,
-//           mint: session!.mint,
-//           seller: seller,
-//           seller_ata: sellerAta,
-//           customer_ata: customerAta,
-//           product_listing: productListingPDA,
-//           product_purchase: productPurchasePDA,
-//           associated_token_program: SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID,
-//           token_program: TOKEN_2022_PROGRAM_ID,
-//           system_program: SYSTEM_PROGRAM_ID,
-//         })
-//         .signers([keypair])
-//         .rpc(),
-//     onSuccess: (signature) => {
-//       transactionToast(signature);
-//       await accounts.refetch();
-//     },
-//     onError: () => toast.error("Failed to make purchase."),
-//   });
-// }
+
+      const [productPurchasePDA] = PublicKey.findProgramAddressSync(
+        [
+          Buffer.from("product"), 
+          Buffer.from("purchase"), 
+          seller.toBuffer(), 
+          intBuffer, 
+          publicKey.toBuffer()],
+        programId
+      );
+      console.log("GOT HERE 4")
+
+      const mint = new PublicKey("mntSPLHmrFAELUiNxDC31Nm44TofrAs7VXBknPoqiBY");
+
+
+      const customerAta = await getAssociatedTokenAddress(
+        mint,
+        publicKey,
+        true, 
+        TOKEN_2022_PROGRAM_ID,
+        SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID
+      );
+      const sellerAta = await getAssociatedTokenAddress(
+        mint, 
+        seller,
+        true, 
+        TOKEN_2022_PROGRAM_ID,
+        SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID
+      );
+
+      console.log("Seller:", seller.toBase58())
+
+      console.log("user:", publicKey.toBase58())
+
+      console.log("Seller ATA:", sellerAta.toBase58())
+      console.log("User ATA:", customerAta.toBase58())
+
+
+      try {
+        await program.methods
+          .makePurchase(intBuffer)
+          .accounts({
+            customer: publicKey.toBase58(),
+            mint: mint.toBase58(),
+            seller: seller.toBase58(),
+            sellerAta: sellerAta.toBase58(),
+            customerAta: customerAta.toBase58(),
+            // productListing: productListingPDA.toBase58(),
+            // productPurchase: productPurchasePDA.toBase58(),
+            // associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID.toBase58(),
+            tokenProgram: TOKEN_2022_PROGRAM_ID.toBase58(),
+            // systemProgram: SYSTEM_PROGRAM_ID.toBase58() 
+          })
+          .signers([])
+          .rpc(); // Generate transaction
+
+          console.log("HEREEEE")
+
+        // transaction.feePayer = publicKey;
+        // transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+
+        // // Sign the transaction using the connected wallet
+        // const signedTransaction = await signTransaction(transaction);
+
+        // Send the signed transaction to the network
+        // const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+        console.log("COMPLETED TRANSACTION")
+        // transactionToast(signature); // Show success notification
+        // return signature;
+      } catch (error) {
+        toast.error("Transaction failed.");
+        console.error(error);
+        throw error;
+      }
+    },
+  });
+
+  return mutation;
+}
 
 export async function setPublicKey(token: string, publicKey: string) {
   const response = await fetch(`${API_BASE_URL}/solana/key`, {

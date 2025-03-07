@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/forms/input";
 import { Label } from "@/components/ui/forms/label";
 import { Separator } from "@/components/ui/helpers/separator";
 import { toast } from "@/hooks/use-toast";
-import { Coins, Link, Lock, Trash, Wallet } from "lucide-react";
+import { Coins, Link, Trash, Wallet } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -27,8 +27,6 @@ import { toast as tot} from "react-hot-toast";
 
 interface TokenBalance {
   availableTokens: number;
-  lockedTokens: number;
-  rescindedTokens: number;
   cryptoWallet: string;
 }
 
@@ -117,7 +115,7 @@ export default function DashboardPage() {
       if (!res.ok) throw new Error("Failed to fetch balance");
 
       const balance = await res.json();
-      setBalance({ availableTokens: balance.tokens.toFixed(2), lockedTokens: balance.locked.toFixed(2), rescindedTokens: balance.rescinded.toFixed(2), cryptoWallet: "" });
+      setBalance({ availableTokens: balance.tokens.toFixed(2), cryptoWallet: "" });
     } catch (error) {
       console.error("Error fetching balance:", error);
       toast({ title: "Error", description: "Failed to load balance.", variant: "destructive" });
@@ -180,47 +178,23 @@ export default function DashboardPage() {
 
       {/* Enhanced Key Metrics UI */}
 
-      {/* Available Tokens */}
-      <Card className="border border-green-400 shadow-lg">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-green-600 text-lg">Available Tokens</CardTitle>
-          <Coins className="text-green-500 w-6 h-6" />
-        </CardHeader>
-        <CardContent>
-          <p className="text-4xl font-semibold text-green-600">{balance?.availableTokens ?? 0}</p>
-          <p className="text-sm text-gray-500">Tokens ready for withdrawal</p>
-        </CardContent>
-      </Card>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Locked Tokens */}
-        <Card className="border border-orange-400 shadow-lg">
+        {/* Available Tokens */}
+        <Card className="border border-green-400 shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-orange-600 text-lg">Locked Tokens</CardTitle>
-            <Lock className="text-orange-500 w-6 h-6" />
+            <CardTitle className="text-green-600 text-lg">Available Tokens</CardTitle>
+            <Coins className="text-green-500 w-6 h-6" />
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-semibold text-orange-600-600">{balance?.lockedTokens ?? 0}</p>
-            <p className="text-sm text-gray-500">Tokens pending release</p>
+            <p className="text-4xl font-semibold text-green-600">{balance?.availableTokens ?? 0}</p>
+            <p className="text-sm text-gray-500">Tokens ready for withdrawal</p>
           </CardContent>
-        </Card>
-
-        <Card className="border border-red-400 shadow-lg">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-red-600 text-lg">Rescinded Tokens</CardTitle>
-            <Trash className="text-red-500 w-6 h-6" />
-          </CardHeader>
           <CardContent>
-            <p className="text-4xl font-semibold text-red-600">{balance?.rescindedTokens ?? 0}</p>
-            <p className="text-sm text-gray-500">Tokens pending release</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardContent>
           <Button onClick={fetchBalance} className="w-full mt-5 bg-green-600 hover:bg-green-700"> Refresh Balance </Button>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+       
 
       {/* Withdrawal Section */}
       <Card>
@@ -254,6 +228,11 @@ export default function DashboardPage() {
           </form>
         </CardContent>
       </Card>
+        
+       
+      </div>
+
+     
 
       {/* Recent Orders */}
       <Card>

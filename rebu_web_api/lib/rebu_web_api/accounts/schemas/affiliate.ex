@@ -26,6 +26,7 @@ defmodule RebuWebApi.Accounts.Affiliate do
     field :token_balance, :decimal, default: 0.0
     field :solana_pub_key, :string
     field :date_joined, :date
+    field :referral_code, :string
 
     field :role, Ecto.Enum, values: [:affiliate, :admin], default: :affiliate
 
@@ -51,8 +52,29 @@ defmodule RebuWebApi.Accounts.Affiliate do
       :solana_pub_key
     ])
     |> validate_required([:first_name, :last_name, :role])
-    |> validate_inclusion(:role, [:user])
+    |> validate_inclusion(:role, [:affiliate, :admin])
+    |> generate_referral_code()
     |> AccountChangesetHelpers.validate_email()
     |> AccountChangesetHelpers.validate_password()
+  end
+
+  defp generate_referral_code(changeset) do
+    role = get_field(changeset, :role)
+
+    # Only generate referral_code if role is :affiliate and it's not already set
+    if role == "affiliate" do
+      if get_field(changeset, :referral_code) do
+        changeset
+      else
+        put_change(
+          changeset,
+          :referral_code,
+          :crypto.strong_rand_bytes(6) |> Base.url_encode64() |> binary_part(0, 8)
+        )
+      end
+    else
+      # If not affiliate, remove referral_code if it exists
+      changeset |> put_change(:referral_code, nil)
+    end
   end
 end

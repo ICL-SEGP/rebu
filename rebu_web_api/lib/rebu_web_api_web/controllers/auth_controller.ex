@@ -2,10 +2,24 @@ defmodule RebuWebApiWeb.AuthController do
   use RebuWebApiWeb, :controller
   alias RebuWebApi.Accounts
   alias RebuWebApi.Auth.Guardian
+  alias RebuWebApi.Repo
 
   action_fallback RebuWebApiWeb.FallbackController
 
-  def register(conn, %{"user" => user_params}) do
+  def register(conn, %{"user" => user_params, "referral_code" => code}) do
+    affiliate =
+      if (code == "") do
+        Repo.get_by(Accounts.Affiliate, email: "affiliate@test.com")
+      else
+        affiliate = Repo.get_by(Accounts.Affiliate, referral_code: code)
+
+        if affiliate,
+          do: affiliate,
+          else: Repo.get_by(Accounts.Affiliate, email: "affiliate@test.com")
+      end
+
+    user_params = Map.put(user_params, "affiliate", affiliate)
+
     with {:ok, user} <- Accounts.register_user(user_params),
          {:ok, token, _claims} <- Guardian.encode_and_sign(user) do
       conn

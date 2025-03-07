@@ -1,3 +1,4 @@
+import { processAndUploadFile, processFile } from "@/lib/api/aws";
 import humps from "humps";
 
 export enum Role {
@@ -125,7 +126,6 @@ export interface Product {
   imageUrls: string[];
   fileUrl: string;
   fileType: string; // e.g., "pdf", "mp3", "zip"
-  fileSize: number; // Size in bytes
   category: Category;
   status: ProductStatus;
   createdAt: Date;
@@ -136,7 +136,7 @@ export interface Product {
 
 export type Category = {
   name: string;
-  imageUrl: URL;
+  imageUrl: string;
 };
 
 export interface Review {
@@ -207,7 +207,7 @@ export function toOrder(order: any): Order {
 }
 
 export function toOfferIds(offers: Offer[]) {
-  return offers.map((offer) => offer.id)
+  return offers.map((offer) => offer.id);
 }
 
 export function toOffer(offer: any): Offer {
@@ -219,6 +219,42 @@ export function toOffer(offer: any): Offer {
   offer.offerEnd = new Date(offer.offerEnd);
 
   return offer;
+}
+
+export function toCategory(category: any) {
+  return humps.camelizeKeys(category);
+}
+
+export function toProduct(product: any) {
+  product = humps.camelizeKeys(product);
+
+  product.id = Number(product.id);
+  product.price = parseFloat(product.price);
+  product.createdAt = new Date(product.createdAt);
+  product.category = product.category ? toCategory(product.category) : null; // Assuming toCategory exists
+  product.reviews =
+    product.reviews?.map((review: any) => toReview(review)) || []; // Assuming toReview exists
+  product.sellerId = Number(product.sellerId);
+
+  switch (product.status) {
+    case "active":
+      product.status = ProductStatus.ACTIVE;
+      break;
+    case "scheduled":
+      product.status = ProductStatus.SCHEDULED;
+      break;
+    case "sold_out":
+      product.status = ProductStatus.SOLD_OUT;
+      break;
+    case "expired":
+      product.status = ProductStatus.EXPIRED;
+      break;
+    default:
+      product.status = ProductStatus.ACTIVE; // Default to active if unknown
+      break;
+  }
+
+  return product as Product;
 }
 
 export function toUserBalance(balance: any): UserBalance {}

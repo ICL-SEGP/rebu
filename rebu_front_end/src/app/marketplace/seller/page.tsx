@@ -4,83 +4,134 @@ import { useEffect, useState, useRef } from "react";
 import { Badge } from "@/components/ui/helpers/badge";
 import { Input } from "@/components/ui/forms/input";
 import { Button } from "@/components/ui/helpers/button";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/shadcn/select";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/helpers/card";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/modals/dialog";
-import { 
-  UploadIcon, XCircleIcon, PlusIcon, StarIcon, 
-  PencilIcon, TrashIcon, ChevronLeft, ChevronRight, DownloadIcon 
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/shadcn/select";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@/components/ui/helpers/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/modals/dialog";
+import {
+  UploadIcon,
+  XCircleIcon,
+  PlusIcon,
+  StarIcon,
+  PencilIcon,
+  TrashIcon,
+  ChevronLeft,
+  ChevronRight,
+  DownloadIcon,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { User, Product, ProductStatus } from "@/types/app";
-import { 
-  uploadProductImage, uploadProductFile,
-  getAffiliateProducts, saveProduct, deleteProduct 
+import { User, Product, ProductStatus, Category } from "@/types/app";
+import {
+  uploadProductImage,
+  uploadProductFile,
+  getAffiliateProducts,
+  saveProduct,
+  deleteProduct,
+  addNewCategory,
+  fetchCategoryImageBlob,
+  fetchCategoryImageFile,
+  getProducts,
+  getCategories,
 } from "@/lib/api/marketplace";
 import { ActiveDraggableContext } from "@dnd-kit/core/dist/components/DndContext";
 import { DndContext, closestCenter } from "@dnd-kit/core";
-import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import {
+  compress,
+  getPresignedUrl,
+  processAndUploadFile,
+  processFile,
+  uploadFile,
+  uploadFileToS3,
+} from "@/lib/api/aws";
+import humps from "humps";
 
 export default function SellerMarketplace() {
-  const { data : session } = useSession();
+  const { data: session } = useSession();
   const [user, setUser] = useState<User | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>();
   const [showDialog, setShowDialog] = useState(false);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [categories, setCategories] = useState([]);
 
   if (!session) {
     throw new Error("No user logged in.");
   }
 
   /**
- * Fetches the seller's products from the backend.
- * TODO: Replace dummy data with actual backend fetch
- */
+   * Fetches the seller's products from the backend.
+   * TODO: Replace dummy data with actual backend fetch
+   */
   useEffect(() => {
     async function fetchSellerProducts() {
       try {
         // TODO: Uncomment when backend is ready
-        // const userProducts = await getAffiliateProducts(session.accessToken);
-        // setProducts(userProducts);
+        const userProducts = await getProducts(session!.accessToken);
+        console.log("products", userProducts);
+        const cats = await getCategories(session!.accessToken);
+        setCategories(cats);
+        setProducts(userProducts);
 
-        // Dummy data for now
-        const dummyProducts: Product[] = [
-          {
-            id: 1,
-            name: "Ebook: Mastering Next.js",
-            desc: "A comprehensive guide to building scalable Next.js applications.",
-            price: 29.99,
-            imageUrls: ["/images/nextjs-ebook.png"],
-            fileUrl: "https://example.com/ebook.pdf",
-            fileType: "pdf",
-            fileSize: 1048576,
-            category: { name: "Ebooks", imageUrl: new URL("https://example.com/category.png") },
-            status: "active",
-            createdAt: "",
-            sellerId: 1,
-            reviews: [],
-          },
-          {
-            id: 2,
-            name: "UI Kit for Designers",
-            desc: "A modern UI kit for Figma and Sketch users.",
-            price: 49.99,
-            imageUrls: ["/images/ui-kit.png"],
-            fileUrl: "/Users/roypark337/Downloads/codingclub_week6",
-            fileType: "zip",
-            fileSize: 2048576,
-            category: { name: "Design Assets", imageUrl: new URL("https://example.com/category.png") },
-            status: "active",
-            createdAt: "",
-            sellerId: 1,
-            reviews: [],
-          },
-        ];
-
-        setProducts(dummyProducts);
+        // [
+        // {
+        //   id: 1,
+        //   name: "Ebook: Mastering Next.js",
+        //   desc: "A comprehensive guide to building scalable Next.js applications.",
+        //   price: 29.99,
+        //   imageUrls: ["/images/nextjs-ebook.png"],
+        //   fileUrl: "https://example.com/ebook.pdf",
+        //   fileType: "pdf",
+        //   fileSize: 1048576,
+        //   category: {
+        //     name: "Ebooks",
+        //     imageUrl: new URL("https://example.com/category.png"),
+        //   },
+        //   status: "active",
+        //   createdAt: "",
+        //   sellerId: 1,
+        //   reviews: [],
+        // },
+        // {
+        //   id: 2,
+        //   name: "UI Kit for Designers",
+        //   desc: "A modern UI kit for Figma and Sketch users.",
+        //   price: 49.99,
+        //   imageUrls: ["/images/ui-kit.png"],
+        //   fileUrl: "/Users/roypark337/Downloads/codingclub_week6",
+        //   fileType: "zip",
+        //   fileSize: 2048576,
+        //   category: {
+        //     name: "Design Assets",
+        //     imageUrl: new URL("https://example.com/category.png"),
+        //   },
+        //   status: "active",
+        //   createdAt: "",
+        //   sellerId: 1,
+        //   reviews: [],
+        // },
+        // ]
       } catch (error) {
         console.error("Failed to fetch products", error);
       }
@@ -88,13 +139,13 @@ export default function SellerMarketplace() {
     fetchSellerProducts();
   }, [session?.accessToken]);
 
-
   /**
    * Handles product deletion by calling the API and updating the local state.
    */
   const handleDeleteProduct = async (productId: number) => {
-    if (!window.confirm("Are you sure you want to delete this product?")) return;
-    
+    if (!window.confirm("Are you sure you want to delete this product?"))
+      return;
+
     try {
       await deleteProduct(session.accessToken, productId);
       setProducts((prev) => prev.filter((p) => p.id !== productId));
@@ -110,7 +161,13 @@ export default function SellerMarketplace() {
    */
   const handleSaveProduct = async (updatedProduct: Product) => {
     try {
-      const savedProduct = await saveProduct(session.accessToken, updatedProduct);
+      console.log("hereEeeeeeeeeeeeee");
+      let savedProduct = await saveProduct(session.accessToken, updatedProduct);
+
+      savedProduct = humps.camelizeKeys(savedProduct);
+
+
+      console.log("saved", savedProduct);
       setProducts((prev) =>
         prev.some((p) => p.id === savedProduct.id)
           ? prev.map((p) => (p.id === savedProduct.id ? savedProduct : p))
@@ -137,7 +194,10 @@ export default function SellerMarketplace() {
           className="w-full max-w-lg"
         />
 
-        <Select onValueChange={(status) => setFilterStatus(status)} defaultValue="all">
+        <Select
+          onValueChange={(status) => setFilterStatus(status)}
+          defaultValue="all"
+        >
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
@@ -167,22 +227,34 @@ export default function SellerMarketplace() {
           .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
           .filter((p) => filterStatus === "all" || p.status === filterStatus)
           .map((product) => (
-            <ProductCard key={product.id} product={product} onView={() => setSelectedProduct(product)} />
-        ))}
+            <ProductCard
+              key={product.id}
+              product={product}
+              onView={() => setSelectedProduct(product)}
+            />
+          ))}
       </div>
 
       {/* 🔹 Add/Edit Product Modal */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent>
-          <DialogTitle>{selectedProduct ? "Edit Product" : "Add Product"}</DialogTitle>
-          {products.length > 0 ? ( // ✅ Ensures `products` is ready before rendering `ProductForm`
-            <ProductForm product={selectedProduct} onSave={handleSaveProduct} products={products} />
+          <DialogTitle>
+            {selectedProduct ? "Edit Product" : "Add Product"}
+          </DialogTitle>
+          {products.length >= 0 ? ( // ✅ Ensures `products` is ready before rendering `ProductForm`
+            <ProductForm
+              product={selectedProduct}
+              onSave={handleSaveProduct}
+              products={products}
+              currentUserToken={session.accessToken}
+              categories={categories}
+              setCategories={setCategories}
+            />
           ) : (
             <p>Loading...</p> // Optional: Show a loading message while products are fetched
           )}
         </DialogContent>
       </Dialog>
-
 
       {/* 🔹 Product Detail Modal */}
       {selectedProduct && (
@@ -202,32 +274,60 @@ export default function SellerMarketplace() {
   );
 }
 
-
 /**
  * Displays a product card with image, name, price, and rating.
  */
-export function ProductCard({ product, onView }: { product: Product; onView: () => void }) {
+export function ProductCard({
+  product,
+  onView,
+}: {
+  product: Product;
+  onView: () => void;
+}) {
+  console.log("new thang", product);
+
   const totalRatings = product.reviews?.length || 0;
   const averageRating = totalRatings
-    ? (product.reviews.reduce((sum, r) => sum + r.rating, 0) / totalRatings).toFixed(1)
+    ? (
+        product.reviews.reduce((sum, r) => sum + r.rating, 0) / totalRatings
+      ).toFixed(1)
     : "N/A";
 
   return (
-    <Card className="relative shadow-md cursor-pointer hover:shadow-lg transition-all" onClick={onView}>
-      <img src={product.imageUrls[0]} alt={product.name} className="w-full h-40 object-cover rounded-t-md" />
+    <Card
+      className="relative shadow-md cursor-pointer hover:shadow-lg transition-all"
+      onClick={onView}
+    >
+      <img
+        src={product.imageUrls[0]}
+        alt={product.name}
+        className="w-full h-40 object-cover rounded-t-md"
+      />
       <CardHeader className="p-4">
-        <CardTitle className="h-14 line-clamp-2 text-lg font-semibold">{product.name}</CardTitle>
+        <CardTitle className="h-14 line-clamp-2 text-lg font-semibold">
+          {product.name}
+        </CardTitle>
       </CardHeader>
       <CardContent className="p-4">
-        <p className="text-xl font-bold text-green-600">{product.price} Tokens</p>
+        <p className="text-xl font-bold text-green-600">
+          {product.price} Tokens
+        </p>
         <div className="flex items-center space-x-1 mt-2">
           {Array.from({ length: 5 }).map((_, i) => (
             <StarIcon
               key={i}
               size={16}
               className="text-yellow-500"
-              fill={i < Math.round(parseFloat(averageRating)) ? "currentColor" : "none"}
-              stroke={i < Math.round(parseFloat(averageRating)) ? "currentColor" : "gray"}
+              fill={
+                i < Math.round(parseFloat(averageRating))
+                  ? "currentColor"
+                  : "none"
+              }
+              stroke={
+                i < Math.round(parseFloat(averageRating))
+                  ? "currentColor"
+                  : "gray"
+              }
             />
           ))}
           <span className="text-sm font-medium">{averageRating} / 5</span>
@@ -284,7 +384,9 @@ export function ProductDetailModal({
     <Dialog open={!!product} onOpenChange={onClose}>
       <DialogContent className="max-w-lg max-h-[85vh] p-4 rounded-lg flex flex-col shadow-lg bg-white">
         <div className="overflow-y-auto max-h-[65vh] space-y-4">
-          <DialogTitle className="text-xl font-bold text-gray-900">{product.name}</DialogTitle>
+          <DialogTitle className="text-xl font-bold text-gray-900">
+            {product.name}
+          </DialogTitle>
 
           {/* Image Carousel */}
           <div className="relative rounded-lg overflow-hidden">
@@ -313,11 +415,12 @@ export function ProductDetailModal({
             )}
           </div>
 
-    
           {/* Description & Status */}
           <div className="text-gray-700">
             <h3 className="text-md font-semibold text-gray-900">Description</h3>
-            <p className="text-sm text-gray-600 mt-1 leading-relaxed">{product.desc}</p>
+            <p className="text-sm text-gray-600 mt-1 leading-relaxed">
+              {product.desc}
+            </p>
 
             {/* Ambient Product Status Badge */}
             <div className="mt-2 flex items-center space-x-2">
@@ -342,7 +445,11 @@ export function ProductDetailModal({
           {product.fileUrl && (
             <div className="bg-gray-100 p-3 rounded-lg flex items-center space-x-3">
               <DownloadIcon size={18} className="text-gray-500" />
-              <a href={product.fileUrl} download className="text-blue-600 text-sm font-medium hover:underline">
+              <a
+                href={product.fileUrl}
+                download
+                className="text-blue-600 text-sm font-medium hover:underline"
+              >
                 {product.fileType.toUpperCase()} File (Click to Download)
               </a>
             </div>
@@ -354,7 +461,10 @@ export function ProductDetailModal({
             <div className="space-y-3 mt-2">
               {product.reviews?.length > 0 ? (
                 product.reviews.map((review) => (
-                  <div key={review.id} className="bg-gray-50 p-3 rounded-lg flex flex-col shadow-sm">
+                  <div
+                    key={review.id}
+                    className="bg-gray-50 p-3 rounded-lg flex flex-col shadow-sm"
+                  >
                     <div className="flex justify-between items-center">
                       <p className="text-sm text-gray-800">{review.comment}</p>
                       <div className="flex items-center space-x-1">
@@ -362,7 +472,11 @@ export function ProductDetailModal({
                           <StarIcon
                             key={i}
                             size={14}
-                            className={i < review.rating ? "text-yellow-500" : "text-gray-300"}
+                            className={
+                              i < review.rating
+                                ? "text-yellow-500"
+                                : "text-gray-300"
+                            }
                             fill={i < review.rating ? "currentColor" : "none"}
                             stroke={i < review.rating ? "currentColor" : "gray"}
                           />
@@ -378,15 +492,20 @@ export function ProductDetailModal({
           </div>
         </div>
 
-        
-
-
         {/* Edit & Delete Buttons */}
         <div className="p-4 border-t bg-white flex gap-4">
-          <Button variant="outline" onClick={onEdit} className="flex-1 flex items-center justify-center px-6 py-2">
+          <Button
+            variant="outline"
+            onClick={onEdit}
+            className="flex-1 flex items-center justify-center px-6 py-2"
+          >
             <PencilIcon size={16} className="mr-2" /> Edit
           </Button>
-          <Button variant="destructive" onClick={onDelete} className="flex-1 flex items-center justify-center px-6 py-2">
+          <Button
+            variant="destructive"
+            onClick={onDelete}
+            className="flex-1 flex items-center justify-center px-6 py-2"
+          >
             <TrashIcon size={16} className="mr-2" /> Delete
           </Button>
         </div>
@@ -402,40 +521,41 @@ export function ProductForm({
   product,
   onSave,
   currentUserToken,
-  products, //array of all products
+  categories,
+  setCategories,
 }: {
   product: Product | null;
   onSave: (product: Partial<Product>) => void;
   currentUserToken: string;
-  products: Product[];
+  categories: Category[];
+  setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 }) {
   const [name, setName] = useState(product?.name || "");
   const [desc, setDesc] = useState(product?.desc || "");
   const [category, setCategory] = useState(product?.category.name || "");
   const [price, setPrice] = useState(product?.price.toString() || "");
   const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>(product?.imageUrls || []);
+  const [imagePreviews, setImagePreviews] = useState<string[]>(
+    product?.imageUrls || []
+  );
   const [digitalFile, setDigitalFile] = useState<File | null>(null);
-  const [status, setStatus] = useState<ProductStatus>(product?.status || ProductStatus.ACTIVE);
-  const [filteredCategories, setFilteredCategories] = useState<string[]>([]);
+  const [status, setStatus] = useState<ProductStatus>(
+    product?.status || ProductStatus.ACTIVE
+  );
+  const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
-
 
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const digitalFileInputRef = useRef<HTMLInputElement | null>(null);
 
+  function isNewCategory(categoryName: string, products: Product[]): boolean {
+    const existingCategories = new Set(
+      categories.map((p) => p.name.toLowerCase())
+    );
 
-  useEffect(() => {
-    console.log("Extracted Categories:", products.map((p) => p.category?.name));
-  }, [products]);
-  
-  // Extract unique categories dynamically
-  const existingCategories = Array.from(
-    new Set((products ?? []).map((p) => p.category.name))
-  ).sort();
-
-  console.log(existingCategories, filteredCategories)
+    return !existingCategories.has(categoryName.toLowerCase()); // ✅ Returns true if it's a new category
+  }
 
   useEffect(() => {
     setName(product?.name || "");
@@ -447,41 +567,70 @@ export function ProductForm({
   }, [product]);
 
   useEffect(() => {
-    const updatedCategories = existingCategories.filter((cat) =>
-      cat.toLowerCase().includes((category || "").toLowerCase())
+    const updatedCategories = categories.filter((cat) =>
+      cat.name.toLowerCase().includes((category || "").toLowerCase())
     );
-  
-    // Only update state if filtered categories have actually changed
-    if (JSON.stringify(updatedCategories) !== JSON.stringify(filteredCategories)) {
+
+    if (
+      JSON.stringify(updatedCategories) !== JSON.stringify(filteredCategories)
+    ) {
       setFilteredCategories(updatedCategories);
     }
-  }, [category, existingCategories]); // 🔥 Removed filteredCategories from dependencies
-  
+  }, [category, categories]);
+
+  const handleCategoryConfirm = async () => {
+    if (!category.trim()) return;
+
+    if (isNewCategory(category, categories)) {
+      const imageFile = await fetchCategoryImageFile(category);
+      console.log("unsplash", imageFile);
+      const imageFileUrl = await processAndUploadFile(
+        currentUserToken,
+        "image",
+        [imageFile!]
+      );
+      console.log("unsplash url", imageFileUrl);
+      try {
+        const newCategory = await addNewCategory(currentUserToken, {
+          name: category,
+          imageUrl: imageFileUrl?.url,
+        }); // ✅ Call API only if it's new
+        if (newCategory) {
+          setCategories((prevCategories) => [...prevCategories, newCategory]);
+        }
+      } catch (error) {
+        console.error("Failed to add new category:", error);
+        return;
+      }
+    }
+  };
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newCategory = e.target.value;
-  
-    // Only update state if value actually changes
     if (newCategory !== category) {
       setCategory(newCategory);
       setShowDropdown(true);
     }
   };
-  
 
   const handleCategorySelect = (selected: string) => {
     setCategory(selected);
     setShowDropdown(false);
   };
 
-  const isValid = name.trim() && desc.trim() && category.trim() && price && imagePreviews.length > 0 && digitalFile;
+  const isValid =
+    name.trim() &&
+    desc.trim() &&
+    category.trim() &&
+    price &&
+    imagePreviews.length > 0 &&
+    digitalFile;
 
-  /**
-   * Handles image selection and previewing.
-   */
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files ? Array.from(event.target.files) : [];
-    const validFiles = files.filter((file) => ["image/png", "image/jpeg", "image/jpg"].includes(file.type));
+    const validFiles = files.filter((file) =>
+      ["image/png", "image/jpeg", "image/jpg"].includes(file.type)
+    );
 
     if (validFiles.length + imagePreviews.length > 3) {
       alert("You can upload a maximum of 3 images.");
@@ -494,112 +643,179 @@ export function ProductForm({
     setImagePreviews((prev) => [...prev, ...newPreviews]);
   };
 
-  // 🔹 Drag-and-Drop Image Component
-function SortableImage({ id, src, onRemove }: { id: string; src: string; onRemove: () => void }) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+  function SortableImage({
+    id,
+    src,
+    onRemove,
+  }: {
+    id: string;
+    src: string;
+    onRemove: () => void;
+  }) {
+    const { attributes, listeners, setNodeRef, transform, transition } =
+      useSortable({ id });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+    };
 
-  return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="relative">
-      <img src={src} alt="Preview" className="w-24 h-24 object-cover rounded-md shadow-md cursor-move" />
-      <button className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1" onClick={onRemove}>
-        <XCircleIcon size={16} />
-      </button>
-    </div>
-  );
-}
-
-// 🔹 Drag-and-Drop Logic for Reordering
-const handleDragEnd = (event: any) => {
-  const { active, over } = event;
-  if (active.id !== over.id) {
-    const oldIndex = imagePreviews.findIndex((url) => url === active.id);
-    const newIndex = imagePreviews.findIndex((url) => url === over.id);
-
-    setImagePreviews((prev) => arrayMove(prev, oldIndex, newIndex));
-    setImageFiles((prev) => arrayMove(prev, oldIndex, newIndex));
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+        className="relative"
+      >
+        <img
+          src={src}
+          alt="Preview"
+          className="w-24 h-24 object-cover rounded-md shadow-md cursor-move"
+        />
+        <button
+          className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
+          onClick={onRemove}
+        >
+          <XCircleIcon size={16} />
+        </button>
+      </div>
+    );
   }
-};
 
-  /**
-   * Removes a selected image.
-   */
-  const removeImage = (index: number) => {
-    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
-    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+    if (active.id !== over.id) {
+      const oldIndex = imagePreviews.findIndex((url) => url === active.id);
+      const newIndex = imagePreviews.findIndex((url) => url === over.id);
+
+      setImagePreviews((prev) => arrayMove(prev, oldIndex, newIndex));
+      setImageFiles((prev) => arrayMove(prev, oldIndex, newIndex));
+    }
   };
 
-  /**
-   * Handles digital product file selection.
-   */
-  const handleDigitalFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const removeImage = (index: number) => {
+    setImagePreviews((prevPreviews) => {
+      const updatedPreviews = prevPreviews.filter((_, i) => i !== index);
+      setImageFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+      return updatedPreviews;
+    });
+  };
+  
+
+  const handleDigitalFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       setDigitalFile(file);
     }
   };
 
-  /**
-   * Handles product submission by uploading images & digital files to the backend.
-   */
   const handleSubmit = async () => {
-    let uploadedImageUrls = [...imagePreviews];
-    let fileUrl = "";
-    let fileType = "";
-    let fileSize = 0;
+    let imagesUrlsNew = [];
+    let digitalFileUrl = "";
+    let digitalFileType = "";
+
+    if (
+      !name.trim() ||
+      !desc.trim() ||
+      !category.trim() ||
+      !price ||
+      imagePreviews.length === 0 ||
+      !digitalFile
+    ) {
+      alert("Please fill out all fields before submitting.");
+      return;
+    }
+
+    await handleCategoryConfirm();
 
     try {
-      if (imageFiles.length > 0) {
-        uploadedImageUrls = await Promise.all(
-          imageFiles.map(async (file) => await uploadProductImage(currentUserToken, file))
-        );
-      }
+      const compressedImageFiles = await compress(imageFiles);
 
-      if (digitalFile) {
-        fileType = digitalFile.type;
-        fileSize = digitalFile.size;
-        fileUrl = await uploadProductFile(currentUserToken, digitalFile);
+      const urls = await Promise.all(
+        compressedImageFiles.map(async (file) => {
+          return await uploadFile(currentUserToken, "image", file);
+        })
+      );
+
+      imagesUrlsNew = urls.map((url) => url!.url);
+
+
+
+      const digitalUploadResult = await processAndUploadFile(
+        currentUserToken,
+        "file",
+        [digitalFile!]
+      );
+
+      console.log("digital file");
+
+      if (digitalUploadResult) {
+        digitalFileUrl = digitalUploadResult.url;
+        digitalFileType = digitalUploadResult.type;
+      } else {
+        console.error("Digital file upload failed");
+        return;
       }
     } catch (error) {
       console.error("File upload failed", error);
       return;
     }
 
+    console.log("file type", digitalFileType);
+    console.log("to save", {
+      id: product?.id,
+      name,
+      desc,
+      price: Number(price),
+      status,
+      imageUrls: imagesUrlsNew,
+      fileUrl: digitalFileUrl,
+      fileType: digitalFileType,
+    });
+
     onSave({
       id: product?.id,
       name,
       desc,
-      category: { name: category, imageUrl: new URL(uploadedImageUrls[0]) },
+      category: category,
       price: Number(price),
       status,
-      imageUrls: uploadedImageUrls,
-      fileUrl,
-      fileType,
-      fileSize,
-      createdAt: product?.createdAt || "",
+      imageUrls: imagesUrlsNew,
+      fileUrl: digitalFileUrl,
+      fileType: digitalFileType,
     });
   };
 
   return (
     <div className="space-y-4">
-      {/* 🔹 Image Upload Section */}
       <div className="space-y-2">
-        <p className="text-gray-700 text-sm">Upload up to 3 images (PNG, JPG, JPEG). Drag to reorder.</p>
-        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={imagePreviews} strategy={verticalListSortingStrategy}>
-          <div className="flex space-x-2">
-            {imagePreviews.map((preview, index) => (
-              <SortableImage key={preview} id={preview} src={preview} onRemove={() => removeImage(index)} />
-            ))}
-          </div>
+        <p className="text-gray-700 text-sm">
+          Upload up to 3 images (PNG, JPG, JPEG). Drag to reorder.
+        </p>
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={imagePreviews}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="flex space-x-2">
+              {imagePreviews.map((preview, index) => (
+                <SortableImage
+                  key={preview}
+                  id={preview}
+                  src={preview}
+                  onRemove={() => removeImage(index)}
+                />
+              ))}
+            </div>
           </SortableContext>
         </DndContext>
-        
-        
+
         {imagePreviews.length < 3 && (
           <>
             <input
@@ -610,30 +826,50 @@ const handleDragEnd = (event: any) => {
               onChange={handleImageChange}
               className="hidden"
             />
-            <Button variant="outline" onClick={() => imageInputRef.current?.click()}>
+            <Button
+              variant="outline"
+              onClick={() => imageInputRef.current?.click()}
+            >
               <UploadIcon size={16} className="mr-2" /> Upload Images
             </Button>
           </>
         )}
       </div>
 
-      {/* 🔹 Digital Product Upload */}
       <div className="space-y-2">
         <p className="text-gray-700 text-sm">Upload a digital product file.</p>
-        <input type="file" ref={digitalFileInputRef} onChange={handleDigitalFileChange} className="hidden" />
-        <Button variant="outline" onClick={() => digitalFileInputRef.current?.click()}>
+        <input
+          type="file"
+          ref={digitalFileInputRef}
+          onChange={handleDigitalFileChange}
+          className="hidden"
+        />
+        <Button
+          variant="outline"
+          onClick={() => digitalFileInputRef.current?.click()}
+        >
           <UploadIcon size={16} className="mr-2" /> Upload File
         </Button>
         {digitalFile && (
           <p className="text-sm text-gray-500">
-            Selected: {digitalFile.name} ({(digitalFile.size / 1024 / 1024).toFixed(2)} MB)
+            Selected: {digitalFile.name} (
+            {(digitalFile.size / 1024 / 1024).toFixed(2)} MB)
           </p>
         )}
       </div>
 
-      {/* 🔹 Product Details */}
-      <Input placeholder="Product Name" value={name} onChange={(e) => setName(e.target.value)} required />
-      <Input placeholder="Description" value={desc} onChange={(e) => setDesc(e.target.value)} required />
+      <Input
+        placeholder="Product Name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        required
+      />
+      <Input
+        placeholder="Description"
+        value={desc}
+        onChange={(e) => setDesc(e.target.value)}
+        required
+      />
       <div className="relative">
         <Input
           ref={inputRef}
@@ -641,32 +877,40 @@ const handleDragEnd = (event: any) => {
           value={category}
           onChange={handleCategoryChange}
           onFocus={() => setShowDropdown(true)}
-          onBlur={() => setTimeout(() => setShowDropdown(false), 200)} // ✅ Prevents premature closing
+          onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
         />
         {showDropdown && filteredCategories.length > 0 && (
           <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-md max-h-40 overflow-y-auto">
             {filteredCategories.map((cat) => (
               <div
-                key={cat}
+                key={cat.name}
                 className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
                 onMouseDown={(e) => {
-                  e.preventDefault(); // ✅ Prevents blur before selection
-                  handleCategorySelect(cat);
+                  e.preventDefault();
+                  handleCategorySelect(cat.name);
                 }}
               >
-                {cat}
+                {cat.name}
               </div>
             ))}
           </div>
         )}
       </div>
 
-      <Input type="number" placeholder="Price (Tokens)" value={price} onChange={(e) => setPrice(e.target.value)} required />
+      <Input
+        type="number"
+        placeholder="Price (Tokens)"
+        value={price}
+        onChange={(e) => setPrice(e.target.value)}
+        required
+      />
 
-      {/* Product Status Selector */}
       <div className="space-y-2">
         <h3 className="text-md font-semibold text-gray-900">Product Status</h3>
-        <Select onValueChange={(newStatus) => setStatus(newStatus)} defaultValue={status}>
+        <Select
+          onValueChange={(newStatus) => setStatus(newStatus as ProductStatus)}
+          defaultValue={status}
+        >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select Status" />
           </SelectTrigger>
@@ -678,10 +922,13 @@ const handleDragEnd = (event: any) => {
           </SelectContent>
         </Select>
       </div>
-  
-      {/* 🔹 Confirm Button */}
+
       <div className="py-2 bg-white flex justify-end">
-        <Button onClick={handleSubmit} disabled={!isValid} className="px-6 py-2">
+        <Button
+          onClick={handleSubmit}
+          disabled={!isValid}
+          className="px-6 py-2"
+        >
           Confirm
         </Button>
       </div>

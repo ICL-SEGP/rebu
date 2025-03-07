@@ -3,9 +3,10 @@
 
 
 // use anchor_client::{
-//     solana_client::rpc_client::RpcClient,
-//     solana_sdk::{
-//         commitment_config::CommitmentConfig, signature::Keypair,
+    // solana_client::rpc_client::RpcClient,
+    // solana_sdk::{
+        // commitment_config::CommitmentConfig, 
+//         signature::Keypair,
 //     },
 // };
 
@@ -45,45 +46,70 @@ fn main() {
     // // let balance = client.get_balance(&owner.get_pubkey()).unwrap();
     // // println!("Owner balance: {:?}", balance);
 
-    // let user_pubkey_str = format!("{:?}", &new_user.get_pubkey());
-
-    // let owner_pubkey_str = format!("{:?}", &owner.get_pubkey());
-    // println!("New User: {}", &user_pubkey_str);
+    // let user_pubkey_str = format!("{:?}", &user_pubkey);
+    // println!("New User: {}", &new_user.get_pubkey());
 
     // let _result = mint_tokens_to_user(
     //     owner.to_base58_string(),
-    //     user_pubkey_str.clone(),
-    //     20,
+    //     new_user.get_pubkey().to_string(),
+    //     50,
     //     true
     // );
     
-    // println!("Minted\n ");
+    // // println!("Minted\n ");
 
-    // let id = 31;
+    // let id = 101;
 
     // let result = new_product_listing(
     //     owner.to_base58_string(),
     //     id,
     //     5,
-    //     1
+    //     50
     // );
 
-    // println!("New listing result: {:?}", result);
+    // // println!("New listing result: {:?}", result);
 
     // let result = make_purchase(
     //     new_user.to_base58_string(),
-    //     owner_pubkey_str.to_string(),
+    //     owner.to_base58_string(),
     //     id
     // );
 
     // println!("New purchase result: {:?}", result);
 
     // let result = verify_purchase(
-    //     new_user.get_pubkey().to_string(),
     //     owner.to_base58_string(),
+    //     new_user.get_pubkey().to_string(),
     //     id
     // );
 
     // println!("Verifying: {:?}", result);
+
+    // let folder_path = "/home/astrobyte/personalProjects/segp/rebu/token-info/.config/solana/";
+    // let owner_path = format!("{}{}", folder_path, "owner_keypair.json");
+
+    // let owner = get_keypair_from_file(&owner_path);
+    // println!("Owner account: {:?}", &owner.get_pubkey());
+
+    // let new_user = Keypair::new();
+    // println!("New user: {:?}", &new_user.get_pubkey());
+
+
+    // // let result = init_mint(owner.to_base58_string());
+    // let result = mint_rebu(
+    //     owner.to_base58_string(), 
+    //     new_user.get_pubkey().to_string(), 
+    //     3, 
+    //     true
+    // );
+
+    // println!("Result: {:?}", result);
+
+    // let result = burn_rebu(
+    //     new_user.to_base58_string(), 
+    //     3, 
+    // );
+
+    // println!("Result: {:?}", result);
 
 }

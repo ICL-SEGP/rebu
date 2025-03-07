@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getSession, signIn } from "next-auth/react";
 
 import { Button } from "@/components/ui/helpers/button";
@@ -17,14 +17,33 @@ import { Label } from "@/components/ui/forms/label";
 import { API_BASE_URL } from "@/lib/constants";
 import { getAffiliateProfile } from "@/lib/api/affiliate";
 import { getUserProfile } from "@/lib/api/user";
-import { register } from "module";
 import { registerUser } from "@/lib/api/auth";
 import { Credentials } from "@/types/app";
 
 const Register = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // ✅ Extract referral code from URL or localStorage
+  const [referralCode, setReferralCode] = useState<string | null>("");
   const [credentials, setCredentials] = useState<Credentials>();
   const [error, setError] = useState("");
-  const router = useRouter();
+
+  useEffect(() => {
+    // Get referral code from URL
+    const urlReferralCode = searchParams.get("affiliate_code");
+
+    if (urlReferralCode) {
+      setReferralCode(urlReferralCode);
+      localStorage.setItem("affiliate_code", urlReferralCode); // Store it persistently
+    } else {
+      // If no referral code in URL, check localStorage
+      const storedReferralCode = localStorage.getItem("affiliate_code");
+      if (storedReferralCode) {
+        setReferralCode(storedReferralCode);
+      }
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +57,11 @@ const Register = () => {
       return;
     }
 
-    const user = await registerUser(credentials);
+    // ✅ Include referralCode in the registration request
+    const user = await registerUser(
+      credentials,
+      referralCode // Attach referral code
+    );
 
     const response = await signIn("credentials", {
       email: credentials!.email,
@@ -92,7 +115,8 @@ const Register = () => {
                     setCredentials((prev) => ({
                       ...prev!,
                       firstName: e.target.value,
-                    }))}
+                    }))
+                  }
                 />
               </div>
               <div className="flex flex-col space-y-1.5">
@@ -104,7 +128,8 @@ const Register = () => {
                     setCredentials((prev) => ({
                       ...prev!,
                       lastName: e.target.value,
-                    }))}
+                    }))
+                  }
                 />
               </div>
               <div className="flex flex-col space-y-1.5">
@@ -134,6 +159,14 @@ const Register = () => {
                   }
                 />
               </div>
+
+              {/* ✅ Show the referral code (if available) */}
+              {referralCode && (
+                <p className="text-xs text-gray-600">
+                  Signing up under Affiliate ID: <b>{referralCode}</b>
+                </p>
+              )}
+
               <div className="flex items-center justify-between">
                 <Button type="submit" className="w-full">
                   Register

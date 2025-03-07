@@ -36,7 +36,7 @@ import {
   updateOffer,
 } from "@/lib/api/affiliate";
 import { getAllOffers } from "@/lib/api/user";
-import { Offer, OfferStatus, OrderStatus } from "@/types/app";
+import { Offer, OfferStatus } from "@/types/app";
 import {
   Select,
   SelectContent,
@@ -242,7 +242,7 @@ export default function OffersPage() {
             className="mt-6 w-full"
             onClick={() => setSelectedOffer(null)}
           >
-            <PlusCircle size={18} /> New Order
+            <PlusCircle size={18} /> New Offer
           </Button>
         </DialogTrigger>
         <DialogContent>
@@ -294,7 +294,7 @@ export default function OffersPage() {
             <div>
               <Label>Status</Label>
               <select
-                value={selectedOffer?.status || "scheduled"}
+                value={selectedOffer?.status || ""}
                 onChange={(e) =>
                   setSelectedOffer({
                     ...selectedOffer!,
@@ -303,6 +303,9 @@ export default function OffersPage() {
                 }
                 className="w-full p-2 border rounded"
               >
+                <option value="" disabled>
+                  Select Status
+                </option>
                 <option value="scheduled">Scheduled</option>
                 <option value="active">Active</option>
                 <option value="expired">Expired</option>
@@ -324,8 +327,8 @@ export default function OffersPage() {
                       )}
                     >
                       {selectedOffer?.offerStart
-                        ? format(selectedOffer.offerStart, "PPP")
-                        : "Pick a date"}
+                        ? format(new Date(selectedOffer.offerStart), "PPP")
+                        : "Pick a start date"}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
                   </PopoverTrigger>
@@ -336,25 +339,44 @@ export default function OffersPage() {
                   >
                     <Calendar
                       mode="single"
-                      selected={selectedOffer?.offerStart}
+                      selected={
+                        selectedOffer?.offerStart
+                          ? new Date(selectedOffer.offerStart)
+                          : undefined
+                      }
                       onSelect={(date) =>
                         setSelectedOffer({
                           ...selectedOffer!,
                           offerStart: date ?? new Date(),
                         })
                       }
-                      disabled={(date) =>
-                        selectedOffer?.status === OfferStatus.SCHEDULED &&
-                        date < new Date()
-                      }
+                      disabled={(date) => {
+                        const now = new Date();
+                        const offerEndDate = selectedOffer?.offerEnd
+                          ? new Date(selectedOffer.offerEnd)
+                          : null;
+
+                        // Prevent selecting past dates if scheduled
+                        if (
+                          selectedOffer?.status === OfferStatus.SCHEDULED &&
+                          date < now
+                        ) {
+                          return true;
+                        }
+
+                        // Prevent selecting a start date after `offerEnd`
+                        if (offerEndDate && date > offerEndDate) {
+                          return true;
+                        }
+
+                        return false;
+                      }}
                     />
                   </PopoverContent>
                 </Popover>
                 {selectedOffer?.status === OfferStatus.SCHEDULED &&
                   !selectedOffer?.offerStart && (
-                    <p className="text-xs text-red-600 mt-1">
-                      Required for scheduled offers
-                    </p>
+                    <p className="text-xs text-red-600 mt-1">Required</p>
                   )}
                 {selectedOffer?.status === OfferStatus.SCHEDULED && (
                   <p className="text-xs text-gray-600 mt-1">
@@ -364,7 +386,7 @@ export default function OffersPage() {
               </div>
               <div>
                 <Label>Offer End</Label>
-                <Input
+                {/* <Input
                   type="date"
                   name="offer_end"
                   value={
@@ -392,7 +414,67 @@ export default function OffersPage() {
                       : selectedOffer?.offerStart.toISOString().split("T")[0] ||
                         undefined
                   }
-                />
+                /> */}
+                <Popover modal={true}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={clsx(
+                        "w-full justify-start text-left font-normal",
+                        selectedOffer?.status === OfferStatus.SCHEDULED &&
+                          !selectedOffer?.offerEnd
+                          ? "border-red-500"
+                          : "border-gray-300"
+                      )}
+                    >
+                      {selectedOffer?.offerEnd
+                        ? format(new Date(selectedOffer.offerEnd), "PPP")
+                        : "Pick an end date"}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="start"
+                    forceMount
+                    className="z-[9999] w-auto p-0 bg-white shadow-lg"
+                  >
+                    <Calendar
+                      mode="single"
+                      selected={
+                        selectedOffer?.offerEnd
+                          ? new Date(selectedOffer.offerEnd)
+                          : undefined
+                      }
+                      onSelect={(date) =>
+                        setSelectedOffer({
+                          ...selectedOffer!,
+                          offerEnd: date ?? new Date(),
+                        })
+                      }
+                      disabled={(date) => {
+                        const now = new Date();
+                        const offerStartDate = selectedOffer?.offerStart
+                          ? new Date(selectedOffer.offerStart)
+                          : null;
+
+                        // Prevent selecting past dates if scheduled
+                        if (
+                          selectedOffer?.status === OfferStatus.SCHEDULED &&
+                          date < now
+                        ) {
+                          return true;
+                        }
+
+                        // Prevent selecting a date before `offerStart`
+                        if (offerStartDate && date < offerStartDate) {
+                          return true;
+                        }
+
+                        return false;
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
                 {selectedOffer?.status === "scheduled" &&
                   !selectedOffer?.offerEnd && (
                     <p className="text-xs text-red-600 mt-1">
@@ -518,7 +600,12 @@ function OfferSection({
                 </TableCell>
                 <TableCell>
                   <a
-                    href={offer.affiliateLink}
+                    href={
+                      offer.affiliateLink?.startsWith("http://") ||
+                      offer.affiliateLink?.startsWith("https://")
+                        ? offer.affiliateLink
+                        : `https://${offer.affiliateLink}`
+                    }
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 underline"

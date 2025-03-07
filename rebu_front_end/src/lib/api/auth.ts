@@ -17,13 +17,13 @@ export async function logout(token: string) {
   return await response.json();
 }
 
-export async function registerUser(credentials: Credentials): Promise<User> {
+export async function registerUser(credentials: Credentials, referralCode: any): Promise<User> {
   const response = await fetch(`${API_BASE_URL}/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ user: humps.decamelizeKeys(credentials) }),
+    body: JSON.stringify({ user: humps.decamelizeKeys(credentials), referral_code: referralCode }),
   });
 
   if (!response.ok) {

@@ -61,7 +61,7 @@ pub fn add_product_listing(ctx: Context<AddListing>, id: u64, stock: u64, price:
             mint: ctx.accounts.mint.key(),
             id,
             stock,
-            price,
+            price: price * 10u64.pow(ctx.accounts.mint.decimals as u32),
             bump: ctx.bumps.product_listing,
         });
     Ok(())

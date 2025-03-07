@@ -22,6 +22,7 @@ defmodule RebuWebApi.Auth.Guardian do
     # found in the `"sub"` key. In above `subject_for_token/2` we returned
     # the resource id so here we'll rely on that to look it up.
     resource = Accounts.get_user_by_email!(email)
+
     {:ok, resource}
   end
 
