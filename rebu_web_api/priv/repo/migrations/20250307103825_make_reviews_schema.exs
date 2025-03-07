@@ -1,4 +1,5 @@
 defmodule RebuWebApi.Repo.Migrations.MakeReviewsSchema do
+  @moduledoc false
   use Ecto.Migration
 
   def change do
@@ -9,7 +10,6 @@ defmodule RebuWebApi.Repo.Migrations.MakeReviewsSchema do
       add :reviewer_type, :string
 
       add :product_id, references(:products, on_delete: :nothing)
-
 
       timestamps(type: :utc_datetime, inserted_at: :created_at, updated_at: false)
     end

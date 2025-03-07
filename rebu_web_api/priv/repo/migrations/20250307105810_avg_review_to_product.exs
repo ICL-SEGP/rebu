@@ -1,4 +1,5 @@
 defmodule RebuWebApi.Repo.Migrations.AvgReviewToProduct do
+  @moduledoc false
   use Ecto.Migration
 
   def change do
