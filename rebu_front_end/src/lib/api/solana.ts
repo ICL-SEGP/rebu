@@ -108,7 +108,7 @@ export function useMakePurchase() {
       );
       console.log("GOT HERE 4")
 
-      const mint = new PublicKey("mntSPLHmrFAELUiNxDC31Nm44TofrAs7VXBknPoqiBY");
+      const mint = new PublicKey("2Tkswza6ftvMCU3FdmQLHqFcyJzqMNi41YX69eAfTdLt");
 
 
       const customerAta = await getAssociatedTokenAddress(
