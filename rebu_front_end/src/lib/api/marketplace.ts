@@ -306,3 +306,84 @@ export const fetchCategoryImageFile = async (
 //           "Content-Type": "application/json" },
 //     });
 //   }
+
+export async function deleteProduct(token: string, productId: number) {
+  const response = await fetch(
+    `${API_BASE_URL}/marketplace/products/${productId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to delete product: ${response.statusText}`);
+  }
+}
+
+// 📌 Get product reviews
+export async function getReviews(productId: number): Promise<Review[]> {
+  const response = await fetch(
+    `${API_BASE_URL}/marketplace/products/${productId}/reviews`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch reviews: ${response.statusText}`);
+  }
+  return response.json();
+}
+
+//Save Product Review in PurchaseHistory page (only buyers)
+export async function saveReview(
+  token: string,
+  review: Review
+): Promise<Review> {
+  const response = await fetch(`${API_BASE_URL}/marketplace/reviews`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      userId: review.userId,
+      productId: review.productId,
+      rating: review.rating,
+      comment: review.comment,
+      createdAt: review.createdAt.toISOString(),
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to save review: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+// 📌 Delete a review (Buyer only)
+export async function deleteReview(token: string, reviewId: number) {
+  const response = await fetch(
+    `${API_BASE_URL}/marketplace/reviews/${reviewId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to delete review: ${response.statusText}`);
+  }
+}
