@@ -108,7 +108,7 @@ const PurchaseHistory = () => {
                 <TableHead>Product</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="w-1 whitespace-nowrap">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -117,7 +117,7 @@ const PurchaseHistory = () => {
                   <TableCell>{purchase.productId}</TableCell>
                   <TableCell>${purchase.totalAmount.toFixed(2)}</TableCell>
                   <TableCell>{purchase.status}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell>
                     <Button onClick={() => handleOpenModal(purchase)} className="bg-black text-white">
                       View Details
                     </Button>
