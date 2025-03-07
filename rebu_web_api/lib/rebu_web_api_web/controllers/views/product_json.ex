@@ -27,7 +27,7 @@ defmodule RebuWebApiWeb.ProductJSON do
     render_json(product, @fields, [], @relationships)
   end
 
-   def render("product.json", %{products: products}) do
+  def render("product.json", %{products: products}) do
     # 1st way if `use JsonView`
     JsonView.render_many(products, __MODULE__, "product.json")
   end

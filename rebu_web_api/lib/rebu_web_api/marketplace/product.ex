@@ -11,14 +11,16 @@ defmodule RebuWebApi.Marketplace.Product do
     field :file_url, :string
     field :file_type, :string
     field :qty, :integer
+    field :avg_rating, :integer
 
     field :seller_id, :integer
     field :seller_type, Ecto.Enum, values: [:user, :affiliate]
 
     belongs_to :category, RebuWebApi.Marketplace.Category
+    has_many :reviews, RebuWebApi.Marketplace.Review
 
     timestamps(type: :utc_datetime)
-end
+  end
 
   @doc false
   def changeset(product, attrs) do

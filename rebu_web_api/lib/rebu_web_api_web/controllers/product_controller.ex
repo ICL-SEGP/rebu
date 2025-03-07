@@ -29,6 +29,21 @@ defmodule RebuWebApiWeb.ProductController do
     |> render("product.json", product: product)
   end
 
+  def update(conn, %{"id" => id, "product" => product_params}) do
+    product = Marketplace.get_product!(id)
+    category = Marketplace.get_category_by_name(product_params["category"])
+
+    product_params =
+      Map.merge(product_params, %{
+        "category" => category
+      })
+
+    {:ok, product} = Marketplace.update_product(product, product_params)
+
+    conn
+    |> render("product.json", product: product)
+  end
+
   def get(conn, _params) do
     user = Guardian.Plug.current_resource(conn)
     products = Marketplace.get_products_by_user(user)

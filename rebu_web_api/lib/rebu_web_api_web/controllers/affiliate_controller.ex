@@ -16,7 +16,7 @@ defmodule RebuWebApiWeb.AffiliateController do
     |> json(affiliate)
   end
 
-   def get_referral_code(conn, _params) do
+  def get_referral_code(conn, _params) do
     affiliate = Guardian.Plug.current_resource(conn)
 
     conn

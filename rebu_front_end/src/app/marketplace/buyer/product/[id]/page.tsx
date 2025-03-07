@@ -9,6 +9,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/modals/dialog";
 import {
   StarIcon,
@@ -16,6 +17,7 @@ import {
   ChevronRight,
   XIcon,
   CheckCircleIcon,
+  ChevronLeft,
 } from "lucide-react";
 import { Product } from "@/types/app";
 import {
@@ -33,6 +35,7 @@ export default function ProductPage() {
   const [isPurchased, setIsPurchased] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     if (!session) return;
@@ -40,47 +43,6 @@ export default function ProductPage() {
     setError(null);
     async function fetchProductData() {
       try {
-        // TODO: Uncomment when backend is ready
-        // const fetchedProduct = await getSingleProduct(Number(id));
-        // setProduct(fetchedProduct);
-
-        // Dummy data for now - Replace with backend API
-        const dummyProducts: Product[] = [
-          {
-            id: 1,
-            name: "Crypto Hoodie",
-            desc: "A premium hoodie for blockchain lovers. Stay warm and stylish while showing your love for blockchain technology.",
-            price: 50,
-            imageUrl: "https://picsum.photos/200/300",
-            category: {
-              name: "Ebooks",
-              imageUrl: "https://example.com/category.png",
-            },
-            status: "active",
-            createdAt: new Date(),
-            sellerId: 101,
-            reviews: [
-              {
-                id: 1,
-                userId: 201,
-                productId: 1,
-                rating: 5,
-                comment: "Super comfortable!",
-                createdAt: "",
-              },
-              {
-                id: 2,
-                userId: 202,
-                productId: 1,
-                rating: 4,
-                comment: "Great design, a bit expensive.",
-                createdAt: "",
-              },
-            ],
-          },
-        ];
-
-        // const foundProduct = dummyProducts.find((p) => p.id === Number(id));
         if (id) {
           const foundProduct = await getProductById(
             session!.accessToken,
@@ -88,8 +50,6 @@ export default function ProductPage() {
           );
           setProduct(foundProduct);
         }
-
-        // if (foundProduct) setProduct(foundProduct);
       } catch (fetchError: any) {
         console.error("Failed to fetch product data", fetchError);
         setError(fetchError.message || "Failed to fetch product.");
@@ -117,7 +77,7 @@ export default function ProductPage() {
   if (!product) return <div className="p-8 text-center">Product not found</div>;
 
   const averageRating =
-    product.reviews.length > 0
+    product.reviews?.length > 0
       ? product.reviews.reduce((sum, r) => sum + r.rating, 0) /
         product.reviews.length
       : 0;
@@ -154,17 +114,35 @@ export default function ProductPage() {
 
   const isBuyable = product.status === "active";
 
-  return (
-    <div className="p-8 flex flex-col md:flex-row gap-8 max-w-6xl mx-auto">
-      <div className="w-full md:w-1/3 flex justify-center">
-        <img
-          src={product.imageUrl}
-          alt={product.name}
-          className="w-full max-w-md rounded-lg shadow-lg"
-        />
-      </div>
+  const nextImage = () => {
+    if (product.imageUrls) {
+      setCurrentImageIndex(
+        (prevIndex) => (prevIndex + 1) % product.imageUrls.length
+      );
+    }
+  };
 
+  const prevImage = () => {
+    if (product.imageUrls) {
+      setCurrentImageIndex(
+        (prevIndex) =>
+          (prevIndex - 1 + product.imageUrls.length) % product.imageUrls.length
+      );
+    }
+  };
+
+  return (
+    <div className="p-8 flex flex-col md:flex-row gap-8 max-w-6xl mx-auto relative">
+      <div className="w-full md:w-1/3">
+        {product.imageUrls && product.imageUrls.length > 0 && (
+          <ImageCarouselModal
+            imageUrls={product.imageUrls}
+            productName={product.name}
+          />
+        )}
+      </div>
       <div className="w-full md:w-2/3 flex flex-col space-y-4">
+        {/* ... Rest of the component code ... */}
         <div className="flex items-center space-x-2">
           <h1 className="text-2xl font-bold">{product.name}</h1>
           <span
@@ -201,7 +179,9 @@ export default function ProductPage() {
               />
             ))}
           </div>
-          <span className="text-sm">{`(${product.reviews.length} reviews)`}</span>
+          <span className="text-sm">{`(${
+            product.reviews?.length || 0
+          } reviews)`}</span>
           <ChevronRight size={18} />
         </div>
 
@@ -297,7 +277,7 @@ export default function ProductPage() {
           <div className="p-6 overflow-y-auto max-h-[70vh]">
             <DialogTitle>Customer Reviews</DialogTitle>
 
-            {product.reviews.length > 0 ? (
+            {product.reviews && product.reviews.length > 0 ? (
               product.reviews.map((review) => (
                 <div
                   key={review.id}
@@ -329,3 +309,63 @@ export default function ProductPage() {
     </div>
   );
 }
+
+interface ImageCarouselModalProps {
+  imageUrls: string[];
+  productName: string;
+}
+
+const ImageCarouselModal: React.FC<ImageCarouselModalProps> = ({
+  imageUrls,
+  productName,
+}) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const nextImage = () => {
+    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % imageUrls.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex(
+      (prevIndex) => (prevIndex - 1 + imageUrls.length) % imageUrls.length
+    );
+  };
+
+  return (
+    <Dialog>
+      <DialogTrigger>
+        <img
+          src={imageUrls[0]} // Show the first image as a preview
+          alt={productName}
+          className="w-full h-56 object-cover rounded-lg cursor-pointer"
+        />
+      </DialogTrigger>
+      <DialogContent className="max-w-3xl p-0 rounded-lg flex flex-col items-center">
+        <DialogTitle></DialogTitle>
+        <div className="relative w-full">
+          <img
+            src={imageUrls[currentImageIndex]}
+            alt={productName}
+            className="w-full object-contain max-h-[80vh]"
+          />
+          {imageUrls.length > 1 && (
+            <>
+              <button
+                className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md z-10"
+                onClick={prevImage}
+              >
+                <ChevronLeft size={24} />
+              </button>
+              <button
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md z-10"
+                onClick={nextImage}
+              >
+                <ChevronRight size={24} />
+              </button>
+            </>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};

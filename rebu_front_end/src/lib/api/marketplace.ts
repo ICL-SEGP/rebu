@@ -71,9 +71,7 @@ export function getProductById(token: string, id: string): Promise<Product[]> {
       }
       return response.json();
     })
-    .then((productsData: any[]) =>
-      productsData.map((productData) => toProduct(productData))
-    )
+    .then((product) => toProduct(product))
     .catch((error) => {
       console.error("Error fetching seller's products:", error);
       return [];

@@ -91,10 +91,8 @@ defmodule RebuWebApiWeb.Router do
     patch "/orders/:id", OrderController, :update
     # create order from offers browser extension
 
-
     # Offers
     get "/offers", OfferController, :get_offers_for_user
-
 
     # uploads
     post "/upload", UploadController, :create
@@ -105,8 +103,12 @@ defmodule RebuWebApiWeb.Router do
     patch "/products/:id", ProductController, :update
     post "/products", ProductController, :create
     get "/products", ProductController, :get
-    get "/products/:id", ProductController, :get_by_id
     get "/products/all", ProductController, :get_all
+    get "/products/:id", ProductController, :get_by_id
+
+    get "/product/:id/reviews", ReviewController, :get_reviews_for_product
+    post "/product/reviews/create", ReviewController, :create
+    patch "/product/reviews/:id", ReviewController, :update
 
     post "/category", CategoryController, :create
     get "/category", CategoryController, :get
@@ -115,6 +117,7 @@ defmodule RebuWebApiWeb.Router do
   scope "/solana", RebuWebApiWeb do
     pipe_through [:api, :auth]
     post "/key", SolanaController, :update_key
+    get "/key", SolanaController, :get_seller_pub_key
   end
 
   scope "/", RebuWebApiWeb do

@@ -1,4 +1,5 @@
 defmodule RebuWebApi.Repo.Migrations.CreateProducts do
+  @moduledoc false
   use Ecto.Migration
 
   def change do
@@ -6,7 +7,7 @@ defmodule RebuWebApi.Repo.Migrations.CreateProducts do
       add :name, :string
       add :desc, :text
       add :price, :decimal
-      add :image_urls, {:array, :string}
+      add :image_url, :string
       add :file_url, :string
       add :file_type, :string
       add :status, :string

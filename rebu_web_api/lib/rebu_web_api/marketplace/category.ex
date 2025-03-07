@@ -6,7 +6,7 @@ defmodule RebuWebApi.Marketplace.Category do
     field :name, :string
     field :image_url, :string
 
-    has_many :products, RebuWebApi.Marketplace.Product
+    has_many :products, RebuWebApi.Marketplace.Product, foreign_key: :category_id
 
     timestamps(type: :utc_datetime)
   end
@@ -17,7 +17,8 @@ defmodule RebuWebApi.Marketplace.Category do
     |> cast(attrs, [:name, :image_url])
     |> validate_required([:name, :image_url])
     |> transform_name()
-    |> unique_constraint(:name, name: :categories_name_index) # Added unique constraint
+    # Added unique constraint
+    |> unique_constraint(:name, name: :categories_name_index)
   end
 
   defp transform_name(changeset) do

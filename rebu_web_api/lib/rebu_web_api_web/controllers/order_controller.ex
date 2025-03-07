@@ -19,10 +19,7 @@ defmodule RebuWebApiWeb.OrderController do
   def create(conn, %{"offer_ids" => offer_ids}) do
     user = Guardian.Plug.current_resource(conn)
 
-    offers =
-      for id <- offer_ids do
-        offer = Sales.get_offer!(id)
-      end
+    offers = Enum.map(offer_ids, fn id -> Sales.get_offer!(id) end)
 
     total_rebate_amount = Sales.calculate_total_rebate(offers)
 
