@@ -38,7 +38,7 @@ defmodule RebuWebApiWeb.Router do
     # TODO implement this && add oban to do this periodically
     delete "/", AffiliateController, :archive
 
-    get "/balance", AffiliateController, :get_balance
+    get "/revenue", AffiliateController, :get_balance
     get "/stats", AffiliateController, :stats
 
     # Offers
@@ -112,12 +112,15 @@ defmodule RebuWebApiWeb.Router do
 
     post "/category", CategoryController, :create
     get "/category", CategoryController, :get
+
+    post "/purchase", PurchaseController, :make
   end
 
   scope "/solana", RebuWebApiWeb do
     pipe_through [:api, :auth]
     post "/key", SolanaController, :update_key
-    get "/key", SolanaController, :get_seller_pub_key
+    post "/seller-key", SolanaController, :get_seller_pub_key
+    get "/balance", SolanaController, :get_balance
   end
 
   scope "/", RebuWebApiWeb do

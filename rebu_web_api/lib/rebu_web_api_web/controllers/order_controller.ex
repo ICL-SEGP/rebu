@@ -25,18 +25,21 @@ defmodule RebuWebApiWeb.OrderController do
 
     dbg(total_rebate_amount)
 
-    with {:ok, %Order{} = order} <-
-           Sales.create_order(%{
-             offers: offers,
-             order_date: Timex.now(),
-             status: :completed,
-             total_rebate_amount: total_rebate_amount,
-             user: user
-           }) do
-      conn
-      |> put_status(:created)
-      |> json(order)
-    end
+    {:ok, %Order{} = order} =
+      Sales.create_order(%{
+        offers: offers,
+        order_date: Timex.now(),
+        status: :completed,
+        total_rebate_amount: total_rebate_amount,
+        user: user
+      })
+
+    {:ok, {}} =
+      RebuWebApi.Solana.mint_user(user.solana_pub_key, Kernel.round(total_rebate_amount))
+
+    conn
+    |> put_status(:created)
+    |> json(order)
   end
 
   def create(conn, %{"off" => order_params}) do

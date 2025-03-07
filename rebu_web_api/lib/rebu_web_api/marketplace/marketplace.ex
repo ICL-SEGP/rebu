@@ -9,6 +9,7 @@ defmodule RebuWebApi.Marketplace do
   alias RebuWebApi.Marketplace.{Product, Category, Review}
   alias RebuWebApi.Accounts.User
   alias RebuWebApi.Accounts.Affiliate
+  alias RebuWebApi.Accounts
 
   @doc """
   Returns the list of products.
@@ -136,14 +137,14 @@ defmodule RebuWebApi.Marketplace do
       {nil, _} ->
         {:error, :owner_id_missing}
 
-      {id, :user} ->
-        case Users.get_user(id) do
+      {id, "user"} ->
+        case Accounts.get_user!(id) do
           nil -> {:error, :user_not_found}
           user -> {:ok, user}
         end
 
-      {id, :affiliate} ->
-        case Affiliates.get_affiliate(id) do
+      {id, "affiliate"} ->
+        case Accounts.get_affiliate!(id) do
           nil -> {:error, :affiliate_not_found}
           affiliate -> {:ok, affiliate}
         end

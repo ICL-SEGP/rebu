@@ -21,5 +21,6 @@ defmodule RebuWebApi.Marketplace.Review do
     |> cast(attrs, [:rating, :comment])
     |> validate_required([:rating, :comment])
     |> validate_number(:rating, greater_than_or_equal_to: 1, less_than_or_equal_to: 5)
+    |> validate_inclusion(:reviewer_type, [:user, :affiliate])
   end
 end

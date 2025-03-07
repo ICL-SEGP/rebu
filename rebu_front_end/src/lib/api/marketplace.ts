@@ -55,7 +55,32 @@ import { processFile } from "./aws";
 //     });
 // }
 
-export function getProductById(token: string, id: string): Promise<Product[]> {
+
+
+export function makePurchase(token: string, id: string): Promise<Product> {
+  return fetch(`${API_BASE_URL}/products/${id}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch affiliate products: ${response.statusText}`
+        );
+      }
+      return response.json();
+    })
+    .then((product) => toProduct(product))
+    .catch((error) => {
+      console.error("Error fetching seller's products:", error);
+      return [];
+    });
+}
+
+export function getProductById(token: string, id: string): Promise<Product> {
   return fetch(`${API_BASE_URL}/products/${id}`, {
     method: "GET",
     headers: {
@@ -113,9 +138,7 @@ export function getAllProducts(token: string): Promise<Product[]> {
   })
     .then((response) => {
       if (!response.ok) {
-        throw new Error(
-          `Failed to fetch all products: ${response.statusText}`
-        );
+        throw new Error(`Failed to fetch all products: ${response.statusText}`);
       }
       return response.json();
     })

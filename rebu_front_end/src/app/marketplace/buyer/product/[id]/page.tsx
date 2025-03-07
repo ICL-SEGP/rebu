@@ -20,11 +20,70 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { Product } from "@/types/app";
-import {
-  createPurchase,
-  getProductById,
-  getSingleProduct,
-} from "@/lib/api/marketplace";
+import { createPurchase, getProductById } from "@/lib/api/marketplace";
+import { getBalance, getPublicKey, useMakePurchase } from "@/lib/api/solana";
+
+interface ImageCarouselModalProps {
+  imageUrls: string[];
+  productName: string;
+}
+
+const ImageCarouselModal: React.FC<ImageCarouselModalProps> = ({
+  imageUrls,
+  productName,
+}) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const nextImage = () => {
+    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % imageUrls.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex(
+      (prevIndex) => (prevIndex - 1 + imageUrls.length) % imageUrls.length
+    );
+  };
+
+  return (
+    <Dialog>
+      <DialogTrigger>
+        <img
+          src={imageUrls[0]}
+          alt={productName}
+          className="w-full h-56 object-cover rounded-lg cursor-pointer"
+        />
+      </DialogTrigger>
+      <DialogContent className="max-w-3xl p-0 rounded-lg flex flex-col items-center">
+        <DialogTitle className="absolute w-1 h-1 p-0 m-[-1px] overflow-hidden whitespace-nowrap border-0 clip:rect(0,0,0,0)">
+          {productName} Image Carousel
+        </DialogTitle>
+        <div className="relative w-full">
+          <img
+            src={imageUrls[currentImageIndex]}
+            alt={productName}
+            className="w-full object-contain max-h-[80vh]"
+          />
+          {imageUrls.length > 1 && (
+            <>
+              <button
+                className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md z-10"
+                onClick={prevImage}
+              >
+                <ChevronLeft size={24} />
+              </button>
+              <button
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md z-10"
+                onClick={nextImage}
+              >
+                <ChevronRight size={24} />
+              </button>
+            </>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 export default function ProductPage() {
   const { data: session } = useSession();
@@ -34,8 +93,10 @@ export default function ProductPage() {
   const [isPurchaseModalOpen, setPurchaseModalOpen] = useState(false);
   const [isPurchased, setIsPurchased] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [balance, setBalance] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const { mutate: makePurchase } = useMakePurchase();
 
   useEffect(() => {
     if (!session) return;
@@ -48,6 +109,11 @@ export default function ProductPage() {
             session!.accessToken,
             id?.toString()
           );
+
+          const bal = await getBalance(session!.accessToken);
+          setBalance(bal.balance);
+
+          console.log(foundProduct);
           setProduct(foundProduct);
         }
       } catch (fetchError: any) {
@@ -92,19 +158,31 @@ export default function ProductPage() {
     setError(null);
 
     try {
-      const token = session.accessToken;
       const orderData = {
         productId: product.id,
         userId: session.user.id,
         amount: product.price,
       };
 
-      await createPurchase(token, orderData);
-      setIsPurchased(true);
+      const sellerkey = await getPublicKey(session!.accessToken, {
+        sellerId: product.sellerId,
+        sellerType: product.sellerType,
+      });
+
+      console.log("Seller key", sellerkey);
+      makePurchase({
+        seller_str: sellerkey.seller_pub_key,
+        productId: product.id,
+      });
+
+      // await createPurchase(token, orderData);
+      // setIsPurchased(true);
       setTimeout(() => {
         setPurchaseModalOpen(false);
         setIsPurchased(false);
       }, 2500);
+
+      setBalance(balance - product.price);
     } catch (err: any) {
       setError(err.message || "Something went wrong.");
     } finally {
@@ -113,23 +191,6 @@ export default function ProductPage() {
   };
 
   const isBuyable = product.status === "active";
-
-  const nextImage = () => {
-    if (product.imageUrls) {
-      setCurrentImageIndex(
-        (prevIndex) => (prevIndex + 1) % product.imageUrls.length
-      );
-    }
-  };
-
-  const prevImage = () => {
-    if (product.imageUrls) {
-      setCurrentImageIndex(
-        (prevIndex) =>
-          (prevIndex - 1 + product.imageUrls.length) % product.imageUrls.length
-      );
-    }
-  };
 
   return (
     <div className="p-8 flex flex-col md:flex-row gap-8 max-w-6xl mx-auto relative">
@@ -142,7 +203,6 @@ export default function ProductPage() {
         )}
       </div>
       <div className="w-full md:w-2/3 flex flex-col space-y-4">
-        {/* ... Rest of the component code ... */}
         <div className="flex items-center space-x-2">
           <h1 className="text-2xl font-bold">{product.name}</h1>
           <span
@@ -197,7 +257,7 @@ export default function ProductPage() {
           <Button
             variant="default"
             className="w-full"
-            onClick={handlePurchase}
+            onClick={() => setPurchaseModalOpen(true)}
             disabled={loading}
           >
             {loading ? (
@@ -221,27 +281,55 @@ export default function ProductPage() {
         <DialogContent className="p-6 text-center rounded-lg shadow-lg">
           {!isPurchased ? (
             <>
-              <DialogTitle>Are you sure?</DialogTitle>
-              <p className="text-sm text-gray-500 mt-2">
-                This purchase is <strong>non-refundable</strong>.
-              </p>
-              <div className="mt-4 flex justify-center gap-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setPurchaseModalOpen(false)}
-                  className="flex items-center"
-                >
-                  <XIcon size={16} className="mr-1" />
-                  No
-                </Button>
-                <Button
-                  onClick={handlePurchase}
-                  className="flex items-center bg-blue-600 text-white"
-                >
-                  <CheckCircleIcon size={16} className="mr-1" />
-                  Confirm
-                </Button>
-              </div>
+              <DialogTitle>Confirm Purchase</DialogTitle>
+              {balance >= product.price ? (
+                <>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Purchase <strong>{product.name}</strong> for{" "}
+                    <strong>{product.price} Tokens</strong>?
+                  </p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Your balance will be{" "}
+                    <strong>{balance - product.price} Tokens</strong> after this
+                    purchase.
+                  </p>
+                  <div className="mt-4 flex justify-center gap-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => setPurchaseModalOpen(false)}
+                      className="flex items-center"
+                    >
+                      <XIcon size={16} className="mr-1" />
+                      No
+                    </Button>
+                    <Button
+                      onClick={handlePurchase}
+                      className="flex items-center bg-blue-600 text-white"
+                    >
+                      <CheckCircleIcon size={16} className="mr-1" />
+                      Confirm
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-red-500 mt-2">
+                    Insufficient funds. You need{" "}
+                    <strong>{product.price - balance}</strong> more Tokens to
+                    purchase this item.
+                  </p>
+                  <div className="mt-4 flex justify-center">
+                    <Button
+                      variant="outline"
+                      onClick={() => setPurchaseModalOpen(false)}
+                      className="flex items-center"
+                    >
+                      <XIcon size={16} className="mr-1" />
+                      Close
+                    </Button>
+                  </div>
+                </>
+              )}
             </>
           ) : (
             <motion.div
@@ -252,9 +340,8 @@ export default function ProductPage() {
               <CheckCircleIcon size={48} className="text-green-500 mx-auto" />
               <h2 className="text-lg font-semibold mt-2">Thank You!</h2>
               <p className="text-sm text-gray-500">
-                Your purchase was successful.
+                <DialogTitle>Your purchase was successful.</DialogTitle>
               </p>
-
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: -10 }}
@@ -271,7 +358,6 @@ export default function ProductPage() {
           )}
         </DialogContent>
       </Dialog>
-
       <Dialog open={isReviewModalOpen} onOpenChange={setReviewModalOpen}>
         <DialogContent className="max-w-lg p-0 rounded-lg flex flex-col">
           <div className="p-6 overflow-y-auto max-h-[70vh]">
@@ -309,63 +395,3 @@ export default function ProductPage() {
     </div>
   );
 }
-
-interface ImageCarouselModalProps {
-  imageUrls: string[];
-  productName: string;
-}
-
-const ImageCarouselModal: React.FC<ImageCarouselModalProps> = ({
-  imageUrls,
-  productName,
-}) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  const nextImage = () => {
-    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % imageUrls.length);
-  };
-
-  const prevImage = () => {
-    setCurrentImageIndex(
-      (prevIndex) => (prevIndex - 1 + imageUrls.length) % imageUrls.length
-    );
-  };
-
-  return (
-    <Dialog>
-      <DialogTrigger>
-        <img
-          src={imageUrls[0]} // Show the first image as a preview
-          alt={productName}
-          className="w-full h-56 object-cover rounded-lg cursor-pointer"
-        />
-      </DialogTrigger>
-      <DialogContent className="max-w-3xl p-0 rounded-lg flex flex-col items-center">
-        <DialogTitle></DialogTitle>
-        <div className="relative w-full">
-          <img
-            src={imageUrls[currentImageIndex]}
-            alt={productName}
-            className="w-full object-contain max-h-[80vh]"
-          />
-          {imageUrls.length > 1 && (
-            <>
-              <button
-                className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md z-10"
-                onClick={prevImage}
-              >
-                <ChevronLeft size={24} />
-              </button>
-              <button
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md z-10"
-                onClick={nextImage}
-              >
-                <ChevronRight size={24} />
-              </button>
-            </>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-};

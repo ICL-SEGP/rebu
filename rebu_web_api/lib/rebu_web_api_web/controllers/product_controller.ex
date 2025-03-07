@@ -2,6 +2,7 @@ defmodule RebuWebApiWeb.ProductController do
   use RebuWebApiWeb, :controller
   alias RebuWebApi.Accounts.{Affiliate, User}
   alias RebuWebApi.Marketplace
+  alias RebuWebApi.Solana
 
   def create(conn, %{"product" => product_params}) do
     seller = Guardian.Plug.current_resource(conn)
@@ -23,10 +24,15 @@ defmodule RebuWebApiWeb.ProductController do
         "category" => category
       })
 
-    {:ok, product} = Marketplace.create_product(product_params)
+    case Marketplace.create_product(product_params) do
+      {:ok, product} ->
+        Solana.make_listing(product.id, 5, Decimal.to_float(product.price))
 
-    conn
-    |> render("product.json", product: product)
+        conn
+        # Set status to 201 Created
+        |> put_status(:created)
+        |> render("product.json", product: product)
+    end
   end
 
   def update(conn, %{"id" => id, "product" => product_params}) do

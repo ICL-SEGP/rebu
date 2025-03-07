@@ -18,6 +18,7 @@ defmodule RebuWebApi.Marketplace.Product do
 
     belongs_to :category, RebuWebApi.Marketplace.Category
     has_many :reviews, RebuWebApi.Marketplace.Review
+    has_many :purchases, RebuWebApi.Marketplace.Purchase
 
     timestamps(type: :utc_datetime)
   end

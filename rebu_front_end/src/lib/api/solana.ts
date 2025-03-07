@@ -1,8 +1,14 @@
 import humps from "humps";
 import { API_BASE_URL } from "../constants";
 
-import * as anchor  from "@coral-xyz/anchor";
-import { Cluster, clusterApiUrl, Keypair, PublicKey, SystemProgram } from "@solana/web3.js";
+import * as anchor from "@coral-xyz/anchor";
+import {
+  Cluster,
+  clusterApiUrl,
+  Keypair,
+  PublicKey,
+  SystemProgram,
+} from "@solana/web3.js";
 import RebuSolanaIDLJson from "@/../target/idl/solanaIDL.json";
 import type { RebuSolanaIDL } from "@/types/solanaIDL";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
@@ -11,7 +17,10 @@ import { useAnchorProvider } from "@/components/ui/solana/solana-provider";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
-import { ASSOCIATED_TOKEN_PROGRAM_ID, getAssociatedTokenAddress } from "@solana/spl-token";
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  getAssociatedTokenAddress,
+} from "@solana/spl-token";
 
 export { RebuSolanaIDL, RebuSolanaIDLJson };
 
@@ -63,76 +72,79 @@ export function useMakePurchase() {
   const programId = getSolanaProgramId();
   const program = getSolanaProgram(provider, programId);
 
-  console.log("START")
+  console.log("START");
 
   const mutation = useMutation({
     mutationKey: ["rebuSolana", "makePurchase", { DEVNET }],
-    mutationFn: async ({ seller_str, productId }: { seller_str: string; productId: number }) => {
-      console.log("GOT HERE: 1")
-      
+    mutationFn: async ({
+      seller_str,
+      productId,
+    }: {
+      seller_str: string;
+      productId: number;
+    }) => {
+      console.log("GOT HERE: 1");
+
       if (!publicKey || !signTransaction) {
-        console.log("GOT HERE: :(")
+        console.log("GOT HERE: :(");
 
         toast.error("Please connect your wallet.");
         throw new Error("Wallet not connected.");
       }
 
-      console.log("GOT HERE: :)")
-
+      console.log("GOT HERE: :)");
 
       const seller = new PublicKey(seller_str);
-      const intBuffer = new anchor.BN(productId) //.toArrayLike(Buffer, "le", 8);
+      const intBuffer = new anchor.BN(productId); //.toArrayLike(Buffer, "le", 8);
 
-      console.log("GOT HERE: 2")
-
+      console.log("GOT HERE: 2");
 
       const [productListingPDA] = PublicKey.findProgramAddressSync(
         [
-          Buffer.from("product"), 
-          Buffer.from("listing"), 
-          seller.toBuffer(), 
-          intBuffer],
+          Buffer.from("product"),
+          Buffer.from("listing"),
+          seller.toBuffer(),
+          intBuffer,
+        ],
         programId
       );
-      console.log("GOT HERE 3")
-
+      console.log("GOT HERE 3");
 
       const [productPurchasePDA] = PublicKey.findProgramAddressSync(
         [
-          Buffer.from("product"), 
-          Buffer.from("purchase"), 
-          seller.toBuffer(), 
-          intBuffer, 
-          publicKey.toBuffer()],
+          Buffer.from("product"),
+          Buffer.from("purchase"),
+          seller.toBuffer(),
+          intBuffer,
+          publicKey.toBuffer(),
+        ],
         programId
       );
-      console.log("GOT HERE 4")
+      console.log("GOT HERE 4");
 
       const mint = new PublicKey("mntSPLHmrFAELUiNxDC31Nm44TofrAs7VXBknPoqiBY");
-
 
       const customerAta = await getAssociatedTokenAddress(
         mint,
         publicKey,
-        true, 
+        true,
         TOKEN_2022_PROGRAM_ID,
         SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID
       );
       const sellerAta = await getAssociatedTokenAddress(
-        mint, 
+        mint,
         seller,
-        true, 
+        true,
         TOKEN_2022_PROGRAM_ID,
         SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID
       );
 
-      console.log("Seller:", seller.toBase58())
+      console.log("Seller:", seller.toBase58());
 
-      console.log("user:", publicKey.toBase58())
+      console.log("user:", publicKey.toBase58());
 
-      console.log("Seller ATA:", sellerAta.toBase58())
-      console.log("User ATA:", customerAta.toBase58())
-
+      console.log("Seller ATA:", sellerAta.toBase58());
+      console.log("User ATA:", customerAta.toBase58());
 
       try {
         await program.methods
@@ -147,12 +159,12 @@ export function useMakePurchase() {
             // productPurchase: productPurchasePDA.toBase58(),
             // associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID.toBase58(),
             tokenProgram: TOKEN_2022_PROGRAM_ID.toBase58(),
-            // systemProgram: SYSTEM_PROGRAM_ID.toBase58() 
+            // systemProgram: SYSTEM_PROGRAM_ID.toBase58()
           })
           .signers([])
           .rpc(); // Generate transaction
 
-          console.log("HEREEEE")
+        console.log("HEREEEE");
 
         // transaction.feePayer = publicKey;
         // transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
@@ -162,7 +174,7 @@ export function useMakePurchase() {
 
         // Send the signed transaction to the network
         // const signature = await connection.sendRawTransaction(signedTransaction.serialize());
-        console.log("COMPLETED TRANSACTION")
+        console.log("COMPLETED TRANSACTION");
         // transactionToast(signature); // Show success notification
         // return signature;
       } catch (error) {
@@ -193,4 +205,44 @@ export async function setPublicKey(token: string, publicKey: string) {
   }
 
   return await response.json();
+}
+
+export async function getPublicKey(token: string, seller: any) {
+  console.log("seller", seller);
+  const response = await fetch(`${API_BASE_URL}/solana/seller-key`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(humps.decamelizeKeys(seller)),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to get seller's solana public key: ${response.statusText}`
+    );
+  }
+
+  return await response.json();
+}
+
+export function getBalance(token: string) {
+  return fetch(`${API_BASE_URL}/solana/balance`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`Failed to fetch a balance: ${response.statusText}`);
+      }
+      return response.json();
+    })
+    .catch((error) => {
+      console.error("Error fetching balance:", error);
+      return [];
+    });
 }
