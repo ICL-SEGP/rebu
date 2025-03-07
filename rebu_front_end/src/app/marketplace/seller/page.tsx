@@ -529,9 +529,13 @@ const handleDragEnd = (event: any) => {
    * Removes a selected image.
    */
   const removeImage = (index: number) => {
-    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
-    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prevPreviews) => {
+      const updatedPreviews = prevPreviews.filter((_, i) => i !== index);
+      setImageFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+      return updatedPreviews;
+    });
   };
+  
 
   /**
    * Handles digital product file selection.
