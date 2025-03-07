@@ -216,15 +216,9 @@ function CategoryCard({
 }) {
   const router = useRouter();
   const { data: session } = useSession(); // Ensure session is fetched
-  const role = session?.user?.role; // Assuming session is defined somewhere
+
   const handleClick = () => {
-    if (role === "affiliate") {
-      router.push(`/affiliate/marketplace/category/${encodeURIComponent(category)}`);
-    } else if (role === "user") {
-      router.push(`/user/marketplace/category/${encodeURIComponent(category)}`);
-    } else {
-      router.push(`/marketplace/product/category/${encodeURIComponent(category)}`);
-    }
+      router.push(`/marketplace/buyer/category/${encodeURIComponent(category)}`);
   };
   return (
     <div
@@ -251,17 +245,7 @@ function ProductCard({ product }: { product: Product }) {
     <Card
       className="relative shadow-md cursor-pointer hover:shadow-lg transition-all p-4"
       onClick={() => {
-        const role = session?.user?.role; // Assuming session is defined somewhere
-
-        if (role === 'affiliate') {
-          // If the user is an affiliate, go to the affiliate marketplace page
-          router.push(`/affiliate/marketplace/buyer/product/${product.id}`);
-        } else if (role === 'user') {
-          // If the user is a regular user, go to the user marketplace page
-          router.push(`/user/marketplace/product/${product.id}`);
-        } else {
-            router.push(`/marketplace/product/product/${product.id}`); // Default route
-        }
+        router.push(`/marketplace/buyer/product/${product.id}`); // Default route
       }}
     >
       {/* Status Badge */}

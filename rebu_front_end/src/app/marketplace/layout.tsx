@@ -54,7 +54,7 @@ export default function MarketplaceLayout({
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="/marketplace">
+                    <BreadcrumbLink href="/marketplace/select">
                         Marketplace
                     </BreadcrumbLink>
                 </BreadcrumbItem>

@@ -4,7 +4,7 @@
  * Note that this is only a type helper and is not the actual IDL. The original
  * IDL can be found at `target/idl/rebu_solana.json`.
  */
-export type RebuSolanaIDL = {
+export type RebuSolana = {
   "address": "5b8N346ZbwB3PbpYthoUTLtrdw9qpbKue52S1bDCBter",
   "metadata": {
     "name": "rebuSolana",
@@ -202,6 +202,195 @@ export type RebuSolanaIDL = {
       ]
     },
     {
+      "name": "burnRebu",
+      "discriminator": [
+        166,
+        227,
+        223,
+        55,
+        117,
+        147,
+        136,
+        175
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  98,
+                  117,
+                  49,
+                  50,
+                  51
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  105,
+                  110,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "tokenAccount",
+          "writable": true
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  98,
+                  117,
+                  49,
+                  50,
+                  51
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "tokenProgram"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "createToken",
+      "discriminator": [
+        84,
+        52,
+        204,
+        228,
+        24,
+        140,
+        234,
+        75
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  98,
+                  117,
+                  49,
+                  50,
+                  51
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  105,
+                  110,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  98,
+                  117,
+                  49,
+                  50,
+                  51
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "uri",
+          "type": "string"
+        }
+      ]
+    },
+    {
       "name": "makePurchase",
       "discriminator": [
         193,
@@ -347,6 +536,102 @@ export type RebuSolanaIDL = {
       "args": [
         {
           "name": "id",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "mintRebuTo",
+      "discriminator": [
+        13,
+        139,
+        116,
+        57,
+        55,
+        202,
+        156,
+        121
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  98,
+                  117,
+                  49,
+                  50,
+                  51
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  105,
+                  110,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "recipient",
+          "writable": true
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  98,
+                  117,
+                  49,
+                  50,
+                  51
+                ]
+              },
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "tokenProgram"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
           "type": "u64"
         }
       ]
@@ -542,6 +827,20 @@ export type RebuSolanaIDL = {
         150,
         134
       ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "outOfStock"
+    },
+    {
+      "code": 6001,
+      "name": "invalidListing"
+    },
+    {
+      "code": 6002,
+      "name": "listingAlreadyExists"
     }
   ],
   "types": [
