@@ -102,6 +102,7 @@ defmodule RebuWebApiWeb.Router do
     post "/products/:id", ProductController, :update
     post "/products", ProductController, :create
     get "/products", ProductController, :get
+    get "/products/all", ProductController, :get_all
 
     post "/category", CategoryController, :create
     get "/category", CategoryController, :get

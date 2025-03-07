@@ -75,6 +75,31 @@ export function getProducts(token: string): Promise<Product[]> {
       productsData.map((productData) => toProduct(productData))
     )
     .catch((error) => {
+      console.error("Error fetching seller's products:", error);
+      return [];
+    });
+}
+
+export function getAllProducts(token: string): Promise<Product[]> {
+  return fetch(`${API_BASE_URL}/products/all`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch all products: ${response.statusText}`
+        );
+      }
+      return response.json();
+    })
+    .then((productsData: any[]) =>
+      productsData.map((productData) => toProduct(productData))
+    )
+    .catch((error) => {
       console.error("Error fetching affiliate products:", error);
       return [];
     });

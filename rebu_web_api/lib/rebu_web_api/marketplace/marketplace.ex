@@ -21,6 +21,7 @@ defmodule RebuWebApi.Marketplace do
   """
   def list_products do
     Repo.all(Product)
+    |> Repo.preload(:category)
   end
 
   @doc """

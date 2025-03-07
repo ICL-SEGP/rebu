@@ -221,6 +221,10 @@ export function toOffer(offer: any): Offer {
   return offer;
 }
 
+export function toCategory(category: any) {
+  return humps.camelizeKeys(category);
+}
+
 export function toProduct(product: any) {
   product = humps.camelizeKeys(product);
 

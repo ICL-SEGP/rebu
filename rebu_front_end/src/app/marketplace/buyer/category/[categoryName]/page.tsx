@@ -3,10 +3,16 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Input } from "@/components/ui/forms/input";
-import { Button } from "@/components/ui/helpers/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/helpers/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@/components/ui/helpers/card";
 import { StarIcon } from "lucide-react";
 import { Product } from "@/types/app";
+import { useSession } from "next-auth/react";
+import { getAllProducts, getProducts } from "@/lib/api/marketplace";
 
 const dummyProducts: Product[] = [
   {
@@ -18,13 +24,27 @@ const dummyProducts: Product[] = [
     fileUrl: "",
     fileType: "pdf",
     fileSize: 5000,
-    category: { name: "Software", imageUrl: new URL("https://via.placeholder.com/400") },
+    category: { name: "Software", imageUrl: "https://via.placeholder.com/400" },
     status: "active",
-    createdAt: "",
+    createdAt: "2024-01-01T10:00:00Z",
     sellerId: 101,
     reviews: [
-      { id: 1, userId: 201, productId: 1, rating: 4, comment: "Great tool!", createdAt: "" },
-      { id: 2, userId: 202, productId: 1, rating: 5, comment: "Amazing!", createdAt: "" },
+      {
+        id: 1,
+        userId: 201,
+        productId: 1,
+        rating: 4,
+        comment: "Great tool!",
+        createdAt: "2024-01-02T10:00:00Z",
+      },
+      {
+        id: 2,
+        userId: 202,
+        productId: 1,
+        rating: 5,
+        comment: "Amazing!",
+        createdAt: "2024-01-03T10:00:00Z",
+      },
     ],
     sellerPubKey: "123",
   },
@@ -37,52 +57,65 @@ const dummyProducts: Product[] = [
     fileUrl: "",
     fileType: "mp4",
     fileSize: 100000,
-    category: { name: "Education", imageUrl: new URL("https://via.placeholder.com/400") },
+    category: {
+      name: "Education",
+      imageUrl: "https://via.placeholder.com/400",
+    },
     status: "active",
-    createdAt: "",
+    createdAt: "2024-01-05T10:00:00Z",
     sellerId: 102,
     reviews: [
-      { id: 3, userId: 203, productId: 2, rating: 5, comment: "Highly informative!", createdAt: "" },
+      {
+        id: 3,
+        userId: 203,
+        productId: 2,
+        rating: 5,
+        comment: "Highly informative!",
+        createdAt: "2024-01-06T10:00:00Z",
+      },
     ],
     sellerPubKey: "123",
   },
 ];
 
 export default function CategoryPage() {
-  const {categoryName} = useParams();
-  const normalizedCategory = decodeURIComponent(Array.isArray(categoryName) ? categoryName[0] : categoryName || "").toLowerCase();
-
+  const { data: session } = useSession();
+  const { categoryName } = useParams();
+  const normalizedCategory = decodeURIComponent(
+    Array.isArray(categoryName) ? categoryName[0] : categoryName || ""
+  ).toLowerCase();
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("recency");
-  console.log("useParams output:", useParams());
+
+  const fetchProducts = async () => {
+    const fetchProducts = await getAllProducts(session!.accessToken);
+
+    console.log("fetched", fetchProducts);
+
+    const filteredProducts = fetchProducts.filter(
+      (p) => p.category?.name.toLowerCase() === normalizedCategory
+    );
+
+    console.log("filter", filteredProducts);
+
+    setProducts(filteredProducts);
+  };
 
   useEffect(() => {
+    if (!categoryName) return;
 
-  console.log("Category from URL:", categoryName);
-  console.log("Normalized category:", normalizedCategory);
-  console.log("Dummy product categories:", dummyProducts.map(p => p.category.name.toLowerCase()));
-
-  if (normalizedCategory) {
-    setProducts(
-      dummyProducts.filter(
-        (p) => p.category.name.toLowerCase() === normalizedCategory
-      )
-    );
-  }
-}, [normalizedCategory]);
-  
-  
-  
+    fetchProducts();
+  }, [normalizedCategory, categoryName]);
 
   const sortedProducts = [...products].sort((a, b) => {
     if (sortBy === "review_avg") {
       const avgA =
         a.reviews.reduce((sum, r) => sum + r.rating, 0) /
-          a.reviews.length || 0;
+        (a.reviews.length || 0);
       const avgB =
         b.reviews.reduce((sum, r) => sum + r.rating, 0) /
-          b.reviews.length || 0;
+        (b.reviews.length || 0);
       return avgB - avgA;
     } else if (sortBy === "review_count") {
       return b.reviews.length - a.reviews.length;
@@ -93,10 +126,10 @@ export default function CategoryPage() {
 
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-8">
-    <div className="inline-flex items-center space-x-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-lg font-medium">
-      <span className="text-gray-600">Category:</span>
-      <span className="font-semibold text-gray-800">{categoryName}</span>
-    </div>  
+      <div className="inline-flex items-center space-x-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-full text-lg font-medium">
+        <span className="text-gray-600">Category:</span>
+        <span className="font-semibold text-gray-800">{categoryName}</span>
+      </div>
       <div className="flex justify-between items-center">
         <Input
           type="text"
@@ -104,11 +137,13 @@ export default function CategoryPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full max-w-xl text-lg p-4 border rounded-full shadow-md"
+          aria-label="Search products"
         />
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
           className="border p-2 rounded-md shadow-sm"
+          aria-label="Sort products"
         >
           <option value="recency">Newest</option>
           <option value="review_avg">Highest Rated</option>
@@ -128,11 +163,10 @@ export default function CategoryPage() {
 
 function ProductCard({ product }: { product: Product }) {
   const router = useRouter();
-  const averageRating =
-    product.reviews.length
-      ? product.reviews.reduce((sum, r) => sum + r.rating, 0) /
-        product.reviews.length
-      : 0;
+  const averageRating = product.reviews.length
+    ? product.reviews.reduce((sum, r) => sum + r.rating, 0) /
+      product.reviews.length
+    : 0;
 
   return (
     <Card
