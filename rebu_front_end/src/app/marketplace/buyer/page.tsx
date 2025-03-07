@@ -9,24 +9,13 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/helper
 import { StarIcon } from "lucide-react";
 import { Product } from "@/types/app";
 import axios from "axios";
+import { fetchCategoryImage } from "@/lib/api/marketplace";
 
 
-const UNSPLASH_ACCESS_KEY = "TPFS6bS1JKJaCrphzZHJUUwGigQ1ClvFPZhfUKbi-nY";
+
 
 // Fetch Unsplash images
-const fetchCategoryImage = async (categoryName: string): Promise<string> => {
-  try {
-    const response = await axios.get("https://api.unsplash.com/search/photos", {
-      params: { query: categoryName, per_page: 1 },
-      headers: { Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}` },
-    });
 
-    return response.data.results[0]?.urls?.regular || "/fallback-category.jpg";
-  } catch (error) {
-    console.error(`Error fetching image for ${categoryName}:`, error);
-    return "/fallback-category.jpg"; // Fallback image if API fails
-  }
-};
 
 // Fetch Products (TODO: Replace with backend API call)
 const fetchProducts = async () => {
@@ -34,7 +23,7 @@ const fetchProducts = async () => {
     // TODO: Replace dummy products with real API call
     // const response = await axios.get('/api/products');
     // return response.data;
-    
+
     // Dummy Products for now:
     return [
       {
@@ -88,12 +77,12 @@ export default function BuyerMarketplace() {
 
   const getPopularCategories = (products: Product[], maxCount: number = 8) => {
     const categoryCounts: Record<string, number> = {};
-  
+
     products.forEach((product) => {
       const category = product.category.name;
       categoryCounts[category] = (categoryCounts[category] || 0) + 1;
     });
-  
+
     return Object.entries(categoryCounts)
       .sort((a, b) => b[1] - a[1]) // Sort by popularity
       .slice(0, maxCount) // Take the top 8
@@ -109,7 +98,7 @@ export default function BuyerMarketplace() {
     const fetchMarketplaceData = async () => {
       const fetchedProducts = await fetchProducts();
       setProducts(fetchedProducts);
-      
+
       const topCategories = getPopularCategories(fetchedProducts, 8);
       setCategories(topCategories);
 
@@ -135,7 +124,7 @@ export default function BuyerMarketplace() {
       if (!e.target.closest(".category-card")) setFilteredCategory(null);
     }}>
 
-      
+
       {/* 🔹 Search Bar (Google-Like) */}
       <div className="flex justify-center">
         <Input
@@ -147,10 +136,10 @@ export default function BuyerMarketplace() {
         />
       </div>
 
-   
 
 
-      
+
+
 
       {/* 🔹 Category Cards (Amazon-Like) */}
       <div className="flex justify-between items-center">
@@ -177,8 +166,8 @@ export default function BuyerMarketplace() {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Products</h2>
 
-        <div 
-          className="flex items-center space-x-2 cursor-pointer" 
+        <div
+          className="flex items-center space-x-2 cursor-pointer"
           onClick={() => setShowScheduled((prev) => !prev)} // Make entire div clickable
         >
           <span className="text-sm font-medium text-gray-700">Show Upcoming</span>
@@ -253,7 +242,7 @@ function CategoryCard({
 // ✅ Product Card Component
 function ProductCard({ product }: { product: Product }) {
   const router = useRouter();
-  const { data: session } = useSession(); 
+  const { data: session } = useSession();
   const averageRating = product.reviews.length
     ? product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length
     : 0;
@@ -272,7 +261,7 @@ function ProductCard({ product }: { product: Product }) {
           router.push(`/user/marketplace/product/${product.id}`);
         } else {
             router.push(`/marketplace/product/product/${product.id}`); // Default route
-        } 
+        }
       }}
     >
       {/* Status Badge */}

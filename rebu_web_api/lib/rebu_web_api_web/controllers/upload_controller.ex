@@ -1,4 +1,4 @@
-defmodule RebuWebApiWeb.UploadsController do
+defmodule RebuWebApiWeb.UploadController do
   use RebuWebApiWeb, :controller
   alias ExAws.S3
   alias RebuWebApi.Uploads
@@ -9,11 +9,13 @@ defmodule RebuWebApiWeb.UploadsController do
 
   _ = @file_bucket
 
-  def gen_presigned_url(conn, %{"type" => "image"} = params) do
+  def gen_presigned_url(conn, %{"type" => "images"} = params) do
     # Ensure filenames are unique (use UUIDs if needed)
     key = Ecto.UUID.generate()
     # Generate the pre-signed PUT URL
     {:ok, url} = get_s3_url(@image_bucket, key, params)
+
+    dbg(url)
 
     json(conn, %{url: url, key: key})
   end
@@ -28,15 +30,20 @@ defmodule RebuWebApiWeb.UploadsController do
   end
 
   defp get_s3_url(bucket, key, %{"content_type" => content_type}) do
-    S3.presigned_url(
-      ExAws.Config.new(:s3),
-      :put,
-      bucket,
-      key,
-      # URL expires in 1 hour
-      expires_in: 3600,
-      content_type: content_type
-    )
+    region = "eu-west-2"
+
+    url =
+      ExAws.Config.new(:s3)
+      |> S3.presigned_url(
+        # 👈 Pass modified config with region
+        :put,
+        bucket,
+        key,
+        expires_in: 3600,
+        content_type: content_type
+      )
+
+    {:ok, "https://#{bucket}.s3.#{region}.amazonaws.com/#{key}"}
   end
 
   # only for sending files purchased not images
@@ -59,15 +66,19 @@ defmodule RebuWebApiWeb.UploadsController do
 
     to_merge =
       if Accounts.is_affiliate(user) do
-        %{owner_id: user.id, owner_type: :affiliate}
+        %{"owner_id" => user.id, "owner_type" => :affiliate}
       else
-        %{owner_id: user.id, owner_type: :user}
+        %{"owner_id" => user.id, "owner_type" => :user}
       end
 
-    upload = Uploads.create_upload(Map.merge(upload_params, to_merge))
+    dbg(upload_params)
+
+    {:ok, upload} = Uploads.create_upload(Map.merge(upload_params, to_merge))
+
+    dbg(upload)
 
     conn
     |> put_status(:created)
-    |> json(upload)
+    |> render("upload.json", upload: upload)
   end
 end

@@ -94,8 +94,17 @@ defmodule RebuWebApiWeb.Router do
     get "/offers", OfferController, :get_offers_for_user
 
     # uploads
-    post "/upload", UploadsController, :create
-    get "/upload", UploadsController, :gen_presigned_url
+    post "/upload", UploadController, :create
+    post "/upload/url", UploadController, :gen_presigned_url
+
+    # Marketplace
+
+    post "/products/:id", ProductController, :update
+    post "/products", ProductController, :create
+    get "/products", ProductController, :get
+
+    post "/category", CategoryController, :create
+    get "/category", CategoryController, :get
   end
 
   scope "/solana", RebuWebApiWeb do

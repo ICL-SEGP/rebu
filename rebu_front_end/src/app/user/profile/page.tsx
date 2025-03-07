@@ -26,7 +26,7 @@ const dummyUser: User = {
 const dummyBalance: UserBalance = {
   token_balance: 500,
   locked_tokens: 50,
-  rescinded_token: 10,
+  rescinded_token: 10https://meet.google.com/pvs-hwio-jya,
   last_updated: new Date(),
 };
 
