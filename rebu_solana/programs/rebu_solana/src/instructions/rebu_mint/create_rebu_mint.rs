@@ -1,6 +1,9 @@
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::rent::{
-    DEFAULT_EXEMPTION_THRESHOLD, DEFAULT_LAMPORTS_PER_BYTE_YEAR,
+use anchor_lang::solana_program::{
+    native_token::LAMPORTS_PER_SOL,
+    rent::{
+    DEFAULT_EXEMPTION_THRESHOLD, DEFAULT_LAMPORTS_PER_BYTE_YEAR 
+    },
 };
 use anchor_lang::system_program::{transfer, Transfer};
 use anchor_spl::token_interface::{
@@ -13,40 +16,40 @@ use spl_type_length_value::variable_len_pack::VariableLenPack;
 #[derive(Accounts)]
 pub struct CreateToken<'info> {
     #[account(mut)]
-    pub payer: Signer<'info>,
+    payer: Signer<'info>,
 
     #[account(
         init,
-        seeds = [b"rebu", b"mint"],
+        seeds = [b"rebu123".as_ref(), b"mint".as_ref()],
         bump,
         payer = payer,
         mint::decimals = 2,
-        mint::authority = mint_account.key(),
-        mint::freeze_authority = mint_account.key(),
+        mint::authority = mint.key(),
+        mint::freeze_authority = mint.key(),
         extensions::metadata_pointer::authority = payer,
-        extensions::metadata_pointer::metadata_address = mint_account,
+        extensions::metadata_pointer::metadata_address = mint,
     )]
-    pub mint_account: InterfaceAccount<'info, Mint>,
+    mint: InterfaceAccount<'info, Mint>,
 
     #[account(
         mut,
         seeds = [
-            b"rebu",
-            b"vault",
+            b"rebu123".as_ref(),
+            b"vault".as_ref(),
         ],
         bump,
     )]
     vault: SystemAccount<'info>,
 
-    pub token_program: Program<'info, Token2022>,
-    pub system_program: Program<'info, System>,
+    token_program: Program<'info, Token2022>,
+    system_program: Program<'info, System>,
 }
 
 pub fn init_mint(ctx: Context<CreateToken>, uri: String) -> Result<()> {
     msg!("Creating metadata account");
 
     // PDA signer seeds
-    let _signer_seeds: &[&[&[u8]]] = &[&[b"rebu", b"mint", &[ctx.bumps.mint_account]]];
+    let signer_seeds: &[&[&[u8]]] = &[&[b"rebu123", b"mint", &[ctx.bumps.mint]]];
     let name = "Rebu Token".to_string();
     let symbol = "REBU".to_string(); 
 
@@ -71,10 +74,21 @@ pub fn init_mint(ctx: Context<CreateToken>, uri: String) -> Result<()> {
             ctx.accounts.system_program.to_account_info(),
             Transfer {
                 from: ctx.accounts.payer.to_account_info(),
-                to: ctx.accounts.mint_account.to_account_info(),
+                to: ctx.accounts.mint.to_account_info(),
             },
         ),
         lamports,
+    )?;
+
+    transfer(
+        CpiContext::new(
+            ctx.accounts.system_program.to_account_info(),
+            Transfer {
+                from: ctx.accounts.payer.to_account_info(),
+                to: ctx.accounts.vault.to_account_info(),
+            },
+        ),
+        LAMPORTS_PER_SOL as u64,
     )?;
 
     // Initialize token metadata
@@ -83,43 +97,16 @@ pub fn init_mint(ctx: Context<CreateToken>, uri: String) -> Result<()> {
             ctx.accounts.token_program.to_account_info(),
             TokenMetadataInitialize {
                 token_program_id: ctx.accounts.token_program.to_account_info(),
-                mint: ctx.accounts.mint_account.to_account_info(),
-                metadata: ctx.accounts.mint_account.to_account_info(),
-                mint_authority: ctx.accounts.mint_account.to_account_info(),
+                mint: ctx.accounts.mint.to_account_info(),
+                metadata: ctx.accounts.mint.to_account_info(),
+                mint_authority: ctx.accounts.mint.to_account_info(),
                 update_authority: ctx.accounts.payer.to_account_info(),
             },
-        ),
+        )
+        .with_signer(signer_seeds),
         name,
         symbol,
         uri,
     )?;
     Ok(())
-}
-
-#[derive(Accounts)] 
-#[instruction(amount: u64)] 
-pub struct SendSol<'info> {
-
-    #[account(mut, signer)] /// CHECK 
-    pub buyer: AccountInfo<'info>,
-    
-    /// CHECK 
-    pub vault_authority: AccountInfo<'info>,
-    
-    /// CHECK 
-    #[account( 
-        init, 
-        payer = buyer, 
-        seeds = [b"seed"], 
-        space=32 + 32 + 32, 
-        bump, 
-    )] 
-    pub vault_account: Account<'info, LockAccount>,
-    pub system_program: Program<'info, System>,
-}
-
-#[account] 
-pub struct LockAccount { 
-    pub buyer: Pubkey, 
-    pub amount: u64, 
 }

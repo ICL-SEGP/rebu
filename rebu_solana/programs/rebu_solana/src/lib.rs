@@ -13,7 +13,7 @@ pub use constants::*;
 pub use error::*;
 
 
-declare_id!("3BjmHpjppF39NVDJbL4UG7pD6tV75fLHMuh7aZU4f2Qc");
+declare_id!("5b8N346ZbwB3PbpYthoUTLtrdw9qpbKue52S1bDCBter");
 
 #[program]
 pub mod rebu_solana {
@@ -23,13 +23,13 @@ pub mod rebu_solana {
         instructions::rebu_mint::create_rebu_mint::init_mint(ctx, uri)
     }
 
-    pub fn mint_rebu_to(ctx: Context<MintRebuTo>, rebu_amount: u64, sol_amount: u64) -> Result<()> {
-        instructions::rebu_mint::mint_rebu::mint_rebu(&ctx, rebu_amount)?;
-        instructions::rebu_mint::mint_rebu::deposit_sol(ctx, sol_amount)
+    pub fn mint_rebu_to(ctx: Context<MintRebuTo>, amount: u64) -> Result<()> {
+        instructions::rebu_mint::mint_rebu::mint_rebu(&ctx, amount)?;
+        instructions::rebu_mint::mint_rebu::deposit_sol(ctx, amount)
     } 
 
     pub fn burn_rebu(ctx: Context<BurnRebu>, amount: u64) -> Result<()> {
-        instructions::rebu_mint::burn_rebu::burn(&ctx, amount)?;
+        instructions::rebu_mint::burn_rebu::burn_tokens(&ctx, amount)?;
         instructions::rebu_mint::burn_rebu::withdraw_sol(ctx, amount)
     } 
 
