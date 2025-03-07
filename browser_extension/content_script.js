@@ -1,9 +1,11 @@
 (function() {
   
-  chrome.storage.local.get({domain_name_1: "Nothing", domain_name_2: "Nothing", loggedIn: false, affiliate_product: "Nothing", redirected: false, trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing", flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}}, (result) => {
+  chrome.storage.local.get({domain_name_1: "Nothing", domain_name_2: "Nothing", loggedIn: false, affiliate_product: "Nothing", redirected: false, trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing", flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}}, async (result) => {
     if (!result.loggedIn)
     if (!result.trackingEnabled) return;
-    if (!result.flags["affiliate_link_detected"] && check_for_offer(window.location.href)) {
+    const v = await check_for_offer(window.location.href);
+    console.log(v);
+    if (!result.flags["affiliate_link_detected"] && v) {
       chrome.storage.local.set({url: window.location.href});
       chrome.storage.local.set({trackLog: [{url: "Affiliate link clicked " + window.location.href, type:"start", timestamp: new Date().toISOString()}] });
       chrome.storage.local.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": false, "item_confirmed": false}});
@@ -93,14 +95,14 @@
 const sampleOffers = [
   {
     id: 1,
-    affiliate: 101,
+    affiliate_id: 4,
     desc: "Offer #1",
-    itemCost: 29.99,
+    item_cost: "29.99",
     status: "active",
-    start: new Date("2025-01-01"),
-    end: new Date("2025-12-31"),
-    affiliate_link: "https://example.com/product1",
-    orderIds: []
+    offer_start: new Date("2025-01-01"),
+    offer_end: new Date("2025-12-31"),
+    rebate_percentage: "1.85939394932",
+    affiliate_link: "https://localhost:8000/purchase.html",
   },
   {
     id: 2,
@@ -127,66 +129,86 @@ const sampleOffers = [
   // ... add as many sample offers as you like ...
 ];
 
+function storageGetAsync(keys) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.local.get(keys, (result) => {
+      if (chrome.runtime.lastError) {
+        return reject(chrome.runtime.lastError);
+      }
+      resolve(result);
+    });
+  });
+}
+
 async function check_for_offer(url) {
   console.log("Offers added");
-  chrome.storage.local.set({offers:sampleOffers});
-  return true;
   try {
-      chrome.storage.local.get({token: "Nothing"}, async (result) => {
-        if (result.token === "Nothing") {
-            console.error("No authentication token found in Chrome storage.");
-            return false;
-        }
-
-        // Fetch offers from API
-        const response = await fetch("http://18.201.163.141:4000/offers", { 
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json", 
-                "Authorization": `Bearer ${result.token}`,
-            }
-        });
-
-        // Check response status
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        
-        // Ensure the data structure is valid
-        if (!Array.isArray(data)) {
-            console.error("Unexpected API response format:", data);
-            return false;
-        }
-
-        // Get the current date
-        const currentDate = new Date();
-
-        const found = data.filter(offer => {
-          const offerStart = new Date(offer.offer_start);
-          const offerEnd = new Date(offer.offer_end);
-          
-          return url.includes(offer.affiliate_link) &&
-                 offer.status === "active" &&
-                 offerStart <= currentDate &&
-                 offerEnd >= currentDate;
-        });
-
-        if (found) {
-            console.log("Matched active offer:", found);
-            chrome.storage.local.set({offers: found})
-            return true;
-        }
-
-        console.log("No matching active offer found.");
-        return false;
-      });
-  } catch (error) {
-      console.error("Error fetching or processing data:", error);
+    // Use our helper function to await chrome.storage.local.get
+    const result = await storageGetAsync({ token: "Nothing" });
+    if (result.token === "Nothing") {
+      console.error("No authentication token found in Chrome storage.");
       return false;
+    }
+
+    // Fetch offers from API
+    const response = await fetch("http://18.201.163.141:4000/offers", { 
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json", 
+        "Authorization": `Bearer ${result.token}`,
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (!Array.isArray(data)) {
+      console.error("Unexpected API response format:", data);
+      return false;
+    }
+    console.log(data);
+
+    const currentDate = new Date();
+
+    const found = data.filter(offer => {
+      const offerStart = new Date(offer.offer_start);
+      const offerEnd = new Date(offer.offer_end);
+      return offer.status === "active" &&
+             offerStart <= currentDate &&
+             offerEnd >= currentDate;
+    });
+    console.log(found)
+
+    const relevantFound = data.filter(offer => {
+      const offerStart = new Date(offer.offer_start);
+      const offerEnd = new Date(offer.offer_end);
+      return url.includes(offer.affiliate_link) &&
+             offer.status === "active" &&
+             offerStart <= currentDate &&
+             offerEnd >= currentDate;
+    });
+
+    chrome.storage.local.set({ offers: found, relevantOffers: relevantFound });
+    
+    // Optionally, push a sample offer (if needed)
+    // relevantFound.push(sampleOffers[0]);
+    
+    if (relevantFound.length > 0) {
+      console.log("Matched active offer:", relevantFound);
+      return true;
+    }
+
+    console.log("No matching active offer found.");
+    return false;
+  } catch (error) {
+    console.error("Error fetching or processing data:", error);
+    return false;
   }
 }
+
 
 
 
