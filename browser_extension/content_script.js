@@ -1,5 +1,4 @@
 (function() {
-  
   chrome.storage.local.get({domain_name_1: "Nothing", domain_name_2: "Nothing", loggedIn: false, affiliate_product: "Nothing", redirected: false, trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing", flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}}, async (result) => {
     if (!result.loggedIn)
     if (!result.trackingEnabled) return;
@@ -69,26 +68,31 @@
 
   // Function to search the DOM for confirmation keywords.
   function checkForPurchaseConfirmation(affiliate_product) {
-    // Convert the entire body text to lowercase for a case-insensitive search.
-    const bodyText = document.body.innerText.toLowerCase();
-    const purchasePattern = /thank[-_]?you|order[-_]?confirmation|purchase[-_]?success/i;
-    if (purchasePattern.test(window.location.href)) {
-      console.log("Confirmation page detected via URL check");
-      chrome.storage.local.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": true, "item_confirmed": false}})
-      // reset_variables();
-      check_correct_product(affiliate_product, document.body.innerText)
-      return true;
-    }
-    for (let keyword of confirmationKeywords) {
-      if (bodyText.includes(keyword)) {
-        console.log("Confirmation page detected via DOM check. Keyword found:", keyword);
-        chrome.local.storage.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": true, "item_confirmed": false}})
+    chrome.storage.local.get({loggedIn: false, trackingEnabled: false, flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}}, (result) => {
+      // Convert the entire body text to lowercase for a case-insensitive search.
+      if (!result.loggedIn) return false;
+      if (!result.trackingEnabled) return false;
+      if (!result.flags["affiliate_link_detected"]) return false;
+      const bodyText = document.body.innerText.toLowerCase();
+      const purchasePattern = /thank[-_]?you|order[-_]?confirmation|purchase[-_]?success/i;
+      if (purchasePattern.test(window.location.href)) {
+        console.log("Confirmation page detected via URL check");
+        chrome.storage.local.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": true, "item_confirmed": false}})
         // reset_variables();
         check_correct_product(affiliate_product, document.body.innerText)
-        return true; // Found at least one keyword, so exit.
+        return true;
       }
-    }
-    return false;
+      for (let keyword of confirmationKeywords) {
+        if (bodyText.includes(keyword)) {
+          console.log("Confirmation page detected via DOM check. Keyword found:", keyword);
+          chrome.local.storage.set({flags: {"affiliate_link_detected": true, "confirmation_page_reached": true, "item_confirmed": false}})
+          // reset_variables();
+          check_correct_product(affiliate_product, document.body.innerText)
+          return true; // Found at least one keyword, so exit.
+        }
+      }
+      return false;
+    });
   }
 })();
 

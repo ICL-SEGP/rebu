@@ -24,7 +24,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-
 // If affiliate link is a redirect line, stores affiliate link and the link to which a redirection is done
 chrome.webRequest.onBeforeRedirect.addListener(
   (details) => {
@@ -65,6 +64,7 @@ const manualNavigationDetected = {};
 
 // Reset local storage if url is manually changed
 chrome.webNavigation.onCommitted.addListener((details) => {
+  console.log("HELLLLLLLLLLOOOOOOOO");
   chrome.storage.local.get({flags: {"affiliate_link_detected": false, "confirmation_page_reached": false, "item_confirmed": false}, trackingEnabled: false, redirectUrl: "Nothing", url: "Nothing"}, (result) => {
     if (!result.trackingEnabled) return;
     if (result.url !== "Nothing" && details.url !== result.redirectUrl) {
