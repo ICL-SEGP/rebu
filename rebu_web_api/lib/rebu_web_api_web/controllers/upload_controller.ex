@@ -7,9 +7,7 @@ defmodule RebuWebApiWeb.UploadController do
   @file_bucket "rebu-files"
   @image_bucket "rebu-images"
 
-  _ = @file_bucket
-
-  def gen_presigned_url(conn, %{"type" => "images"} = params) do
+  def gen_presigned_url(conn, %{"type" => "image"} = params) do
     # Ensure filenames are unique (use UUIDs if needed)
     key = Ecto.UUID.generate()
     # Generate the pre-signed PUT URL
@@ -24,7 +22,7 @@ defmodule RebuWebApiWeb.UploadController do
     # Ensure filenames are unique (use UUIDs if needed)
     key = Ecto.UUID.generate()
     # Generate the pre-signed PUT URL
-    {:ok, url} = get_s3_url(@image_bucket, key, params)
+    {:ok, url} = get_s3_url(@file_bucket, key, params)
 
     json(conn, %{url: url, key: key})
   end

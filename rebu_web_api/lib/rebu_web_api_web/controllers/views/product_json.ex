@@ -7,7 +7,7 @@ defmodule RebuWebApiWeb.ProductJSON do
     :name,
     :desc,
     :price,
-    :image_url,
+    :image_urls,
     :file_url,
     :file_type,
     :file_size,

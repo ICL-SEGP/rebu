@@ -5,75 +5,81 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/forms/input";
 import { Button } from "@/components/ui/helpers/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/helpers/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@/components/ui/helpers/card";
 import { StarIcon } from "lucide-react";
-import { Product } from "@/types/app";
+import { Category, Product } from "@/types/app";
 import axios from "axios";
-import { fetchCategoryImage } from "@/lib/api/marketplace";
-
-
-
+import {
+  fetchCategoryImage,
+  getCategories,
+  getProducts,
+} from "@/lib/api/marketplace";
 
 // Fetch Unsplash images
-
-
-// Fetch Products (TODO: Replace with backend API call)
-const fetchProducts = async () => {
-  try {
-    // TODO: Replace dummy products with real API call
-    // const response = await axios.get('/api/products');
-    // return response.data;
-
-    // Dummy Products for now:
-    return [
-      {
-        id: 1,
-        name: "Crypto Hoodie",
-        desc: "A premium hoodie for blockchain lovers.",
-        price: 50,
-        imageUrls: ["https://via.placeholder.com/400"],
-        fileUrl: "",
-        fileType: "pdf",
-        fileSize: 5000,
-        category: { name: "Clothing", imageUrl: new URL("https://via.placeholder.com/400") },
-        status: "scheduled",
-        createdAt: "",
-        sellerId: 101,
-        reviews: [{ id: 1, userId: 201, productId: 1, rating: 5, comment: "Super comfortable!", createdAt: "" }],
-        sellerPubKey: "123"
-      },
-      {
-        id: 2,
-        name: "Solana Cap",
-        desc: "Stylish cap featuring the Solana logo.",
-        price: 25,
-        imageUrls: ["https://via.placeholder.com/400"],
-        fileUrl: "",
-        fileType: "pdf",
-        fileSize: 5000,
-        category: { name: "Clothing", imageUrl: new URL("https://via.placeholder.com/400") },
-        status: "active",
-        createdAt: "",
-        sellerId: 102,
-        reviews: [{ id: 2, userId: 203, productId: 2, rating: 5, comment: "Love the material!", createdAt: "" }],
-        sellerPubKey: "123"
-      },
-    ];
-  } catch (error) {
-    console.error("Failed to fetch products", error);
-    return []; // Fallback in case of error
-  }
-};
+// {
+//         id: 1,
+//         name: "Crypto Hoodie",
+//         desc: "A premium hoodie for blockchain lovers.",
+//         price: 50,
+//         imageUrls: ["https://via.placeholder.com/400"],
+//         fileUrl: "",
+//         fileType: "pdf",
+//         fileSize: 5000,
+//         category: { name: "Clothing", imageUrl: new URL("https://via.placeholder.com/400") },
+//         status: "scheduled",
+//         createdAt: "",
+//         sellerId: 101,
+//         reviews: [{ id: 1, userId: 201, productId: 1, rating: 5, comment: "Super comfortable!", createdAt: "" }],
+//         sellerPubKey: "123"
+//       },
+//       {
+//         id: 2,
+//         name: "Solana Cap",
+//         desc: "Stylish cap featuring the Solana logo.",
+//         price: 25,
+//         imageUrls: ["https://via.placeholder.com/400"],
+//         fileUrl: "",
+//         fileType: "pdf",
+//         fileSize: 5000,
+//         category: { name: "Clothing", imageUrl: new URL("https://via.placeholder.com/400") },
+//         status: "active",
+//         createdAt: "",
+//         sellerId: 102,
+//         reviews: [{ id: 2, userId: 203, productId: 2, rating: 5, comment: "Love the material!", createdAt: "" }],
+//         sellerPubKey: "123"
+//       },
 
 export default function BuyerMarketplace() {
-  const { data : session } = useSession();
+  const { data: session } = useSession();
   const [search, setSearch] = useState("");
   const [filteredCategory, setFilteredCategory] = useState<string | null>(null);
-  const [categoryImages, setCategoryImages] = useState<{ [key: string]: string }>({});
+  const [categoryImages, setCategoryImages] = useState<{
+    [key: string]: string;
+  }>({});
   const [showScheduled, setShowScheduled] = useState(false); // 🔹 Toggle to show scheduled products
   const [categories, setCategories] = useState<string[]>([]); // New state to store unique categories
   const [products, setProducts] = useState<Product[]>([]); // Using the products state here
   const router = useRouter();
+
+  // const fetchProducts = async () => {
+  //   try {
+  //     // TODO: Replace dummy products with real API call
+  //     // const response = await axios.get('/api/products');
+  //     // return response.data;
+
+  //     // Dummy Products for now:
+  //     const cats =
+  //     return cats
+  //   } catch (error) {
+  //     console.error("Failed to fetch products", error);
+  //     return []; // Fallback in case of error
+  //   }
+  // };
 
   const getPopularCategories = (products: Product[], maxCount: number = 8) => {
     const categoryCounts: Record<string, number> = {};
@@ -96,20 +102,20 @@ export default function BuyerMarketplace() {
   // Fetch products and categories
   useEffect(() => {
     const fetchMarketplaceData = async () => {
-      const fetchedProducts = await fetchProducts();
+      const fetchedProducts = await getProducts(session!.accessToken);
       setProducts(fetchedProducts);
 
-      const topCategories = getPopularCategories(fetchedProducts, 8);
+      const topCategories = await getCategories(session!.accessToken);
       setCategories(topCategories);
 
-      // Fetch category images
-      const newCategoryImages: { [key: string]: string } = {};
-      for (const category of topCategories) {
-        if (!categoryImages[category]) {
-          newCategoryImages[category] = await fetchCategoryImage(category);
-        }
-      }
-      setCategoryImages((prev) => ({ ...prev, ...newCategoryImages }));
+      // // Fetch category images
+      // const newCategoryImages: { [key: string]: string } = {};
+      // for (const category of topCategories) {
+      //   if (!categoryImages[category]) {
+      //     newCategoryImages[category] = await fetchCategoryImage(category);
+      //   }
+      // }
+      // setCategoryImages((prev) => ({ ...prev, ...newCategoryImages }));
     };
 
     fetchMarketplaceData();
@@ -120,11 +126,12 @@ export default function BuyerMarketplace() {
   };
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-12" onClick={(e) => {
-      if (!e.target.closest(".category-card")) setFilteredCategory(null);
-    }}>
-
-
+    <div
+      className="p-8 max-w-6xl mx-auto space-y-12"
+      onClick={(e) => {
+        if (!e.target.closest(".category-card")) setFilteredCategory(null);
+      }}
+    >
       {/* 🔹 Search Bar (Google-Like) */}
       <div className="flex justify-center">
         <Input
@@ -135,11 +142,6 @@ export default function BuyerMarketplace() {
           className="w-full max-w-xl text-lg p-4 border rounded-full shadow-md"
         />
       </div>
-
-
-
-
-
 
       {/* 🔹 Category Cards (Amazon-Like) */}
       <div className="flex justify-between items-center">
@@ -170,7 +172,9 @@ export default function BuyerMarketplace() {
           className="flex items-center space-x-2 cursor-pointer"
           onClick={() => setShowScheduled((prev) => !prev)} // Make entire div clickable
         >
-          <span className="text-sm font-medium text-gray-700">Show Upcoming</span>
+          <span className="text-sm font-medium text-gray-700">
+            Show Upcoming
+          </span>
           <div
             className={`w-10 h-5 flex items-center bg-gray-200 rounded-full p-1 transition-all ${
               showScheduled ? "bg-blue-500" : "bg-gray-300"
@@ -183,17 +187,20 @@ export default function BuyerMarketplace() {
             />
           </div>
         </div>
-
-
       </div>
-
 
       {/* 🔹 Product Listings */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {products
-          .filter((p) => p.status === "active" || (showScheduled && p.status === "scheduled")) // Toggle for scheduled products
+          .filter(
+            (p) =>
+              p.status === "active" ||
+              (showScheduled && p.status === "scheduled")
+          ) // Toggle for scheduled products
           .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
-          .filter((p) => (filteredCategory ? p.category.name === filteredCategory : true))
+          .filter((p) =>
+            filteredCategory ? p.category.name === filteredCategory : true
+          )
           .map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
@@ -205,11 +212,10 @@ export default function BuyerMarketplace() {
 // ✅ Category Card Component
 function CategoryCard({
   category,
-  imageUrl,
   onSelect,
   isActive,
 }: {
-  category: string;
+  category: Category;
   imageUrl: string;
   onSelect: () => void;
   isActive: boolean;
@@ -218,16 +224,16 @@ function CategoryCard({
   const { data: session } = useSession(); // Ensure session is fetched
 
   const handleClick = () => {
-      router.push(`/marketplace/buyer/category/${encodeURIComponent(category)}`);
+    router.push(`/marketplace/buyer/category/${encodeURIComponent(category.name)}`);
   };
   return (
     <div
       className="relative cursor-pointer rounded-lg overflow-hidden transition-all shadow-md hover:shadow-lg"
       onClick={handleClick}
     >
-      <img src={imageUrl} alt={category} className="w-full h-60 object-cover" />
+      <img src={category.imageUrl} alt={category} className="w-full h-60 object-cover" />
       <div className="absolute bottom-0 w-full h-24 bg-gradient-to-t from-white/50 to-transparent flex items-end p-4">
-        <h3 className="text-lg font-semibold text-white">{category}</h3>
+        <h3 className="text-lg font-semibold text-white">{category.name}</h3>
       </div>
     </div>
   );
@@ -238,7 +244,8 @@ function ProductCard({ product }: { product: Product }) {
   const router = useRouter();
   const { data: session } = useSession();
   const averageRating = product.reviews.length
-    ? product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length
+    ? product.reviews.reduce((sum, r) => sum + r.rating, 0) /
+      product.reviews.length
     : 0;
 
   return (
@@ -256,18 +263,30 @@ function ProductCard({ product }: { product: Product }) {
         </span>
       )}
 
-
-      <img src={product.imageUrls[0]} alt={product.name} className="w-full h-40 object-cover rounded-md" />
+      <img
+        src={product.imageUrls[0]}
+        alt={product.name}
+        className="w-full h-40 object-cover rounded-md"
+      />
       <CardHeader className="p-2">
         <CardTitle className="text-lg font-semibold">{product.name}</CardTitle>
       </CardHeader>
       <CardContent className="p-2 space-y-2">
-        <p className="text-xl font-bold text-green-600">{product.price} Tokens</p>
+        <p className="text-xl font-bold text-green-600">
+          {product.price} Tokens
+        </p>
         <div className="flex items-center space-x-1">
           {Array.from({ length: 5 }).map((_, i) => (
-            <StarIcon key={i} size={14} className="text-yellow-500" fill={i < Math.round(averageRating) ? "currentColor" : "none"} />
+            <StarIcon
+              key={i}
+              size={14}
+              className="text-yellow-500"
+              fill={i < Math.round(averageRating) ? "currentColor" : "none"}
+            />
           ))}
-          <span className="text-xs font-medium ml-1">{averageRating.toFixed(1)} / 5</span>
+          <span className="text-xs font-medium ml-1">
+            {averageRating.toFixed(1)} / 5
+          </span>
         </div>
       </CardContent>
     </Card>

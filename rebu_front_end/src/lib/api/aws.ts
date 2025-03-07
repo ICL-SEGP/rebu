@@ -11,8 +11,19 @@ export async function processAndUploadFile(
   files: File[]
 ) {
   try {
-    const file = await compress(files);
+    const file = await compressAndZip(files);
 
+    const { url, key } = await getPresignedUrl(token, type, file);
+
+    return await uploadFileToS3(token, url, key, file);
+  } catch (error) {
+    console.error("Error processing and uploading file:", error);
+    return null; // Or throw the error, depending on how you want to handle it
+  }
+}
+
+export async function uploadFile(token: string, type: string, file: File) {
+  try {
     const { url, key } = await getPresignedUrl(token, type, file);
 
     return await uploadFileToS3(token, url, key, file);
@@ -78,11 +89,7 @@ export async function uploadFileToS3(
 
     if (!response.ok) throw new Error(`Upload failed for ${file.name}`);
 
-    const upload = await createUpload(token, { type: file.type, url, key }); // Await createUpload
-
-    console.log(upload);
-
-    return {url, type: file.type};
+    return { url, type: file.type };
   } catch (error) {
     console.error(`❌ Error uploading files`, error);
     return null;
@@ -90,6 +97,16 @@ export async function uploadFileToS3(
 }
 
 export async function compress(files: File[]) {
+  const compressedFiles = await Promise.all(
+    files.map(async (file) =>
+      file.type.startsWith("image/") ? await compressImage(file) : file
+    )
+  );
+
+  return compressedFiles;
+}
+
+export async function compressAndZip(files: File[]) {
   const compressedFiles = await Promise.all(
     files.map(async (file) =>
       file.type.startsWith("image/") ? await compressImage(file) : file
@@ -203,7 +220,7 @@ async function compressFiles(files: File[]): Promise<File> {
 
 export async function processFile(url: string): Promise<string[]> {
   try {
-    console.log("url for axios", url)
+    console.log("url for axios", url);
     const response = await axios.head(url);
     const contentType = response.headers["content-type"];
     console.log("Axios head", contentType);

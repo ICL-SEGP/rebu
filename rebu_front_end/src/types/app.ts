@@ -123,7 +123,6 @@ export interface Product {
   name: string;
   desc: string;
   price: number;
-  imageUrl: string;
   imageUrls: string[];
   fileUrl: string;
   fileType: string; // e.g., "pdf", "mp3", "zip"

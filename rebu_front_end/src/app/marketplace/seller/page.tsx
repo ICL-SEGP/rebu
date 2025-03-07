@@ -61,6 +61,7 @@ import {
   getPresignedUrl,
   processAndUploadFile,
   processFile,
+  uploadFile,
   uploadFileToS3,
 } from "@/lib/api/aws";
 import humps from "humps";
@@ -90,47 +91,46 @@ export default function SellerMarketplace() {
         const userProducts = await getProducts(session!.accessToken);
         console.log("products", userProducts);
         const cats = await getCategories(session!.accessToken);
-        console.log("cats", cats);
         setCategories(cats);
         setProducts(userProducts);
 
-          // [
-          // {
-          //   id: 1,
-          //   name: "Ebook: Mastering Next.js",
-          //   desc: "A comprehensive guide to building scalable Next.js applications.",
-          //   price: 29.99,
-          //   imageUrls: ["/images/nextjs-ebook.png"],
-          //   fileUrl: "https://example.com/ebook.pdf",
-          //   fileType: "pdf",
-          //   fileSize: 1048576,
-          //   category: {
-          //     name: "Ebooks",
-          //     imageUrl: new URL("https://example.com/category.png"),
-          //   },
-          //   status: "active",
-          //   createdAt: "",
-          //   sellerId: 1,
-          //   reviews: [],
-          // },
-          // {
-          //   id: 2,
-          //   name: "UI Kit for Designers",
-          //   desc: "A modern UI kit for Figma and Sketch users.",
-          //   price: 49.99,
-          //   imageUrls: ["/images/ui-kit.png"],
-          //   fileUrl: "/Users/roypark337/Downloads/codingclub_week6",
-          //   fileType: "zip",
-          //   fileSize: 2048576,
-          //   category: {
-          //     name: "Design Assets",
-          //     imageUrl: new URL("https://example.com/category.png"),
-          //   },
-          //   status: "active",
-          //   createdAt: "",
-          //   sellerId: 1,
-          //   reviews: [],
-          // },
+        // [
+        // {
+        //   id: 1,
+        //   name: "Ebook: Mastering Next.js",
+        //   desc: "A comprehensive guide to building scalable Next.js applications.",
+        //   price: 29.99,
+        //   imageUrls: ["/images/nextjs-ebook.png"],
+        //   fileUrl: "https://example.com/ebook.pdf",
+        //   fileType: "pdf",
+        //   fileSize: 1048576,
+        //   category: {
+        //     name: "Ebooks",
+        //     imageUrl: new URL("https://example.com/category.png"),
+        //   },
+        //   status: "active",
+        //   createdAt: "",
+        //   sellerId: 1,
+        //   reviews: [],
+        // },
+        // {
+        //   id: 2,
+        //   name: "UI Kit for Designers",
+        //   desc: "A modern UI kit for Figma and Sketch users.",
+        //   price: 49.99,
+        //   imageUrls: ["/images/ui-kit.png"],
+        //   fileUrl: "/Users/roypark337/Downloads/codingclub_week6",
+        //   fileType: "zip",
+        //   fileSize: 2048576,
+        //   category: {
+        //     name: "Design Assets",
+        //     imageUrl: new URL("https://example.com/category.png"),
+        //   },
+        //   status: "active",
+        //   createdAt: "",
+        //   sellerId: 1,
+        //   reviews: [],
+        // },
         // ]
       } catch (error) {
         console.error("Failed to fetch products", error);
@@ -165,7 +165,7 @@ export default function SellerMarketplace() {
       let savedProduct = await saveProduct(session.accessToken, updatedProduct);
 
       savedProduct = humps.camelizeKeys(savedProduct);
-      savedProduct.imageUrls = await processFile(savedProduct.imageUrl);
+
 
       console.log("saved", savedProduct);
       setProducts((prev) =>
@@ -280,8 +280,6 @@ export default function SellerMarketplace() {
 export function ProductCard({
   product,
   onView,
-  categories,
-  setCategories,
 }: {
   product: Product;
   onView: () => void;
@@ -516,7 +514,6 @@ export function ProductDetailModal({
   );
 }
 
-
 /**
  * Handles product creation and editing, including file uploads.
  */
@@ -589,7 +586,7 @@ export function ProductForm({
       console.log("unsplash", imageFile);
       const imageFileUrl = await processAndUploadFile(
         currentUserToken,
-        "images",
+        "image",
         [imageFile!]
       );
       console.log("unsplash url", imageFileUrl);
@@ -712,7 +709,7 @@ export function ProductForm({
   };
 
   const handleSubmit = async () => {
-    let imagesUrlNew = "";
+    let imagesUrlsNew = [];
     let digitalFileUrl = "";
     let digitalFileType = "";
 
@@ -731,24 +728,24 @@ export function ProductForm({
     await handleCategoryConfirm();
 
     try {
-      const imagesUploadResult = await processAndUploadFile(
-        currentUserToken,
-        "images",
-        imageFiles
+      const compressedImageFiles = await compress(imageFiles);
+
+      const urls = await Promise.all(
+        compressedImageFiles.map(async (file) => {
+          return await uploadFile(currentUserToken, "image", file);
+        })
       );
 
-      if (imagesUploadResult) {
-        imagesUrlNew = imagesUploadResult.url;
-      } else {
-        console.error("Image upload failed");
-        return;
-      }
+      imagesUrlsNew = urls.map((url) => url!.url);
+
+
 
       const digitalUploadResult = await processAndUploadFile(
         currentUserToken,
         "file",
         [digitalFile!]
       );
+
       console.log("digital file");
 
       if (digitalUploadResult) {
@@ -770,7 +767,7 @@ export function ProductForm({
       desc,
       price: Number(price),
       status,
-      imageUrl: imagesUrlNew,
+      imageUrls: imagesUrlsNew,
       fileUrl: digitalFileUrl,
       fileType: digitalFileType,
     });
@@ -782,7 +779,7 @@ export function ProductForm({
       category: category,
       price: Number(price),
       status,
-      imageUrl: imagesUrlNew,
+      imageUrls: imagesUrlsNew,
       fileUrl: digitalFileUrl,
       fileType: digitalFileType,
     });

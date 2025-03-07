@@ -7,7 +7,7 @@ defmodule RebuWebApi.Marketplace.Product do
     field :status, Ecto.Enum, values: [:scheduled, :active, :expired, :sold_out], default: :active
     field :desc, :string
     field :price, :decimal
-    field :image_url, :string
+    field :image_urls, {:array, :string}
     field :file_url, :string
     field :file_type, :string
     field :qty, :integer
@@ -18,7 +18,7 @@ defmodule RebuWebApi.Marketplace.Product do
     belongs_to :category, RebuWebApi.Marketplace.Category
 
     timestamps(type: :utc_datetime)
-  end
+end
 
   @doc false
   def changeset(product, attrs) do
@@ -27,7 +27,7 @@ defmodule RebuWebApi.Marketplace.Product do
       :name,
       :desc,
       :price,
-      :image_url,
+      :image_urls,
       :file_url,
       :file_type,
       :status,
@@ -39,7 +39,7 @@ defmodule RebuWebApi.Marketplace.Product do
       :name,
       :desc,
       :price,
-      :image_url,
+      :image_urls,
       :file_url,
       :file_type,
       :status

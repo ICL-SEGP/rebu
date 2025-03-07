@@ -21,6 +21,40 @@ import { processFile } from "./aws";
 // }
 
 // //Fetches only the products created by the logged-in affiliate.
+// export function getProducts(token: string): Promise<Product[]> {
+//   return fetch(`${API_BASE_URL}/products`, {
+//     method: "GET",
+//     headers: {
+//       Authorization: `Bearer ${token}`,
+//       "Content-Type": "application/json",
+//     },
+//   })
+//     .then((response) => {
+//       if (!response.ok) {
+//         throw new Error(
+//           `Failed to fetch affiliate products: ${response.statusText}`
+//         );
+//       }
+//       return response.json();
+//     })
+//     .then(async (productsData: any[]) => {
+//       // Make this .then async
+//       const processedProducts = await Promise.all(
+//         productsData.map(async (productData) => {
+//           productData = humps.camelizeKeys(productData);
+//           productData.imageUrls = await processFile(productData.imageUrl);
+//           console.log("processed urls", productData.imageUrl);
+//           return productData; // Return the processed data
+//         })
+//       );
+//       return processedProducts.map((productData) => toProduct(productData)); // Synchronously map to Product
+//     })
+//     .catch((error) => {
+//       console.error("Error fetching affiliate products:", error);
+//       return [];
+//     });
+// }
+
 export function getProducts(token: string): Promise<Product[]> {
   return fetch(`${API_BASE_URL}/products`, {
     method: "GET",
@@ -37,18 +71,9 @@ export function getProducts(token: string): Promise<Product[]> {
       }
       return response.json();
     })
-    .then(async (productsData: any[]) => {
-      // Make this .then async
-      const processedProducts = await Promise.all(
-        productsData.map(async (productData) => {
-          productData = humps.camelizeKeys(productData);
-          productData.imageUrls = await processFile(productData.imageUrl);
-          console.log("processed urls", productData.imageUrl);
-          return productData; // Return the processed data
-        })
-      );
-      return processedProducts.map((productData) => toProduct(productData)); // Synchronously map to Product
-    })
+    .then((productsData: any[]) =>
+      productsData.map((productData) => toProduct(productData))
+    )
     .catch((error) => {
       console.error("Error fetching affiliate products:", error);
       return [];

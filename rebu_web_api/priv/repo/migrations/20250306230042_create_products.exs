@@ -6,7 +6,7 @@ defmodule RebuWebApi.Repo.Migrations.CreateProducts do
       add :name, :string
       add :desc, :text
       add :price, :decimal
-      add :image_url, :string
+      add :image_urls, {:array, :string}
       add :file_url, :string
       add :file_type, :string
       add :status, :string
