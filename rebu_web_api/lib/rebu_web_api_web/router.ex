@@ -32,7 +32,6 @@ defmodule RebuWebApiWeb.Router do
     # referral code
     get "/referral-code", AffiliateController, :get_referral_code
 
-
     # Affiliate
     get "/", AffiliateController, :get
     patch "/", AffiliateController, :update
@@ -87,11 +86,15 @@ defmodule RebuWebApiWeb.Router do
     # Orders
     get "/orders", OrderController, :get_orders
     post "/orders", OrderController, :create
+    post "/orders/detect", OrderController, :create
     get "/orders/:id", OrderController, :get
     patch "/orders/:id", OrderController, :update
+    # create order from offers browser extension
+
 
     # Offers
     get "/offers", OfferController, :get_offers_for_user
+
 
     # uploads
     post "/upload", UploadController, :create
@@ -99,9 +102,10 @@ defmodule RebuWebApiWeb.Router do
 
     # Marketplace
 
-    post "/products/:id", ProductController, :update
+    patch "/products/:id", ProductController, :update
     post "/products", ProductController, :create
     get "/products", ProductController, :get
+    get "/products/:id", ProductController, :get_by_id
     get "/products/all", ProductController, :get_all
 
     post "/category", CategoryController, :create

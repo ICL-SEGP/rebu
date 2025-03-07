@@ -37,8 +37,16 @@ defmodule RebuWebApiWeb.ProductController do
     |> render("product.json", products: products)
   end
 
+  def get_by_id(conn, %{"id" => id}) do
+    product = Marketplace.get_product!(id)
+
+    conn
+    |> render("product.json", product: product)
+  end
+
   def get_all(conn, _params) do
     products = Marketplace.list_products()
+
     conn
     |> render("product.json", products: products)
   end

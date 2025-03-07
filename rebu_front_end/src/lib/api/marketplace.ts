@@ -55,6 +55,31 @@ import { processFile } from "./aws";
 //     });
 // }
 
+export function getProductById(token: string, id: string): Promise<Product[]> {
+  return fetch(`${API_BASE_URL}/products/${id}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch affiliate products: ${response.statusText}`
+        );
+      }
+      return response.json();
+    })
+    .then((productsData: any[]) =>
+      productsData.map((productData) => toProduct(productData))
+    )
+    .catch((error) => {
+      console.error("Error fetching seller's products:", error);
+      return [];
+    });
+}
+
 export function getProducts(token: string): Promise<Product[]> {
   return fetch(`${API_BASE_URL}/products`, {
     method: "GET",

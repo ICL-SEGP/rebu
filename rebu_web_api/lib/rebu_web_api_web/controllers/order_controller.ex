@@ -16,7 +16,33 @@ defmodule RebuWebApiWeb.OrderController do
     |> json(orders)
   end
 
-  def create(conn, %{"order" => order_params}) do
+  def create(conn, %{"offer_ids" => offer_ids}) do
+    user = Guardian.Plug.current_resource(conn)
+
+    offers =
+      for id <- offer_ids do
+        offer = Sales.get_offer!(id)
+      end
+
+    total_rebate_amount = Sales.calculate_total_rebate(offers)
+
+    dbg(total_rebate_amount)
+
+    with {:ok, %Order{} = order} <-
+           Sales.create_order(%{
+             offers: offers,
+             order_date: Timex.now(),
+             status: :completed,
+             total_rebate_amount: total_rebate_amount,
+             user: user
+           }) do
+      conn
+      |> put_status(:created)
+      |> json(order)
+    end
+  end
+
+  def create(conn, %{"off" => order_params}) do
     with {:ok, %Order{} = order} <- Sales.create_order(order_params) do
       conn
       |> put_status(:created)

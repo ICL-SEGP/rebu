@@ -18,7 +18,11 @@ import {
   CheckCircleIcon,
 } from "lucide-react";
 import { Product } from "@/types/app";
-import { createPurchase, getSingleProduct } from "@/lib/api/marketplace";
+import {
+  createPurchase,
+  getProductById,
+  getSingleProduct,
+} from "@/lib/api/marketplace";
 
 export default function ProductPage() {
   const { data: session } = useSession();
@@ -76,8 +80,16 @@ export default function ProductPage() {
           },
         ];
 
-        const foundProduct = dummyProducts.find((p) => p.id === Number(id));
-        if (foundProduct) setProduct(foundProduct);
+        // const foundProduct = dummyProducts.find((p) => p.id === Number(id));
+        if (id) {
+          const foundProduct = await getProductById(
+            session!.accessToken,
+            id?.toString()
+          );
+          setProduct(foundProduct);
+        }
+
+        // if (foundProduct) setProduct(foundProduct);
       } catch (fetchError: any) {
         console.error("Failed to fetch product data", fetchError);
         setError(fetchError.message || "Failed to fetch product.");

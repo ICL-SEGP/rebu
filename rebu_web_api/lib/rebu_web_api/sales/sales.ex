@@ -46,7 +46,6 @@ defmodule RebuWebApi.Sales do
     |> Repo.all()
   end
 
-  @spec get_offer!(any()) :: any()
   @doc """
   Gets a single offer.
 
@@ -430,5 +429,24 @@ defmodule RebuWebApi.Sales do
       preload: [:offers]
     )
     |> Repo.all()
+  end
+
+  def calculate_total_rebate(offers) do
+    case offers do
+      # Handle empty offers case, return a float
+      [] ->
+        0.0
+
+      [first_offer | _rest] ->
+        cost = first_offer.item_cost
+
+        total_rebate_percentage =
+          Enum.reduce(offers, 0, fn offer, acc ->
+            # Directly add the decimal
+            Decimal.add(acc, offer.rebate_percentage)
+          end)
+
+        Decimal.mult(cost, total_rebate_percentage)
+    end
   end
 end

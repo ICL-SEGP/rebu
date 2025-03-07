@@ -171,7 +171,7 @@ function ProductCard({ product }: { product: Product }) {
   return (
     <Card
       className="shadow-md cursor-pointer hover:shadow-lg transition-all p-4"
-      onClick={() => router.push(`marketplace/product/${product.id}`)}
+      onClick={() => router.push(`/marketplace/buyer/product/${product.id}`)}
     >
       <img
         src={product.imageUrls[0]}
