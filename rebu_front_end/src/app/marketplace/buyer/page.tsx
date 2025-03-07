@@ -57,12 +57,12 @@ import {
 export default function BuyerMarketplace() {
   const { data: session } = useSession();
   const [search, setSearch] = useState("");
-  const [filteredCategory, setFilteredCategory] = useState<string | null>(null);
+  const [filteredCategory, setFilteredCategory] = useState<Category | null>(null);
   const [categoryImages, setCategoryImages] = useState<{
     [key: string]: string;
   }>({});
   const [showScheduled, setShowScheduled] = useState(false); // 🔹 Toggle to show scheduled products
-  const [categories, setCategories] = useState<string[]>([]); // New state to store unique categories
+  const [categories, setCategories] = useState<Category[]>([]); // New state to store unique categories
   const [products, setProducts] = useState<Product[]>([]); // Using the products state here
   const router = useRouter();
 
@@ -121,8 +121,8 @@ export default function BuyerMarketplace() {
     fetchMarketplaceData();
   }, []);
 
-  const handleCategoryClick = (category: string) => {
-    setFilteredCategory((prev) => (prev === category ? null : category)); // Toggle category selection
+  const handleCategoryClick = (category: Category) => {
+    setFilteredCategory((prev) => (prev?.name === category.name ? null : category)); // Toggle category selection
   };
 
   return (
@@ -156,10 +156,10 @@ export default function BuyerMarketplace() {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {categories.map((category) => (
           <CategoryCard
-            key={category}
+            key={category.name}
             category={category}
-            imageUrl={categoryImages[category] || "/fallback-category.jpg"}
-            isActive={filteredCategory === category}
+            imageUrl={category.imageUrl || "/fallback-category.jpg"}
+            isActive={filteredCategory?.name === category.name}
             onSelect={() => handleCategoryClick(category)}
           />
         ))}
@@ -199,7 +199,7 @@ export default function BuyerMarketplace() {
           ) // Toggle for scheduled products
           .filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
           .filter((p) =>
-            filteredCategory ? p.category.name === filteredCategory : true
+            filteredCategory ? p.category.name === filteredCategory.name : true
           )
           .map((product) => (
             <ProductCard key={product.id} product={product} />
@@ -231,7 +231,7 @@ function CategoryCard({
       className="relative cursor-pointer rounded-lg overflow-hidden transition-all shadow-md hover:shadow-lg"
       onClick={handleClick}
     >
-      <img src={category.imageUrl} alt={category} className="w-full h-60 object-cover" />
+      <img src={category.imageUrl} alt={category.name} className="w-full h-60 object-cover" />
       <div className="absolute bottom-0 w-full h-24 bg-gradient-to-t from-white/50 to-transparent flex items-end p-4">
         <h3 className="text-lg font-semibold text-white">{category.name}</h3>
       </div>

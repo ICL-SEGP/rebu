@@ -94,17 +94,9 @@ export async function getCategories(token: string): Promise<Category[]> {
       }
       return response.json();
     })
-    .then(async (categories) => {
-      // Make this .then async
-      const processedCategories = await Promise.all(
-        categories.map(async (category: humps.Camelized<any>) => {
-          category = humps.camelizeKeys(category);
-          category.imageUrl = await processFile(category.imageUrl);
-          return category;
-        })
-      );
-      return processedCategories;
-    })
+    .then((categories) =>
+      categories.map((category: any) => humps.camelizeKeys(category))
+    )
     .catch((error) => {
       console.error("Error fetching categories:", error);
       return [];
