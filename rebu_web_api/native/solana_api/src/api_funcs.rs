@@ -114,7 +114,7 @@ pub fn mint_str() -> String {
 #[rustler::nif]
 pub fn new_product_listing(
     owner_keypair: String, id: u64, 
-    stock: u64, price: u64,
+    stock: u64, price: f64,
 ) -> Result<(), String> {
 
     let mint_pubkey = mint_str();
@@ -169,7 +169,7 @@ pub fn new_product_listing(
 #[rustler::nif]
 pub fn modify_product_listing( // TODO: extract duplicate code
     owner_keypair: String, id: u64, 
-    stock: u64, price: u64,
+    stock: u64, price: f64,
 ) -> Result<(), String> {
 
     let owner_keypair = &get_keypair_from_str(owner_keypair);
@@ -326,7 +326,7 @@ pub fn verify_purchase(owner_keypair: String, customer_pubkey: String, id: u64) 
 }
 
 #[rustler::nif]
-pub fn get_user_token_balance(user_pubkey: String) -> u64 {
+pub fn get_user_token_balance(user_pubkey: String) -> f64 {
     let mint_pubkey = mint_str();
     let rpc_client = &new_rpc_client();
     let mint_pubkey = &get_pubkey_from_str(&mint_pubkey);
@@ -337,7 +337,7 @@ pub fn get_user_token_balance(user_pubkey: String) -> u64 {
                    .get_token_account_balance(&user_ata_pubkey)
                    .expect("Something went wrong when getting user balance.");
 
-    amount.ui_amount.expect("Something went wrong when getting user ui amount balance.") as u64
+    amount.ui_amount.expect("Something went wrong when getting user ui amount balance.")
 }
 
 pub fn init_mint(owner_keypair: String) -> Result<(), String> {
@@ -386,7 +386,7 @@ pub fn init_mint(owner_keypair: String) -> Result<(), String> {
 #[rustler::nif]
 pub fn mint_tokens_to_user(
     owner_keypair: String, user_pubkey: String, 
-    amount: u64, is_new_user: bool,
+    amount: f64, is_new_user: bool,
 ) -> Result<(), String> {
 
     let owner_keypair = &get_keypair_from_str(owner_keypair);
@@ -426,6 +426,10 @@ pub fn mint_tokens_to_user(
             .send_and_confirm_transaction_with_spinner(&mint_transaction)
             .expect("Something went wrong in comfirming the transaction.");
         println!("Created account");
+
+        if amount == 0.0 {
+            return Ok(())
+        }
     }
 
     let provider = Client::new(Cluster::Localnet, Rc::new(owner_keypair));
@@ -459,7 +463,7 @@ pub fn mint_tokens_to_user(
     Ok(())
 }
 
-pub fn burn_rebu(user_keypair: String, amount: u64) -> Result<(), String> {
+pub fn burn_rebu(user_keypair: String, amount: f64) -> Result<(), String> {
 
     let user_keypair = &get_keypair_from_str(user_keypair);
 

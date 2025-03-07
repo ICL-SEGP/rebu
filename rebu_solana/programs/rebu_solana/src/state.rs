@@ -7,7 +7,7 @@ pub struct ProductListing {
     pub mint: Pubkey,
     pub id: u64,
     pub stock: u64,
-    pub price: u64,
+    pub price: f64,
     pub bump: u8,
 }
 
