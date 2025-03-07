@@ -823,6 +823,20 @@
       ]
     }
   ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "OutOfStock"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidListing"
+    },
+    {
+      "code": 6002,
+      "name": "ListingAlreadyExists"
+    }
+  ],
   "types": [
     {
       "name": "ProductListing",

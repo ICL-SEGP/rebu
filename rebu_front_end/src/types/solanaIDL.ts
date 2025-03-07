@@ -829,6 +829,20 @@ export type RebuSolana = {
       ]
     }
   ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "outOfStock"
+    },
+    {
+      "code": 6001,
+      "name": "invalidListing"
+    },
+    {
+      "code": 6002,
+      "name": "listingAlreadyExists"
+    }
+  ],
   "types": [
     {
       "name": "productListing",
