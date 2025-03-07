@@ -9,9 +9,6 @@ export default function MarketplaceSelect() {
   const router = useRouter();
   const { data: session } = useSession();
 
-  // Determine the correct base path based on user role
-  const basePath =
-    session?.user?.role === "affiliate" ? "/affiliate/marketplace" : "/user/marketplace";
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen px-6 py-12">
@@ -21,7 +18,7 @@ export default function MarketplaceSelect() {
         {/* Seller Card */}
         <Card
           className="cursor-pointer hover:shadow-xl transition-all border border-gray-200"
-          onClick={() => router.push(`${basePath}/seller`)}
+          onClick={() => router.push(`/marketplace/seller`)}
         >
           <CardHeader className="flex flex-col items-center p-6">
             <CardTitle className="text-xl font-semibold">Seller</CardTitle>
@@ -37,7 +34,7 @@ export default function MarketplaceSelect() {
         {/* Buyer Card */}
         <Card
           className="cursor-pointer hover:shadow-xl transition-all border border-gray-200"
-          onClick={() => router.push(`${basePath}/buyer`)}
+          onClick={() => router.push(`/marketplace/buyer`)}
         >
           <CardHeader className="flex flex-col items-center p-6">
             <CardTitle className="text-xl font-semibold">Buyer</CardTitle>
