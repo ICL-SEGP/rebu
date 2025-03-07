@@ -197,7 +197,7 @@ export type RebuSolana = {
         },
         {
           "name": "price",
-          "type": "u64"
+          "type": "f64"
         }
       ]
     },
@@ -293,7 +293,7 @@ export type RebuSolana = {
       "args": [
         {
           "name": "amount",
-          "type": "u64"
+          "type": "f64"
         }
       ]
     },
@@ -632,7 +632,7 @@ export type RebuSolana = {
       "args": [
         {
           "name": "amount",
-          "type": "u64"
+          "type": "f64"
         }
       ]
     },
@@ -718,7 +718,7 @@ export type RebuSolana = {
         },
         {
           "name": "price",
-          "type": "u64"
+          "type": "f64"
         }
       ]
     },
@@ -867,7 +867,7 @@ export type RebuSolana = {
           },
           {
             "name": "price",
-            "type": "u64"
+            "type": "f64"
           },
           {
             "name": "bump",

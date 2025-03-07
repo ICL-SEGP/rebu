@@ -98,8 +98,10 @@ pub fn transfer_tokens(ctx: &Context<MakePurchase>, _id: u64) -> Result<()> {
 
     let cpi_program = ctx.accounts.token_program.to_account_info();
     let cpi_context = CpiContext::new(cpi_program, cpi_accounts);
-    let amount = ctx.accounts.product_listing.price;
-    token_interface::transfer_checked(cpi_context, amount, ctx.accounts.mint.decimals)?;
+
+    let amount = ctx.accounts.product_listing.price  * 10u64.pow(ctx.accounts.mint.decimals as u32) as f64;
+
+    token_interface::transfer_checked(cpi_context, amount as u64, ctx.accounts.mint.decimals)?;
     msg!("Tokens transfered");
     Ok(())
 }

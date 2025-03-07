@@ -8,7 +8,7 @@ defmodule RebuWebApiWeb.AuthController do
 
   def register(conn, %{"user" => user_params, "referral_code" => code}) do
     affiliate =
-      if (code == "") do
+      if code == "" do
         Repo.get_by(Accounts.Affiliate, email: "affiliate@test.com")
       else
         affiliate = Repo.get_by(Accounts.Affiliate, referral_code: code)

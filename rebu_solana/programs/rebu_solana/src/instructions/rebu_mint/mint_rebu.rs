@@ -49,7 +49,7 @@ pub struct MintRebuTo<'info> {
 }
 
 
-pub fn mint_rebu(ctx: &Context<MintRebuTo>, amount: u64) -> Result<()> {
+pub fn mint_rebu(ctx: &Context<MintRebuTo>, amount: f64) -> Result<()> {
     // PDA signer seeds
     let signer_seeds: &[&[&[u8]]] = &[&[b"rebu123".as_ref(), b"mint".as_ref(), &[ctx.bumps.mint]]];
 
@@ -64,7 +64,7 @@ pub fn mint_rebu(ctx: &Context<MintRebuTo>, amount: u64) -> Result<()> {
             },
         )
         .with_signer(signer_seeds), // using PDA to sign
-        amount * 10u64.pow(ctx.accounts.mint.decimals as u32), // Mint tokens, adjust for decimals
+        (amount * (10u64.pow(ctx.accounts.mint.decimals as u32) as f64)) as u64, // Mint tokens, adjust for decimals
     )?;
 
     msg!("Token minted successfully.");
@@ -72,9 +72,9 @@ pub fn mint_rebu(ctx: &Context<MintRebuTo>, amount: u64) -> Result<()> {
     Ok(())
 }
 
-pub fn deposit_sol(ctx: Context<MintRebuTo>, amount: u64) -> Result<()> {
-    let discounted_amount = 0.5 * amount as f64;
-    let lamports_amount = discounted_amount * LAMPORTS_PER_SOL as f64;
+pub fn deposit_sol(ctx: Context<MintRebuTo>, amount: f64) -> Result<()> {
+    let discounted_amount = 0.5 * amount;
+    let lamports_amount = discounted_amount * (LAMPORTS_PER_SOL / 100) as f64;
 
     let transfer_accounts = Transfer {
         from: ctx.accounts.signer.to_account_info(),

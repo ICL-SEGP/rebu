@@ -1,4 +1,5 @@
 defmodule RebuWebApi.Repo.Migrations.MakeImageUrlsAList do
+  @moduledoc false
   use Ecto.Migration
 
   def change do

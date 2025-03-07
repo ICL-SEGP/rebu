@@ -310,7 +310,7 @@ defmodule RebuWebApi.Accounts do
     Repo.all(query)
   end
 
-  def get_affiliate_by_referral_code(code)do
+  def get_affiliate_by_referral_code(code) do
     Repo.get_by(Accounts.Affiliate, referral_Code: code)
   end
 end

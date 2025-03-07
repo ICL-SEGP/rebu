@@ -30,7 +30,7 @@ defmodule RebuWebApiWeb.UploadController do
   defp get_s3_url(bucket, key, %{"content_type" => content_type}) do
     region = "eu-west-2"
 
-    url =
+    {:ok, _url} =
       ExAws.Config.new(:s3)
       |> S3.presigned_url(
         # 👈 Pass modified config with region

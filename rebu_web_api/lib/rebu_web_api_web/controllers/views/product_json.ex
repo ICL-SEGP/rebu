@@ -19,7 +19,8 @@ defmodule RebuWebApiWeb.ProductJSON do
   ]
   # define which fields that need to format or calculate, you have to define `render_field/2` below
   @relationships [
-    category: RebuWebApiWeb.CategoryJSON
+    category: RebuWebApiWeb.CategoryJSON,
+    purchases: RebuWebApiWeb.PurchaseJSON
   ]
 
   def render("product.json", %{product: product}) do
@@ -27,7 +28,7 @@ defmodule RebuWebApiWeb.ProductJSON do
     render_json(product, @fields, [], @relationships)
   end
 
-   def render("product.json", %{products: products}) do
+  def render("product.json", %{products: products}) do
     # 1st way if `use JsonView`
     JsonView.render_many(products, __MODULE__, "product.json")
   end

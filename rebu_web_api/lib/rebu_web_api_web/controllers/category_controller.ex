@@ -1,6 +1,6 @@
 defmodule RebuWebApiWeb.CategoryController do
   use RebuWebApiWeb, :controller
-  alias RebuWebApi.Accounts.{Affiliate, User}
+  # alias RebuWebApi.Accounts.{Affiliate, User}
   alias RebuWebApi.Marketplace
 
   def create(conn, %{"category" => category_params}) do
