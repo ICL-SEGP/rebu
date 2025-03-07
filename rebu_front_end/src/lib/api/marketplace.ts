@@ -85,7 +85,32 @@ export async function getReviews(productId: number): Promise<Review[]> {
   return response.json();
 }
 
-// 📌 Delete a review (Seller only)
+//Save Product Review in PurchaseHistory page (only buyers)
+export async function saveReview(token: string, review: Review): Promise<Review> {
+  const response = await fetch(`${API_BASE_URL}/marketplace/reviews`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      userId: review.userId,
+      productId: review.productId,
+      rating: review.rating,
+      comment: review.comment,
+      createdAt: review.createdAt.toISOString(),
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to save review: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+
+// 📌 Delete a review (Buyer only)
 export async function deleteReview(token: string, reviewId: number) {
   const response = await fetch(`${API_BASE_URL}/marketplace/reviews/${reviewId}`, {
     method: "DELETE",
@@ -194,3 +219,4 @@ export async function getSingleProduct(productId: number): Promise<Product> {
           "Content-Type": "application/json" },
     });
   }
+
