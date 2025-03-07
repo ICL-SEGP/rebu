@@ -15,7 +15,7 @@ import { useSession } from "next-auth/react";
 import { User, Product, ProductStatus } from "@/types/app";
 import { 
   uploadProductImage, uploadProductFile,
-  getAffiliateProducts, saveProduct, deleteProduct 
+  getSellerProducts, saveProduct, deleteProduct 
 } from "@/lib/api/marketplace";
 import { ActiveDraggableContext } from "@dnd-kit/core/dist/components/DndContext";
 import { DndContext, closestCenter } from "@dnd-kit/core";
@@ -43,7 +43,7 @@ export default function SellerMarketplace() {
     async function fetchSellerProducts() {
       try {
         // TODO: Uncomment when backend is ready
-        // const userProducts = await getAffiliateProducts(session.accessToken);
+        // const userProducts = await getSellerProducts(session.accessToken);
         // setProducts(userProducts);
 
         // Dummy data for now

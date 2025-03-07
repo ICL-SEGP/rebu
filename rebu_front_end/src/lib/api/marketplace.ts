@@ -17,8 +17,8 @@ export async function getMarketplaceProducts(): Promise<Product[]> {
   return response.json();
 }
 
-//Fetches only the products created by the logged-in affiliate.
-export async function getAffiliateProducts(token: string): Promise<Product[]> {
+//Fetches only the products created by the logged-in sellers.
+export async function getSellerProducts(token: string): Promise<Product[]> {
   try {
     const response = await fetch(`${API_BASE_URL}/marketplace/products`, {
       method: "GET",
@@ -29,7 +29,7 @@ export async function getAffiliateProducts(token: string): Promise<Product[]> {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch affiliate products: ${response.statusText}`);
+      throw new Error(`Failed to fetch seller products: ${response.statusText}`);
     }
 
     return await response.json();
