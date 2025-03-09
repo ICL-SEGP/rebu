@@ -25,7 +25,7 @@ use anchor_spl::{
         self,
         spl_associated_token_account::{
         instruction::create_associated_token_account,
-        get_associated_token_address_with_program_id 
+        get_associated_token_address_with_program_id
         },
     },
     token_2022::spl_token_2022,
@@ -83,7 +83,7 @@ pub fn get_pubkey_from_str(key_str: &str) -> Pubkey {
 
 pub fn get_token_account(user_pubkey: &Pubkey, mint_pubkey: &Pubkey) -> Pubkey {
     get_associated_token_address_with_program_id(
-        user_pubkey, mint_pubkey, 
+        user_pubkey, mint_pubkey,
         &spl_token_2022::ID
     )
 }
@@ -93,7 +93,7 @@ pub fn mint_str() -> String {
         &[
             b"rebu123".as_ref(),
             b"mint".as_ref(),
-        ], 
+        ],
         &rebu_solana::ID)
         .0
         .to_string()
@@ -105,7 +105,7 @@ pub fn mint_str() -> String {
         &[
             b"rebu123".as_ref(),
             b"mint".as_ref(),
-        ], 
+        ],
         &rebu_solana::ID)
         .0
         .to_string()
@@ -113,7 +113,7 @@ pub fn mint_str() -> String {
 
 #[rustler::nif]
 pub fn new_product_listing(
-    owner_keypair: String, id: u64, 
+    owner_keypair: String, id: u64,
     stock: u64, price: f64,
 ) -> Result<(), String> {
 
@@ -134,7 +134,7 @@ pub fn new_product_listing(
             b"listing".as_ref(),
             program.payer().as_ref(),
             id.to_le_bytes().as_ref()
-        ], 
+        ],
         &rebu_solana::ID);
 
     let new_product_listing_ix = program
@@ -156,10 +156,10 @@ pub fn new_product_listing(
         });
 
     let rt = Runtime::new().expect("Error when creating tokio runtime.");
-    let _transaction: Signature = { rt.block_on(async { 
+    let _transaction: Signature = { rt.block_on(async {
         new_product_listing_ix
             .send()
-            .await 
+            .await
             .map_err(|e| format!("Error: Product Listing initialization. {}", e))
     })?};
 
@@ -168,7 +168,7 @@ pub fn new_product_listing(
 
 #[rustler::nif]
 pub fn modify_product_listing( // TODO: extract duplicate code
-    owner_keypair: String, id: u64, 
+    owner_keypair: String, id: u64,
     stock: u64, price: f64,
 ) -> Result<(), String> {
 
@@ -186,7 +186,7 @@ pub fn modify_product_listing( // TODO: extract duplicate code
             b"listing".as_ref(),
             program.payer().as_ref(),
             id.to_le_bytes().as_ref()
-        ], 
+        ],
         &rebu_solana::ID);
 
     let new_product_listing_ix = program
@@ -205,10 +205,10 @@ pub fn modify_product_listing( // TODO: extract duplicate code
         });
 
     let rt = Runtime::new().expect("Error when creating tokio runtime.");
-    let _transaction: Signature = { rt.block_on(async { 
+    let _transaction: Signature = { rt.block_on(async {
         new_product_listing_ix
             .send()
-            .await 
+            .await
             .map_err(|e| format!("Error: Product Listing modification. {}", e))
     })?};
 
@@ -238,7 +238,7 @@ pub fn make_purchase(customer_keypair: String, owner_keypair: String, id: u64) -
             b"listing".as_ref(),
             owner.as_ref(),
             id.to_le_bytes().as_ref()
-        ], 
+        ],
         &rebu_solana::ID);
 
     let (product_purchase, _) = Pubkey::find_program_address(
@@ -248,7 +248,7 @@ pub fn make_purchase(customer_keypair: String, owner_keypair: String, id: u64) -
             owner.as_ref(),
             id.to_le_bytes().as_ref(),
             program.payer().as_ref(),
-        ], 
+        ],
         &rebu_solana::ID);
 
     let new_product_listing_ix = program
@@ -271,10 +271,10 @@ pub fn make_purchase(customer_keypair: String, owner_keypair: String, id: u64) -
         });
 
     let rt = Runtime::new().expect("Error when creating tokio runtime.");
-    let _transaction: Signature = { rt.block_on(async { 
+    let _transaction: Signature = { rt.block_on(async {
         new_product_listing_ix
             .send()
-            .await 
+            .await
             .map_err(|e| format!("Error: Purchase. {}", e))
     })?};
 
@@ -299,7 +299,7 @@ pub fn verify_purchase(owner_keypair: String, customer_pubkey: String, id: u64) 
             owner.pubkey().as_ref(),
             id.to_le_bytes().as_ref(),
             customer.as_ref(),
-        ], 
+        ],
         &rebu_solana::ID);
 
     let verify_purchase_ix = program
@@ -315,10 +315,10 @@ pub fn verify_purchase(owner_keypair: String, customer_pubkey: String, id: u64) 
         });
 
     let rt = Runtime::new().expect("Error when creating tokio runtime.");
-    let _transaction: Signature = { rt.block_on(async { 
+    let _transaction: Signature = { rt.block_on(async {
         verify_purchase_ix
             .send()
-            .await 
+            .await
             .map_err(|e| format!("Error: Verifying purchase. {}", e))
     })?};
 
@@ -350,7 +350,7 @@ pub fn init_mint(owner_keypair: String) -> Result<(), String> {
         &[
             b"rebu123".as_ref(),
             b"vault".as_ref(),
-        ], 
+        ],
         &rebu_solana::ID);
 
     let provider = Client::new(Cluster::Devnet, Rc::new(owner_keypair));
@@ -373,10 +373,10 @@ pub fn init_mint(owner_keypair: String) -> Result<(), String> {
         });
 
     let rt = Runtime::new().expect("Error when creating tokio runtime.");
-    let _transaction: Signature = { rt.block_on(async { 
+    let _transaction: Signature = { rt.block_on(async {
         create_token_ix
             .send()
-            .await 
+            .await
             .map_err(|e| format!("Error: Mint initialization. {}", e))
     })?};
 
@@ -385,7 +385,7 @@ pub fn init_mint(owner_keypair: String) -> Result<(), String> {
 
 #[rustler::nif]
 pub fn mint_tokens_to_user(
-    owner_keypair: String, user_pubkey: String, 
+    owner_keypair: String, user_pubkey: String,
     amount: f64, is_new_user: bool,
 ) -> Result<(), String> {
 
@@ -398,17 +398,17 @@ pub fn mint_tokens_to_user(
         &[
             b"rebu123".as_ref(),
             b"vault".as_ref(),
-        ], 
+        ],
         &rebu_solana::ID);
 
     if is_new_user {
         let rpc_client = new_rpc_client();
-        let airdrop_amount = 500_000_000; // 0.5 SOL
-        let signature = rpc_client
-            .request_airdrop(user_pubkey, airdrop_amount)
-            .expect("Failed to request airdrop");
+        // let airdrop_amount = 500_000_000; // 0.5 SOL
+        // let signature = rpc_client
+        //     .request_airdrop(user_pubkey, airdrop_amount)
+        //     .expect("Failed to request airdrop");
 
-        while !rpc_client.confirm_transaction(&signature).unwrap() {}
+        // while !rpc_client.confirm_transaction(&signature).unwrap() {}
 
         let mint_transaction = Transaction::new_signed_with_payer(
             &[create_associated_token_account(
@@ -421,7 +421,7 @@ pub fn mint_tokens_to_user(
             &[&owner_keypair],
             rpc_client.get_latest_blockhash().expect("Something went wrong with getting blockhash.")
         );
-        
+
         rpc_client
             .send_and_confirm_transaction_with_spinner(&mint_transaction)
             .expect("Something went wrong in comfirming the transaction.");
@@ -432,7 +432,7 @@ pub fn mint_tokens_to_user(
         }
     }
 
-    let provider = Client::new(Cluster::Localnet, Rc::new(owner_keypair));
+    let provider = Client::new(Cluster::Devnet, Rc::new(owner_keypair));
     let program = provider
         .program(rebu_solana::ID)
         .map_err(|_| "Error: rebu_solana could not be loaded as a client program.".to_string())?;
@@ -453,10 +453,10 @@ pub fn mint_tokens_to_user(
         });
 
     let rt = Runtime::new().expect("Error when creating tokio runtime.");
-    let _transaction: Signature = { rt.block_on(async { 
+    let _transaction: Signature = { rt.block_on(async {
         mint_token_ix
             .send()
-            .await 
+            .await
             .map_err(|e| format!("Error: Mint initialization. {}", e))
     })?};
 
@@ -473,10 +473,10 @@ pub fn burn_rebu(user_keypair: String, amount: f64) -> Result<(), String> {
         &[
             b"rebu123".as_ref(),
             b"vault".as_ref(),
-        ], 
+        ],
         &rebu_solana::ID);
 
-    let provider = Client::new(Cluster::Localnet, Rc::new(user_keypair));
+    let provider = Client::new(Cluster::Devnet, Rc::new(user_keypair));
     let program = provider
         .program(rebu_solana::ID)
         .map_err(|_| "Error: rebu_solana could not be loaded as a client program.".to_string())?;
@@ -497,10 +497,10 @@ pub fn burn_rebu(user_keypair: String, amount: f64) -> Result<(), String> {
         });
 
     let rt = Runtime::new().expect("Error when creating tokio runtime.");
-    let _transaction: Signature = { rt.block_on(async { 
+    let _transaction: Signature = { rt.block_on(async {
         burn_token_ix
             .send()
-            .await 
+            .await
             .map_err(|e| format!("Error: Burning . {}", e))
     })?};
 

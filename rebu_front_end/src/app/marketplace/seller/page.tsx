@@ -166,7 +166,6 @@ export default function SellerMarketplace() {
 
       savedProduct = humps.camelizeKeys(savedProduct);
 
-
       console.log("saved", savedProduct);
       setProducts((prev) =>
         prev.some((p) => p.id === savedProduct.id)
@@ -284,8 +283,6 @@ export function ProductCard({
   product: Product;
   onView: () => void;
 }) {
-  console.log("new thang", product);
-
   const totalRatings = product.reviews?.length || 0;
   const averageRating = totalRatings
     ? (
@@ -701,7 +698,6 @@ export function ProductForm({
       return updatedPreviews;
     });
   };
-  
 
   const handleDigitalFileChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -741,8 +737,6 @@ export function ProductForm({
       );
 
       imagesUrlsNew = urls.map((url) => url!.url);
-
-
 
       const digitalUploadResult = await processAndUploadFile(
         currentUserToken,

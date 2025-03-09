@@ -95,7 +95,7 @@ defmodule RebuWebApiWeb.Router do
     get "/offers", OfferController, :get_offers_for_user
 
     # uploads
-    post "/upload", UploadController, :create
+    # post "/upload", UploadController, :create
     post "/upload/url", UploadController, :gen_presigned_url
 
     # Marketplace

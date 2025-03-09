@@ -17,7 +17,7 @@ export default function WalletSolana() {
 
     updatePubKey();
 
-  }, [publicKey, session]);
+  }, [publicKey]);
 
   return (
     <div className="pt-6">

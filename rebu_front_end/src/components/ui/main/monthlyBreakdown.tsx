@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   Card,
@@ -6,8 +6,8 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-} from "@/components/ui/helpers/card"
-import { Bar, Pie, Line, PolarArea } from "react-chartjs-2"
+} from "@/components/ui/helpers/card";
+import { Bar, Pie, Line, PolarArea } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   BarElement,
@@ -20,7 +20,7 @@ import {
   Legend,
   RadialLinearScale,
   PolarAreaController,
-} from "chart.js"
+} from "chart.js";
 
 // Register Chart.js components
 ChartJS.register(
@@ -33,14 +33,15 @@ ChartJS.register(
   Tooltip,
   Legend,
   RadialLinearScale
-)
+);
 
 // Helper: sum numeric fields in an array of objects
 function sum(array, key) {
-  return array.reduce((acc, cur) => acc + (cur[key] || 0), 0)
+  return array.reduce((acc, cur) => acc + (cur[key] || 0), 0);
 }
 
 export default function SalesDashboard({ monthlyBreakdown }) {
+  console.log("monthyl", monthlyBreakdown);
 
   const sortedMonthlyData = [
     ["September", 3],
@@ -49,11 +50,11 @@ export default function SalesDashboard({ monthlyBreakdown }) {
     ["December", 3],
     ["January", 4],
     ["February", 2],
-  ]
+  ];
 
   // 3) Extract labels & values
-  const labels = sortedMonthlyData.map(([month]) => month)
-  const values = sortedMonthlyData.map(([_, count]) => count)
+  const labels = sortedMonthlyData.map(([month]) => month);
+  const values = sortedMonthlyData.map(([_, count]) => count);
 
   const data = {
     labels,
@@ -80,7 +81,7 @@ export default function SalesDashboard({ monthlyBreakdown }) {
         borderWidth: 1,
       },
     ],
-  }
+  };
 
   const polarOptions = {
     responsive: true,
@@ -108,7 +109,7 @@ export default function SalesDashboard({ monthlyBreakdown }) {
         },
       },
     },
-  }
+  };
 
   const pieOptions = {
     responsive: true,
@@ -132,13 +133,12 @@ export default function SalesDashboard({ monthlyBreakdown }) {
     },
   };
 
-
   const numericBreakdown = monthlyBreakdown.map((item) => ({
     ...item,
     // Ensure these fields are numbers
     rebateCompleted: parseFloat(item.rebateCompleted),
     tokensRefunded: parseFloat(item.tokensRefunded),
-  }))
+  }));
 
   // ----- BAR CHART (Orders by Month) -----
   const barData = {
@@ -155,7 +155,7 @@ export default function SalesDashboard({ monthlyBreakdown }) {
         backgroundColor: "#EF5350",
       },
     ],
-  }
+  };
 
   // ----- LINE CHART (Tokens Over Time) -----
   const lineData = {
@@ -178,11 +178,11 @@ export default function SalesDashboard({ monthlyBreakdown }) {
         tension: 0.3,
       },
     ],
-  }
+  };
 
   // ----- PIE CHART (Totals Summed) -----
-  const totalCompletedTokens = sum(numericBreakdown, "rebateCompleted")
-  const totalRefundedTokens = sum(numericBreakdown, "tokensRefunded")
+  const totalCompletedTokens = sum(numericBreakdown, "rebateCompleted");
+  const totalRefundedTokens = sum(numericBreakdown, "tokensRefunded");
 
   const pieData = {
     labels: ["Completed Tokens", "Refunded Tokens"],
@@ -192,7 +192,7 @@ export default function SalesDashboard({ monthlyBreakdown }) {
         backgroundColor: ["#42A5F5", "#AB47BC"],
       },
     ],
-  }
+  };
 
   return (
     <Card>
@@ -205,22 +205,22 @@ export default function SalesDashboard({ monthlyBreakdown }) {
       <CardContent>
         {/* Top: Full-width line chart */}
         <div className="mb-8 w-full h-[650px] justify-center bg-white p-4 border rounded-md shadow">
-          <h2 className="mb-4 text-xl font-semibold">Tokens Over Time (Full Width)</h2>
+          <h2 className="mb-4 text-xl font-semibold">
+            Tokens Over Time (Full Width)
+          </h2>
           <Line data={lineData} />
         </div>
 
         {/* Bottom: Two columns for Bar & Pie side by side */}
         <div
           style={{
-            display: "flex",          // side-by-side
+            display: "flex", // side-by-side
             flexWrap: "wrap",
-            width: "auto",            // wrap on small screens
-            gap: "1rem",              // spacing between charts
-            justifyContent: "center" // center horizontally
+            width: "auto", // wrap on small screens
+            gap: "1rem", // spacing between charts
+            justifyContent: "center", // center horizontally
           }}
         >
-
-
           <div
             style={{
               position: "relative",
@@ -229,12 +229,8 @@ export default function SalesDashboard({ monthlyBreakdown }) {
               overflow: "hidden",
             }}
           >
-
             <PolarArea data={data} options={polarOptions} />
           </div>
-
-
-
 
           <div
             style={{
@@ -248,5 +244,5 @@ export default function SalesDashboard({ monthlyBreakdown }) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

@@ -1,7 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/helpers/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/helpers/card";
 import {
   ChartContainer,
   ChartTooltip,
@@ -34,10 +39,16 @@ import {
   ArcElement,
   Tooltip,
   Legend,
-} from "chart.js"
-import { Bar, Pie, Line } from "react-chartjs-2"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/helpers/alert";
-
+} from "chart.js";
+import { Bar, Pie, Line } from "react-chartjs-2";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/helpers/alert";
+import { getAllLinkedOrders } from "@/lib/api/affiliate";
+import { useQuery } from "@tanstack/react-query";
+import { Order } from "@/types/app";
 
 ChartJS.register(
   BarElement,
@@ -48,7 +59,7 @@ ChartJS.register(
   ArcElement,
   Tooltip,
   Legend
-)
+);
 
 export default function DashboardPage() {
   // Hardcoded key metrics data
@@ -61,49 +72,61 @@ export default function DashboardPage() {
   const [monthlyBreakdown, setMonthlyBreakdown] = useState([]);
   const [orders, setOrders] = useState<Order[]>([]);
 
-
-
   if (!session) {
     throw new Error("No user logged in.");
   }
 
-  const fetchOrders = async () => {
+  const {
+    status,
+    error,
+    data: ordersList,
+  } = useQuery({
+    queryKey: ["affiliate-user-orders"],
+    queryFn: () => getAllLinkedOrders(session!.accessToken),
+  });
 
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/affiliate/orders`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.accessToken}`,
-        },
-      });
-
-      if (!res.ok) throw new Error("Failed to fetch orders");
-
-      const orders = (await res.json());
-
-      console.log(orders)
-
-      let fetchedOrders = await orders.map((order) => ({
-        id: order.id,
-        status: order.status,
-        date: order.inserted_at, // Renaming inserted_at to date
-        totalRebateAmount: parseFloat(order.total_rebate_amount).toFixed(2), // Convert to number
-      }))
-
-
-      setOrders(fetchedOrders.slice(0, 3));
-
-
-    } catch (error) {
-      console.error("Error fetching orders:", error);
+  useEffect(() => {
+    if (ordersList) {
+      console.log(ordersList);
+      ordersList.sort((a, b) => b.orderDate.getTime() - a.orderDate.getTime());
+      setOrders(ordersList.slice(0, 5));
     }
-  };
+  }, [ordersList]);
+
+  // const fetchOrders = async () => {
+
+  //   try {
+  //     const res = await fetch(`${API_BASE_URL}/api/affiliate/orders`, {
+  //       method: "GET",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${session.accessToken}`,
+  //       },
+  //     });
+
+  //     if (!res.ok) throw new Error("Failed to fetch orders");
+
+  //     const orders = (await res.json());
+
+  //     console.log(orders)
+
+  //     let fetchedOrders = await orders.map((order) => ({
+  //       id: order.id,
+  //       status: order.status,
+  //       date: order.inserted_at, // Renaming inserted_at to date
+  //       totalRebateAmount: parseFloat(order.total_rebate_amount).toFixed(2), // Convert to number
+  //     }))
+
+  //     setOrders(fetchedOrders.slice(0, 3));
+
+  //   } catch (error) {
+  //     console.error("Error fetching orders:", error);
+  //   }
+  // };
 
   const fetchUsers = async () => {
-
     try {
-      const res = await fetch(`${API_BASE_URL}/api/affiliate/users`, {
+      const res = await fetch(`${API_BASE_URL}/affiliate/users`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -113,7 +136,7 @@ export default function DashboardPage() {
 
       if (!res.ok) throw new Error("Failed to fetch users");
 
-      const users = (await res.json()).users;
+      const users = await res.json();
 
       // let fetchedOrders: Order[] = await orders.map((order) => ({
       //   id: order.id,
@@ -123,18 +146,15 @@ export default function DashboardPage() {
       // }))
 
       setUsers(users.slice(0, 3));
-      setTotalUsers(users.length)
-
-
+      setTotalUsers(users.length);
     } catch (error) {
       console.error("Error fetching users:", error);
     }
   };
 
   const fetchStats = async () => {
-
     try {
-      const res = await fetch(`${API_BASE_URL}/api/affiliate/stats`, {
+      const res = await fetch(`${API_BASE_URL}/affiliate/stats`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -144,7 +164,7 @@ export default function DashboardPage() {
 
       if (!res.ok) throw new Error("Failed to fetch stats");
 
-      const stats = (await res.json());
+      const stats = await res.json();
 
       // let fetchedOrders: Order[] = await orders.map((order) => ({
       //   id: order.id,
@@ -153,23 +173,24 @@ export default function DashboardPage() {
       //   totalRebateAmount: parseFloat(order.total_rebate_amount).toFixed(2), // Convert to number
       // }))
 
-      setStats(stats)
+      setStats(stats);
 
-      console.log("stats", stats)
+      console.log("stats", stats);
       setMonthlyBreakdown(
         Object.entries(stats.monthly_breakdown).map(([key, value]) => {
           return {
             monthName: value.month.trim(),
             completedOrders: value.completed_orders,
-            refundedOrders: value.refunded_orders,
-            rebateCompleted: parseFloat(value.total_tokens_rebate_completed).toFixed(2),
+            refundedOrders: value.cancelled_orders,
+            rebateCompleted: parseFloat(
+              value.total_tokens_rebate_completed
+            ).toFixed(2),
             tokensRefunded: parseFloat(value.total_rescinded_tokens).toFixed(2),
-          }
+          };
         })
       );
 
-      console.log(stats)
-
+      console.log(stats);
     } catch (error) {
       console.error("Error fetching stats:", error);
     }
@@ -178,15 +199,14 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchUsers();
     fetchStats();
-    fetchOrders();
-  }, [])
+  }, []);
 
   const numericBreakdown = monthlyBreakdown.map((item) => ({
     ...item,
     // Ensure these fields are numbers
     rebateCompleted: parseFloat(item.rebateCompleted),
     tokensRefunded: parseFloat(item.tokensRefunded),
-  }))
+  }));
   const barData = {
     labels: numericBreakdown.map((d) => d.monthName), // x-axis
     datasets: [
@@ -201,9 +221,7 @@ export default function DashboardPage() {
         backgroundColor: "#EF5350",
       },
     ],
-  }
-
-
+  };
 
   const s = {
     totalUsers: 150,
@@ -211,7 +229,6 @@ export default function DashboardPage() {
     activeOffers: 12,
     completedOrders: 50, // completed/refunded orders
   };
-
 
   const chartConfig = {
     revenue: {
@@ -222,23 +239,21 @@ export default function DashboardPage() {
 
   const [orderType, setOrderType] = useState("completed");
 
-
   // Determine chart data & color dynamically
   function changeOrderType() {
     if (orderType == "completed") {
-      setOrderType("refunded")
-
+      setOrderType("cancelled");
     } else {
-      setOrderType("completed")
+      setOrderType("completed");
     }
   }
 
-  const chartColor = orderType === "completed" ? "rgb(54, 162, 235)" : "rgb(235, 54, 54)";
+  const chartColor =
+    orderType === "completed" ? "rgb(54, 162, 235)" : "rgb(235, 54, 54)";
 
   return (
     <div className="space-y-8 p-6">
       <h1 className="text-2xl font-bold">Affiliate Dashboard</h1>
-
 
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -255,7 +270,7 @@ export default function DashboardPage() {
         {/* Total Revenue */}
         <Card>
           <CardHeader>
-            <CardTitle>Total successful Rebates</CardTitle>
+            <CardTitle>Total Rebated</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-semibold flex items-center gap-1">
@@ -271,7 +286,9 @@ export default function DashboardPage() {
             <CardTitle>Active Offers</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-semibold">{stats?.offer_counts?.active ?? 0}</p>
+            <p className="text-3xl font-semibold">
+              {stats?.offer_counts?.active ?? 0}
+            </p>
           </CardContent>
         </Card>
 
@@ -281,7 +298,9 @@ export default function DashboardPage() {
             <CardTitle>Completed</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-semibold">{stats?.order_counts?.completed ?? 0}</p>
+            <p className="text-3xl font-semibold">
+              {stats?.order_counts?.completed ?? 0}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -301,7 +320,10 @@ export default function DashboardPage() {
         <CardHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <CardTitle>Recent Transactions</CardTitle>
-            <Button onClick={() => router.push("/affiliate/orders")}> All Orders </Button>
+            <Button onClick={() => router.push("/affiliate/orders")}>
+              {" "}
+              All Orders{" "}
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -312,16 +334,24 @@ export default function DashboardPage() {
                 <TableHead className="w-[150px] px-4 py-3">Order Id</TableHead>
                 <TableHead className="px-4 py-3">Date</TableHead>
                 <TableHead className="px-4 py-3">Order Status</TableHead>
-                <TableHead className="text-right px-4 py-3">Token's Earned</TableHead>
+                <TableHead className="text-right px-4 py-3">
+                  Token's Earned
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {orders.map((order, index) => (
                 <TableRow key={index} className="hover:bg-gray-50 transition">
-                  <TableCell className="font-medium px-4 py-2">{order.id}</TableCell>
-                  <TableCell className="font-medium px-4 py-2">{order.date}</TableCell>
+                  <TableCell className="font-medium px-4 py-2">
+                    {order.id}
+                  </TableCell>
+                  <TableCell className="font-medium px-4 py-2">
+                    {order.orderDate.toISOString().split("T")[0]}
+                  </TableCell>
                   <TableCell className="px-4 py-2">{order.status}</TableCell>
-                  <TableCell className="text-right px-4 py-2">{order.totalRebateAmount}</TableCell>
+                  <TableCell className="text-right px-4 py-2">
+                    {order.totalRebateAmount}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -335,7 +365,10 @@ export default function DashboardPage() {
         <CardHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <CardTitle>Recent Transactions</CardTitle>
-            <Button onClick={() => router.push("/affiliate/users")}> Users </Button>
+            <Button onClick={() => router.push("/affiliate/users")}>
+              {" "}
+              Users{" "}
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -346,16 +379,24 @@ export default function DashboardPage() {
                 <TableHead className="w-[150px] px-4 py-3">User Id</TableHead>
                 <TableHead className="px-4 py-3">Name</TableHead>
                 <TableHead className="px-4 py-3">Email</TableHead>
-                <TableHead className="text-right px-4 py-3">Token's Earned</TableHead>
+                <TableHead className="text-right px-4 py-3">
+                  Token's Earned
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {users.map((user, index) => (
                 <TableRow key={index} className="hover:bg-gray-50 transition">
-                  <TableCell className="font-medium px-4 py-2">{user.id}</TableCell>
-                  <TableCell className="font-medium px-4 py-2">{user.first_name + " " + user.last_name}</TableCell>
+                  <TableCell className="font-medium px-4 py-2">
+                    {user.id}
+                  </TableCell>
+                  <TableCell className="font-medium px-4 py-2">
+                    {user.first_name + " " + user.last_name}
+                  </TableCell>
                   <TableCell className="px-4 py-2">{user.email}</TableCell>
-                  <TableCell className="text-right px-4 py-2">{parseFloat(user.token_balance).toFixed(2)}</TableCell>
+                  <TableCell className="text-right px-4 py-2">
+                    {parseFloat(user.token_balance).toFixed(2)}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

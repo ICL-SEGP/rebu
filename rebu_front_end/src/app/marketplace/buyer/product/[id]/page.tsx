@@ -169,18 +169,17 @@ export default function ProductPage() {
         sellerType: product.sellerType,
       });
 
-      console.log("Seller key", sellerkey);
       makePurchase({
         seller_str: sellerkey.seller_pub_key,
-        productId: product.id,
+        productId: 41,
       });
 
       // await createPurchase(token, orderData);
       // setIsPurchased(true);
-      setTimeout(() => {
-        setPurchaseModalOpen(false);
-        setIsPurchased(false);
-      }, 2500);
+      // setTimeout(() => {
+      //   setPurchaseModalOpen(false);
+      //   setIsPurchased(false);
+      // }, 2500);
 
       setBalance(balance - product.price);
     } catch (err: any) {
@@ -257,7 +256,8 @@ export default function ProductPage() {
           <Button
             variant="default"
             className="w-full"
-            onClick={() => setPurchaseModalOpen(true)}
+            // onClick={() => setPurchaseModalOpen(true)}
+            onClick={handlePurchase}
             disabled={loading}
           >
             {loading ? (

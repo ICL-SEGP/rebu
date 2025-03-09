@@ -23,17 +23,12 @@ import { getAllOffers } from "@/lib/api/user";
 import { Offer } from "@/types/app";
 
 export default function offersPage() {
-  
   const [offers, setOffers] = useState<Offer[]>([]);
   const [selectedOffer, setSelectedOffer] = useState<Offer>();
   const [sortBy, setSortBy] = useState("endingSoonest");
 
   // TODO check for errors on the api response here
-  const {
-    status,
-    error,
-    data: offersList,
-  } = useQuery({
+  const { data: offersList } = useQuery({
     queryKey: ["offers"],
     queryFn: () => getAllOffers(session!.accessToken),
   });

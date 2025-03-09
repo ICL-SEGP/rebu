@@ -343,8 +343,8 @@ defmodule RebuWebApi.Sales do
       from(o in Order,
         select: {
           # Format `date` field to `YYYY-MM`
-          fragment("TO_CHAR(?, 'YYYY-MM')", o.date),
-          fragment("TO_CHAR(?, 'Month')", o.date),
+          fragment("TO_CHAR(?, 'YYYY-MM')", o.order_date),
+          fragment("TO_CHAR(?, 'Month')", o.order_date),
           # Total orders in the month
           count(o.id),
           # Total rebate for completed orders
@@ -370,8 +370,8 @@ defmodule RebuWebApi.Sales do
         },
         # Group by month
         group_by: [
-          fragment("TO_CHAR(?, 'YYYY-MM')", o.date),
-          fragment("TO_CHAR(?, 'Month')", o.date)
+          fragment("TO_CHAR(?, 'YYYY-MM')", o.order_date),
+          fragment("TO_CHAR(?, 'Month')", o.order_date)
         ]
       )
 

@@ -98,6 +98,11 @@ export default function OrdersPage() {
         userEmail = order.user.email.toLowerCase();
       }
 
+       const dateString = order.orderDate.toDateString().toLowerCase();
+       const dateSearch = dateString.includes(
+         searchQuery.toLowerCase().trim()
+       );
+
       const userName =
         order.user.firstName.toLowerCase() +
         " " +
@@ -110,7 +115,7 @@ export default function OrdersPage() {
       const matchesStatus =
         statusFilter === OrderStatus.ALL || order.status === statusFilter;
 
-      return matchesSearch && matchesStatus;
+      return (matchesSearch || dateSearch) && matchesStatus;
     });
   }, [orders, searchQuery, statusFilter]);
 

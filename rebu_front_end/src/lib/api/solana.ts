@@ -99,7 +99,7 @@ export function useMakePurchase() {
 
       console.log("GOT HERE: 2");
 
-      const [productListingPDA] = PublicKey.findProgramAddressSync(
+      const [productListingPDA, _] = PublicKey.findProgramAddressSync(
         [
           Buffer.from("product"),
           Buffer.from("listing"),
@@ -122,21 +122,21 @@ export function useMakePurchase() {
       );
       console.log("GOT HERE 4");
 
-      const mint = new PublicKey("2Tkswza6ftvMCU3FdmQLHqFcyJzqMNi41YX69eAfTdLt");
+      const mint = new PublicKey(
+        "2Tkswza6ftvMCU3FdmQLHqFcyJzqMNi41YX69eAfTdLt"
+      );
 
       const customerAta = await getAssociatedTokenAddress(
         mint,
         publicKey,
         true,
-        TOKEN_2022_PROGRAM_ID,
-        SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID
+        TOKEN_2022_PROGRAM_ID
       );
       const sellerAta = await getAssociatedTokenAddress(
         mint,
         seller,
         true,
-        TOKEN_2022_PROGRAM_ID,
-        SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID
+        TOKEN_2022_PROGRAM_ID
       );
 
       console.log("Seller:", seller.toBase58());

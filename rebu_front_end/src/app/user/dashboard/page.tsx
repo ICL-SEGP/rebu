@@ -48,6 +48,8 @@ export default function DashboardPage() {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
 
+  console.log("session",session)
+
   useEffect(() => {
     if (sessionStorage.getItem("fromSignIn")) {
       tot.success("Welcome! Successfully signed in.");
@@ -194,7 +196,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-       
+
 
       {/* Withdrawal Section */}
       <Card>
@@ -228,11 +230,11 @@ export default function DashboardPage() {
           </form>
         </CardContent>
       </Card>
-        
-       
+
+
       </div>
 
-     
+
 
       {/* Recent Orders */}
       <Card>

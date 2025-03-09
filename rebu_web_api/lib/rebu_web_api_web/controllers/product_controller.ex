@@ -54,6 +54,8 @@ defmodule RebuWebApiWeb.ProductController do
     user = Guardian.Plug.current_resource(conn)
     products = Marketplace.get_products_by_user(user)
 
+    dbg(products)
+
     conn
     |> render("product.json", products: products)
   end
@@ -67,6 +69,8 @@ defmodule RebuWebApiWeb.ProductController do
 
   def get_all(conn, _params) do
     products = Marketplace.list_products()
+
+    dbg(products)
 
     conn
     |> render("product.json", products: products)

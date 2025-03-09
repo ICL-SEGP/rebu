@@ -38,7 +38,7 @@ export function updateUserProfile(
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(humps.decamelizeKeys(updatedUser)),
+    body: JSON.stringify({ user: humps.decamelizeKeys(updatedUser) }),
   })
     .then((response) => {
       if (!response.ok) {

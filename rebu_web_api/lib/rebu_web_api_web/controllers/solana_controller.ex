@@ -8,18 +8,16 @@ defmodule RebuWebApiWeb.SolanaController do
   def update_key(conn, %{"public_key" => key}) do
     user = Guardian.Plug.current_resource(conn)
 
-    if is_nil(user.solana_pub_key) do
-      dbg(Solana.set_up_blockchain_account(key))
-    end
+    # if is_nil(user.solana_pub_key) do
+    #   dbg(Solana.set_up_blockchain_account(key))
+    # end
 
-    Solana.update_key(user, key)
+    dbg(Solana.update_key(user, key))
 
     conn
     |> put_status(:ok)
     |> render(:success, %{})
   end
-
-
 
   def get_seller_pub_key(conn, %{
         "seller_id" => seller_id,
