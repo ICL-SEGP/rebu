@@ -1,0 +1,539 @@
+{
+  "address": "5b8N346ZbwB3PbpYthoUTLtrdw9qpbKue52S1bDCBter",
+  "metadata": {
+    "name": "rebu_solana",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "add_listing",
+      "discriminator": [165, 124, 143, 190, 249, 53, 128, 195],
+      "accounts": [
+        {
+          "name": "seller",
+          "docs": ["Affiliate"],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint",
+          "docs": ["Rebu mint"],
+          "writable": true
+        },
+        {
+          "name": "seller_ata",
+          "docs": ["ATA of seller"]
+        },
+        {
+          "name": "product_listing",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [112, 114, 111, 100, 117, 99, 116]
+              },
+              {
+                "kind": "const",
+                "value": [108, 105, 115, 116, 105, 110, 103]
+              },
+              {
+                "kind": "account",
+                "path": "seller"
+              },
+              {
+                "kind": "arg",
+                "path": "id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "id",
+          "type": "u64"
+        },
+        {
+          "name": "stock",
+          "type": "u64"
+        },
+        {
+          "name": "price",
+          "type": "f64"
+        }
+      ]
+    },
+    {
+      "name": "burn_rebu",
+      "discriminator": [166, 227, 223, 55, 117, 147, 136, 175],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [114, 101, 98, 117, 49, 50, 51]
+              },
+              {
+                "kind": "const",
+                "value": [109, 105, 110, 116]
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_account",
+          "writable": true
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [114, 101, 98, 117, 49, 50, 51]
+              },
+              {
+                "kind": "const",
+                "value": [118, 97, 117, 108, 116]
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "f64"
+        }
+      ]
+    },
+    {
+      "name": "create_token",
+      "discriminator": [84, 52, 204, 228, 24, 140, 234, 75],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [114, 101, 98, 117, 49, 50, 51]
+              },
+              {
+                "kind": "const",
+                "value": [109, 105, 110, 116]
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [114, 101, 98, 117, 49, 50, 51]
+              },
+              {
+                "kind": "const",
+                "value": [118, 97, 117, 108, 116]
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "uri",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "make_purchase",
+      "discriminator": [193, 62, 227, 136, 105, 212, 201, 20],
+      "accounts": [
+        {
+          "name": "customer",
+          "docs": ["Customer"],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint",
+          "docs": ["Rebu mint"],
+          "writable": true
+        },
+        {
+          "name": "seller",
+          "writable": true
+        },
+        {
+          "name": "seller_ata",
+          "docs": ["ATA of seller"],
+          "writable": true
+        },
+        {
+          "name": "customer_ata",
+          "docs": ["ATA of customer"],
+          "writable": true
+        },
+        {
+          "name": "product_listing",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [112, 114, 111, 100, 117, 99, 116]
+              },
+              {
+                "kind": "const",
+                "value": [108, 105, 115, 116, 105, 110, 103]
+              },
+              {
+                "kind": "account",
+                "path": "seller"
+              },
+              {
+                "kind": "arg",
+                "path": "id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "product_purchase",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [112, 114, 111, 100, 117, 99, 116]
+              },
+              {
+                "kind": "const",
+                "value": [112, 117, 114, 99, 104, 97, 115, 101]
+              },
+              {
+                "kind": "account",
+                "path": "seller"
+              },
+              {
+                "kind": "arg",
+                "path": "id"
+              },
+              {
+                "kind": "account",
+                "path": "customer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "id",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "mint_rebu_to",
+      "discriminator": [13, 139, 116, 57, 55, 202, 156, 121],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [114, 101, 98, 117, 49, 50, 51]
+              },
+              {
+                "kind": "const",
+                "value": [109, 105, 110, 116]
+              }
+            ]
+          }
+        },
+        {
+          "name": "recipient",
+          "writable": true
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [114, 101, 98, 117, 49, 50, 51]
+              },
+              {
+                "kind": "const",
+                "value": [118, 97, 117, 108, 116]
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "f64"
+        }
+      ]
+    },
+    {
+      "name": "modify_listing",
+      "discriminator": [36, 132, 230, 119, 139, 147, 164, 183],
+      "accounts": [
+        {
+          "name": "seller",
+          "docs": ["Affiliate"],
+          "writable": true,
+          "signer": true,
+          "relations": ["product_listing"]
+        },
+        {
+          "name": "product_listing",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [112, 114, 111, 100, 117, 99, 116]
+              },
+              {
+                "kind": "const",
+                "value": [108, 105, 115, 116, 105, 110, 103]
+              },
+              {
+                "kind": "account",
+                "path": "seller"
+              },
+              {
+                "kind": "arg",
+                "path": "id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "id",
+          "type": "u64"
+        },
+        {
+          "name": "stock",
+          "type": "u64"
+        },
+        {
+          "name": "price",
+          "type": "f64"
+        }
+      ]
+    },
+    {
+      "name": "verify_purchase",
+      "discriminator": [205, 162, 209, 116, 231, 224, 181, 251],
+      "accounts": [
+        {
+          "name": "seller",
+          "writable": true,
+          "signer": true,
+          "relations": ["product_purchase"]
+        },
+        {
+          "name": "customer",
+          "writable": true
+        },
+        {
+          "name": "product_purchase",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [112, 114, 111, 100, 117, 99, 116]
+              },
+              {
+                "kind": "const",
+                "value": [112, 117, 114, 99, 104, 97, 115, 101]
+              },
+              {
+                "kind": "account",
+                "path": "seller"
+              },
+              {
+                "kind": "arg",
+                "path": "id"
+              },
+              {
+                "kind": "account",
+                "path": "customer"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "id",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "ProductListing",
+      "discriminator": [12, 188, 195, 61, 183, 115, 249, 54]
+    },
+    {
+      "name": "PurchaseReceipt",
+      "discriminator": [79, 127, 222, 137, 154, 131, 150, 134]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "OutOfStock"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidListing"
+    },
+    {
+      "code": 6002,
+      "name": "ListingAlreadyExists"
+    }
+  ],
+  "types": [
+    {
+      "name": "ProductListing",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "seller",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "stock",
+            "type": "u64"
+          },
+          {
+            "name": "price",
+            "type": "f64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PurchaseReceipt",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "seller",
+            "type": "pubkey"
+          },
+          {
+            "name": "customer",
+            "type": "pubkey"
+          },
+          {
+            "name": "product_id",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}

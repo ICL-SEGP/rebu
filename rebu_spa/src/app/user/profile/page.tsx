@@ -1,56 +1,37 @@
 "use client";
 
-import { ClipboardCopy } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Affiliate, AffiliateBalance, Role } from "@/types/app";
-import { Input } from "@/components/ui/forms/input";
-import { Button } from "@/components/ui/helpers/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/helpers/card";
+import { useState, useRef } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/modals/dialog";
-import { useToast } from "@/hooks/use-toast";
-import { UserIcon } from "lucide-react";
-import { EyeIcon, EyeOffIcon as EyeSlashIcon } from "lucide-react";
-import { getReferralCode } from "@/lib/api/affiliate";
+} from "@/components/ui/dialog";
+import { EyeOff, UserIcon, EyeIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useQuery } from "@tanstack/react-query";
+import { updateUserProfile } from "@/lib/api/user";
+import toast from "react-hot-toast"; // Import toast from react-hot-toast
+import { changePassword } from "@/lib/api/auth";
 
-// Dummy affiliate data for UI testing
-const dummyAffiliate: Affiliate = {
-  id: 1,
-  firstName: "Jane",
-  LastName: "Doe",
-  email: "jane.doe@example.com",
-  token_balance: 1000,
-  role: Role.AFFILIATE,
-  orderIds: 67890,
-  solanaPubKey: "9A2b5c9d8E3f...",
-  revenue: 5000,
-  offerIds: [101, 102, 103],
-};
-
-const dummyBalance: AffiliateBalance = {
-  token_balance: 1000,
-  last_updated: new Date(),
-};
-
-export default function AffiliateProfile() {
-  const { data: session } = useSession();
-  const [affiliate, setAffiliate] = useState<Affiliate>(dummyAffiliate);
-  const [balance, setBalance] = useState<AffiliateBalance>(dummyBalance);
+export default function UserProfile() {
+  const { data: session, update } = useSession();
+  console.log(session?.user);
   const [editing, setEditing] = useState(false);
   const [passwordsMatch, setPasswordsMatch] = useState(true);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
-  const [formData, setFormData] = useState<Partial<Affiliate>>(dummyAffiliate);
+  const [formData, setFormData] = useState(
+    session?.user
+      ? { ...session.user }
+      : { firstName: "", lastName: "", email: "" }
+  );
+  const originalFormData = useRef(
+    session?.user
+      ? { ...session.user }
+      : { firstName: "", lastName: "", email: "" }
+  );
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -61,7 +42,7 @@ export default function AffiliateProfile() {
     new: false,
     confirm: false,
   });
-  const { toast } = useToast();
+  const [renderTrigger, setRenderTrigger] = useState(0);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -72,9 +53,10 @@ export default function AffiliateProfile() {
     const updatedPasswords = { ...passwordData, [name]: value };
     setPasswordData(updatedPasswords);
 
-    // Validate passwords match
     if (name === "newPassword" || name === "confirmPassword") {
-      setPasswordsMatch(updatedPasswords.newPassword === updatedPasswords.confirmPassword);
+      setPasswordsMatch(
+        updatedPasswords.newPassword === updatedPasswords.confirmPassword
+      );
     }
   };
 
@@ -84,73 +66,67 @@ export default function AffiliateProfile() {
 
   const handleSubmit = async () => {
     try {
-      setAffiliate({ ...affiliate, ...formData });
+      if (!session?.user) {
+        toast.error("Session user data is missing.");
+        return;
+      }
+
+      console.log("Session User:", formData);
+
+      await updateUserProfile(session.accessToken, formData);
       setEditing(false);
-      toast({ title: "Profile updated successfully" });
-      // TODO: Send updated data to backend API
+
+      session.user.firstName = formData.firstName;
+      session.user.lastName = formData.lastName;
+      session.user.email = formData.email;
+
+      await update(session);
+
+      originalFormData.current = formData;
+      toast.success("Profile updated successfully");
+      setRenderTrigger((prev) => prev + 1);
+
+      console.log("Updated Session:", session);
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast({ title: "Failed to update profile", variant: "destructive" });
+      toast.error("That email is taken.");
+      setEditing(false);
+      setFormData(originalFormData.current);
     }
+  };
+
+  const handleCancel = () => {
+    setFormData(originalFormData.current);
+    setEditing(false);
   };
 
   const handleChangePassword = async () => {
     if (!passwordsMatch) {
-      toast({ title: "Passwords do not match", variant: "destructive" });
+      toast.error("Passwords do not match");
       return;
     }
     try {
-      // TODO: Integrate password update API
-      toast({ title: "Password updated successfully" });
+      await changePassword(
+        session?.accessToken,
+        passwordData.currentPassword,
+        passwordData.newPassword
+      );
+      toast.success("Password updated successfully");
       setPasswordModalOpen(false);
     } catch (error) {
       console.error("Error updating password:", error);
-      toast({ title: "Failed to update password", variant: "destructive" });
-    }
-  };
-
-
-  const [referralCode, setReferralCode] = useState({});
-
-  const {
-    status,
-    error,
-    data: code,
-  } = useQuery({
-    queryKey: ["referral-code"],
-    queryFn: () => getReferralCode(session!.accessToken),
-  });
-
-  useEffect(() => {
-    if (code) {
-      setReferralCode(code);
-      console.log(code);
-    }
-  }, [code]);
-
-  const generateReferralLink = (code: any): string => {
-    return `${window.location.origin}/register?affiliate_code=${code}`;
-  };
-
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(generateReferralLink(referralCode.referral_code));
-      toast({ title: "Referral link copied to clipboard!" });
-    } catch (err) {
-      toast({
-        title: "Failed to copy link!",
-        description: "Please copy manually.",
-        variant: "destructive",
-      });
+      toast.error("Your existing password was incorrect!");
     }
   };
 
   return (
-    <Card className="max-w-lg mx-auto p-6">
+    <Card className="max-w-lg mx-auto p-6" key={renderTrigger}>
       <CardHeader>
         <div className="flex flex-col items-center">
           <UserIcon className="w-24 h-24 text-gray-500" />
-          <CardTitle className="mt-4">Affiliate Profile</CardTitle>
+          <CardTitle className="mt-4">
+            {session?.user?.firstName} {session?.user?.lastName}'s Profile
+          </CardTitle>
         </div>
       </CardHeader>
       <CardContent>
@@ -167,8 +143,8 @@ export default function AffiliateProfile() {
           <div>
             <label className="text-sm font-medium">Last Name</label>
             <Input
-              name="LastName"
-              value={formData.LastName || ""}
+              name="lastName"
+              value={formData.lastName || ""}
               onChange={handleChange}
               disabled={!editing}
             />
@@ -182,15 +158,11 @@ export default function AffiliateProfile() {
               disabled={!editing}
             />
           </div>
-          <div>
-            <label className="text-sm font-medium">Revenue</label>
-            <Input value={`$${affiliate.revenue}`} disabled />
-          </div>
           <div className="flex justify-between mt-4">
             {editing ? (
               <>
                 <Button onClick={handleSubmit}>Save</Button>
-                <Button variant="outline" onClick={() => setEditing(false)}>
+                <Button variant="outline" onClick={handleCancel}>
                   Cancel
                 </Button>
               </>
@@ -206,19 +178,8 @@ export default function AffiliateProfile() {
               Change Password
             </Button>
           </div>
-          <div>
-            <Button
-              className="w-full mt-5 bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2"
-              onClick={copyToClipboard}
-            >
-              <ClipboardCopy size={16} />
-              Copy Rebu referral to Clipboard
-            </Button>
-          </div>
         </div>
       </CardContent>
-
-      {/* Password Change Modal */}
       <Dialog open={passwordModalOpen} onOpenChange={setPasswordModalOpen}>
         <DialogContent>
           <DialogHeader>
@@ -248,7 +209,7 @@ export default function AffiliateProfile() {
                     }
                   >
                     {showPassword[field as keyof typeof showPassword] ? (
-                      <EyeSlashIcon className="w-5 h-5" />
+                      <EyeOff className="w-5 h-5" />
                     ) : (
                       <EyeIcon className="w-5 h-5" />
                     )}
@@ -257,7 +218,9 @@ export default function AffiliateProfile() {
               )
             )}
             <div className="flex justify-end">
-              <Button onClick={handleChangePassword} disabled={!passwordsMatch}>Save</Button>
+              <Button onClick={handleChangePassword} disabled={!passwordsMatch}>
+                Save
+              </Button>
             </div>
           </div>
         </DialogContent>
@@ -265,3 +228,31 @@ export default function AffiliateProfile() {
     </Card>
   );
 }
+
+
+  // const generateReferralLink = (code: any): string => {
+  //   return `${window.location.origin}/register?affiliate_code=${code}`;
+  // };
+
+  // const copyToClipboard = async () => {
+  //   try {
+  //     await navigator.clipboard.writeText(
+  //       generateReferralLink(referralCode.referral_code)
+  //     );
+  //     toast({ title: "Referral link copied to clipboard!" });
+  //   } catch (err) {
+  //     toast({
+  //       title: "Failed to copy link!",
+  //       description: "Please copy manually.",
+  //       variant: "destructive",
+  //     });
+  //   }
+  // // };
+
+  // <Button
+  //   className="w-full mt-5 bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2"
+  //   onClick={copyToClipboard}
+  // >
+  //   <ClipboardCopy size={16} />
+  //   Copy Rebu referral to Clipboard
+  // </Button>;
