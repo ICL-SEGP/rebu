@@ -15,11 +15,14 @@ defmodule RebuWebApiWeb.ProductJSON do
     :category,
     :qty,
     :seller_id,
-    :seller_type
+    :seller_type,
+    :avg_rating
   ]
   # define which fields that need to format or calculate, you have to define `render_field/2` below
   @relationships [
-    category: RebuWebApiWeb.CategoryJSON
+    category: RebuWebApiWeb.CategoryJSON,
+    upload: RebuWebApiWeb.UploadJSON,
+    reviews: RebuWebApiWeb.ReviewJSON
   ]
 
   def render("product.json", %{product: product}) do
@@ -28,6 +31,7 @@ defmodule RebuWebApiWeb.ProductJSON do
   end
 
   def render("product.json", %{products: products}) do
+    dbg(products)
     # 1st way if `use JsonView`
     JsonView.render_many(products, __MODULE__, "product.json")
   end

@@ -12,7 +12,8 @@ defmodule RebuWebApi.Accounts.Affiliate do
              :role,
              :inserted_at,
              :updated_at,
-             :solana_pub_key
+             :solana_pub_key,
+             :referral_code
            ],
            except: [:token_balance, :revenue]}
 
@@ -58,23 +59,34 @@ defmodule RebuWebApi.Accounts.Affiliate do
     |> AccountChangesetHelpers.validate_password()
   end
 
-  defp generate_referral_code(changeset) do
-    role = get_field(changeset, :role)
+  def update_changeset(user, attrs) do
+    user
+    |> cast(attrs, [
+      :first_name,
+      :last_name,
+      :email,
+      :token_balance,
+      :password,
+      :role,
+      :solana_pub_key
+    ])
+    |> validate_required([
+      :first_name,
+      :last_name
+    ])
+    |> validate_inclusion(:role, [:affiliate])
+    |> AccountChangesetHelpers.validate_email()
+  end
 
-    # Only generate referral_code if role is :affiliate and it's not already set
-    if role == "affiliate" do
-      if get_field(changeset, :referral_code) do
-        changeset
-      else
-        put_change(
-          changeset,
-          :referral_code,
-          :crypto.strong_rand_bytes(6) |> Base.url_encode64() |> binary_part(0, 8)
-        )
-      end
+  defp generate_referral_code(changeset) do
+    if get_field(changeset, :referral_code) do
+      changeset
     else
-      # If not affiliate, remove referral_code if it exists
-      changeset |> put_change(:referral_code, nil)
+      put_change(
+        changeset,
+        :referral_code,
+        :crypto.strong_rand_bytes(6) |> Base.url_encode64() |> binary_part(0, 8)
+      )
     end
   end
 end

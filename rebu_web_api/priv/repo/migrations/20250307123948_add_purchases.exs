@@ -1,4 +1,5 @@
 defmodule RebuWebApi.Repo.Migrations.AddPurchases do
+  @moduledoc false
   use Ecto.Migration
 
   def change do
@@ -8,7 +9,7 @@ defmodule RebuWebApi.Repo.Migrations.AddPurchases do
       add :seller_id, :integer
       add :seller_type, :string
       add :total_amount, :decimal
-      add :order_date, :utc_datetime
+      add :purchase_date, :utc_datetime
       add :status, :string
       add :qty, :integer
 

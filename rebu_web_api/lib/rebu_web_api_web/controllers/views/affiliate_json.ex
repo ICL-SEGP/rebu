@@ -10,7 +10,8 @@ defmodule RebuWebApiWeb.AffiliateJSON do
     :role,
     :inserted_at,
     :updated_at,
-    :solana_pub_key
+    :solana_pub_key,
+    :referral_code
   ]
   # define which fields that need to format or calculate, you have to define `render_field/2` below
   @relationships [

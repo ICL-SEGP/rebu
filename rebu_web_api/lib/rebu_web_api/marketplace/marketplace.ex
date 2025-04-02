@@ -6,7 +6,7 @@ defmodule RebuWebApi.Marketplace do
   import Ecto.Query, warn: false
   alias RebuWebApi.Repo
 
-  alias RebuWebApi.Marketplace.{Product, Category, Review}
+  alias RebuWebApi.Marketplace.{Product, Category, Review, Purchase}
   alias RebuWebApi.Accounts.User
   alias RebuWebApi.Accounts.Affiliate
   alias RebuWebApi.Accounts
@@ -39,7 +39,7 @@ defmodule RebuWebApi.Marketplace do
       ** (Ecto.NoResultsError)
 
   """
-  def get_product!(id), do: Repo.get!(Product, id)
+  def get_product!(id), do: Repo.get!(Product, id) |> Repo.preload(:category)
 
   @doc """
   Creates a product.
@@ -54,6 +54,8 @@ defmodule RebuWebApi.Marketplace do
 
   """
   def create_product(attrs \\ %{}) do
+    dbg(attrs)
+
     %Product{}
     |> Product.changeset(attrs)
     |> Ecto.Changeset.put_assoc(:category, attrs["category"])
@@ -75,7 +77,19 @@ defmodule RebuWebApi.Marketplace do
   def update_product(%Product{} = product, attrs) do
     product
     |> Product.changeset(attrs)
-    |> Ecto.Changeset.put_assoc(:category, attrs["category"])
+    |> maybe_put_category(attrs["category"])
+    |> Repo.update()
+  end
+
+  defp maybe_put_category(changeset, nil), do: changeset
+
+  defp maybe_put_category(changeset, category_attrs) when is_map(category_attrs) do
+    Ecto.Changeset.put_assoc(changeset, :category, category_attrs)
+  end
+
+  def mark_expired(%Product{} = product) do
+    product
+    |> Product.changeset(%{status: :expired})
     |> Repo.update()
   end
 
@@ -111,11 +125,14 @@ defmodule RebuWebApi.Marketplace do
   def get_products_by_user(%User{} = user) do
     from(o in Product, where: o.seller_id == ^user.id)
     |> Repo.all()
+    # <--- Preload function on the list
+    |> Repo.preload(:category)
   end
 
   def get_products_by_user(%Affiliate{} = user) do
     from(o in Product, where: o.seller_id == ^user.id)
     |> Repo.all()
+    |> Repo.preload(:category)
   end
 
   def create_category(attrs \\ %{}) do
@@ -164,12 +181,17 @@ defmodule RebuWebApi.Marketplace do
           Kernel.round((product.avg_rating + rating) / get_review_count(product.id))
       end
 
-    update_product(product, %{avg_rating: avg_rating})
+    dbg(avg_rating)
+
+    dbg(update_product(product, %{avg_rating: avg_rating}))
   end
 
   def get_review_count(product_id) do
-    Repo.get!(Product, product_id)
-    |> Repo.aggregate(:count, "*")
+    from(review in RebuWebApi.Marketplace.Review,
+      where: review.product_id == ^product_id,
+      select: count("*")
+    )
+    |> Repo.one()
   end
 
   def get_review!(id) do
@@ -203,5 +225,57 @@ defmodule RebuWebApi.Marketplace do
     update_avg_rating(attrs["product"], attrs["rating"])
 
     output
+  end
+
+  def create_purchase(attrs \\ %{}) do
+    %Purchase{}
+    |> Purchase.changeset(attrs)
+    |> Ecto.Changeset.put_assoc(:product, attrs.product)
+    |> Repo.insert()
+  end
+
+  def get_purchases_by_user(user_id) do
+    from(p in Purchase,
+      where: p.buyer_id == ^user_id,
+      # Sort by latest first
+      order_by: [desc: p.inserted_at],
+      # Preload product details
+      preload: [:product]
+    )
+    |> Repo.all()
+  end
+
+  def get_product_with_user_reviews(product_id, user_id) do
+    Product
+    |> Repo.get(product_id)
+    |> Repo.preload(reviews: from(r in Review, where: r.reviewer_id == ^user_id))
+  end
+
+  def get_product_with_reviews(product_id) do
+    Product
+    |> Repo.get(product_id)
+    |> Repo.preload(:reviews)
+  end
+
+  def get_reviews_by_product_id(product_id) do
+    from(r in Review,
+      where: r.product_id == ^product_id,
+      order_by: [desc: r.inserted_at]
+    )
+    |> Repo.all()
+  end
+
+  def get_reviews_by_product_id_and_user_id(product_id, user_id) do
+    from(r in Review,
+      where: r.product_id == ^product_id and r.reviewer_id == ^user_id,
+      order_by: [desc: r.inserted_at],
+      # Optional: preload user information
+      preload: [:user]
+    )
+    |> Repo.all()
+  end
+
+  def delete_review(%Review{} = review) do
+    Repo.delete(review)
   end
 end

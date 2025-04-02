@@ -22,7 +22,7 @@ use anchor_client::{
 };
 use anchor_spl::{
     associated_token::{
-        self,
+        // self,
         spl_associated_token_account::{
         instruction::create_associated_token_account,
         get_associated_token_address_with_program_id
@@ -69,7 +69,7 @@ pub fn get_keypair_from_file(path: &str) -> Keypair {
     }).unwrap()
 }
 
-fn get_keypair_from_str(kp_str: String) -> Keypair {
+pub fn get_keypair_from_str(kp_str: String) -> Keypair {
     Keypair::from_base58_string(&kp_str)
 }
 
@@ -145,7 +145,7 @@ pub fn new_product_listing(
             seller: program.payer(),
             seller_ata: get_token_account(&program.payer(), mint),
             product_listing: product_listing,
-            associated_token_program: associated_token::ID,
+            // associated_token_program: associated_token::ID,
             token_program: spl_token_2022::ID,
             system_program: system_program::ID,
         })
@@ -262,7 +262,7 @@ pub fn make_purchase(customer_keypair: String, owner_keypair: String, id: u64) -
             seller_ata: owner_ata,
             product_listing,
             product_purchase,
-            associated_token_program: associated_token::ID,
+            // associated_token_program: associated_token::ID,
             token_program: spl_token_2022::ID,
             system_program: system_program::ID,
         })
@@ -403,12 +403,12 @@ pub fn mint_tokens_to_user(
 
     if is_new_user {
         let rpc_client = new_rpc_client();
-        // let airdrop_amount = 500_000_000; // 0.5 SOL
-        // let signature = rpc_client
-        //     .request_airdrop(user_pubkey, airdrop_amount)
-        //     .expect("Failed to request airdrop");
+        let airdrop_amount = 500_000_000; // 0.5 SOL
+        let signature = rpc_client
+            .request_airdrop(user_pubkey, airdrop_amount)
+            .expect("Failed to request airdrop");
 
-        // while !rpc_client.confirm_transaction(&signature).unwrap() {}
+        while !rpc_client.confirm_transaction(&signature).unwrap() {}
 
         let mint_transaction = Transaction::new_signed_with_payer(
             &[create_associated_token_account(
@@ -463,9 +463,10 @@ pub fn mint_tokens_to_user(
     Ok(())
 }
 
-pub fn burn_rebu(user_keypair: String, amount: f64) -> Result<(), String> {
+#[rustler::nif]
+pub fn burn_rebu(owner_keypair: String, amount: f64) -> Result<(), String> {
 
-    let user_keypair = &get_keypair_from_str(user_keypair);
+    let owner_keypair = &get_keypair_from_str(owner_keypair);
 
     let mint = get_pubkey_from_str(&mint_str());
 
@@ -476,18 +477,18 @@ pub fn burn_rebu(user_keypair: String, amount: f64) -> Result<(), String> {
         ],
         &rebu_solana::ID);
 
-    let provider = Client::new(Cluster::Devnet, Rc::new(user_keypair));
+    let provider = Client::new(Cluster::Devnet, Rc::new(owner_keypair));
     let program = provider
         .program(rebu_solana::ID)
         .map_err(|_| "Error: rebu_solana could not be loaded as a client program.".to_string())?;
 
     let burn_token_ix = program
         .request()
-        .signer(user_keypair)
+        .signer(owner_keypair)
         .accounts(accounts::BurnRebu {
             signer: program.payer(),
             mint,
-            token_account: get_token_account(&user_keypair.pubkey(), &mint),
+            token_account: get_token_account(&owner_keypair.pubkey(), &mint),
             vault,
             token_program: spl_token_2022::ID,
             system_program: system_program::ID,

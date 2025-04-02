@@ -8,6 +8,26 @@ import Config
 config :rebu_web_api, RebuWebApiWeb.Endpoint,
   cache_static_manifest: "priv/static/cache_manifest.json"
 
+if config_env() == :prod do
+  config :rebu_web_api, RebuWebApiWeb.Endpoint,
+    url: [host: "rebu.online", scheme: "https", port: 443],
+    http: [port: 4000],
+    https: [
+      port: 443,
+      ip: {0, 0, 0, 0},
+      cipher_suite: :compatible,
+      keyfile: "/etc/letsencrypt/live/rebu.online/privkey.pem",
+      certfile: "/etc/letsencrypt/live/rebu.online/fullchain.pem"
+    ],
+    # Redirect HTTP to HTTPS
+    # force_ssl: [hsts: true],
+    server: true,
+    render_errors: [
+      formats: [json: RebuWebApiWeb.ErrorJSON],
+      layout: false
+    ]
+end
+
 # Disable Swoosh Local Memory Storage
 config :swoosh, local: false
 

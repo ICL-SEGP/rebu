@@ -9,21 +9,7 @@ defmodule RebuWebApi.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps(),
-      releases: [
-        rebu_web_api: [
-          config_providers: [
-            {
-              SopsConfigProvider,
-              %{
-                app_name: :rebu_web_api,
-                secret_file_path: "priv/secrets/elixir-secrets.enc.yaml",
-                env_variables: [{"SOPS_AGE_KEY_FILE", "priv/secrets/sops-key.txt"}]
-              }
-            }
-          ]
-        ]
-      ]
+      deps: deps()
     ]
   end
 
@@ -89,7 +75,8 @@ defmodule RebuWebApi.MixProject do
       {:ex_aws_ses, "~> 2.4"},
       {:poison, "~> 6.0"},
       {:gen_smtp, "~> 1.2"},
-      {:json_view, git: "https://github.com/AJReade/json_view_2025.git"}
+      {:json_view, git: "https://github.com/AJReade/json_view_2025.git"},
+      {:site_encrypt, "~> 0.6.0"}
     ]
   end
 

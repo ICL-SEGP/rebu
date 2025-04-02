@@ -8,7 +8,7 @@ defmodule RebuWebApiWeb.AuthController do
 
   def register(conn, %{"user" => user_params, "referral_code" => code}) do
     affiliate =
-      if code == "" do
+      if code == nil do
         Repo.get_by(Accounts.Affiliate, email: "affiliate@test.com")
       else
         affiliate = Repo.get_by(Accounts.Affiliate, referral_code: code)
@@ -22,6 +22,8 @@ defmodule RebuWebApiWeb.AuthController do
 
     with {:ok, user} <- Accounts.register_user(user_params),
          {:ok, token, _claims} <- Guardian.encode_and_sign(user) do
+      RebuWebApi.Mailer.send_email(RebuWebApi.Emails.welcome(user))
+
       conn
       |> put_status(:created)
       |> render(:user, %{user: user, token: token})
@@ -31,25 +33,29 @@ defmodule RebuWebApiWeb.AuthController do
   def register(conn, %{"affiliate" => affiliate_params}) do
     with {:ok, affiliate} <- Accounts.register_affiliate(affiliate_params),
          {:ok, token, _claims} <- Guardian.encode_and_sign(affiliate) do
+      RebuWebApi.Mailer.send_email(RebuWebApi.Emails.welcome(affiliate))
+
       conn
       |> put_status(:created)
       |> render(:user, %{user: affiliate, token: token})
     end
   end
 
-  def sign_in(conn, %{"email" => email, "password" => password}) do
-    with {:ok, user, token} <- Accounts.authenticate_sign_in(email, password) do
+  def sign_in(conn, %{"email" => email, "password" => password, "is_affiliate" => is_affiliate}) do
+    with {:ok, user, token} <- Accounts.authenticate_sign_in(email, password, is_affiliate) do
       conn
       |> render(:user, %{user: user, token: token})
     end
   end
 
-  def password_reset(conn, %{"password" => password, "new_password" => _new_password}) do
+  def password_reset(conn, %{"password" => password, "new_password" => new_password}) do
     user = Guardian.Plug.current_resource(conn)
 
     with true <- Bcrypt.verify_pass(password, user.hashed_password) do
+      dbg(Accounts.update_pass(user, %{password: new_password}))
+
       conn
-      |> render(:user, %{user: user})
+      |> json(:user)
     end
   end
 

@@ -23,6 +23,7 @@ defmodule RebuWebApiWeb.PurchaseJSON do
   end
 
   def render("purchase.json", %{purchases: purchases}) do
+    dbg(purchases)
     # 1st way if `use JsonView`
     JsonView.render_many(purchases, __MODULE__, "purchase.json")
   end

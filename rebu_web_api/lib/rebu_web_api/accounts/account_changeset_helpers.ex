@@ -47,4 +47,12 @@ defmodule RebuWebApi.Accounts.AccountChangesetHelpers do
       %{} = changeset -> add_error(changeset, :name, "no change name")
     end
   end
+
+  def password_changeset(user, attrs) do
+    user
+    |> cast(attrs, [
+      :password
+    ])
+    |> validate_password()
+  end
 end

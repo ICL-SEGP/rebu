@@ -13,7 +13,7 @@ defmodule RebuWebApiWeb.OrderController do
     orders = Sales.get_orders_by_user(user)
 
     conn
-    |> json(orders)
+    |> render("order.json", orders: orders)
   end
 
   def create(conn, %{"offer_ids" => offer_ids}) do
@@ -73,7 +73,7 @@ defmodule RebuWebApiWeb.OrderController do
     {:ok, order} = Sales.update_order(order, order_params)
 
     conn
-    |> json(order)
+    |> render("order.json", order: order)
   end
 
   # def create_complete(conn, %{"affiliate_link" => affiliate_link, "order" => order_params}) do
@@ -150,7 +150,17 @@ defmodule RebuWebApiWeb.OrderController do
 
     dbg(order_params)
 
+    offer_ids = Map.get(order_params, "offers", [])
+
+    offers = Sales.offers_from_offer_ids(offer_ids)
+
+    rebate_amount = Sales.calculate_total_rebate(offers)
+
+    order_params = Map.put(order_params, "total_rebate_amount", rebate_amount)
+
     {:ok, order} = Sales.update_order(order, order_params)
+
+    dbg(order)
 
     conn
     |> render("order.json", order: order)
@@ -174,10 +184,18 @@ defmodule RebuWebApiWeb.OrderController do
       raise ErrorResponse.Unauthorized
     end
 
+    offer_ids = Map.get(order_params, "offers", [])
+
+    offers = Sales.offers_from_offer_ids(offer_ids)
+
+    rebate_amount = Sales.calculate_total_rebate(offers)
+
+    order_params = Map.put(order_params, "total_rebate_amount", rebate_amount)
+
     {:ok, order} = Sales.create_order(Map.put(order_params, "user", user), order_params["offers"])
 
     conn
-    |> json(order)
+    |> render("order.json", order: order)
   end
 
   def affiliate_get_orders_for_user(conn, %{"user_id" => user_id}) do

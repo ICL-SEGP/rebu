@@ -27,15 +27,15 @@ defmodule RebuWebApi.Marketplace.Purchase do
       :seller_type,
       :product_id,
       :total_amount,
-      :order_date,
-      :status
+      :status,
+      :purchase_date
     ])
     |> validate_required([
       :buyer_id,
       :seller_id,
       :product_id,
       :total_amount,
-      :order_date,
+      :purchase_date,
       :status
     ])
     |> validate_inclusion(:seller_type, [:user, :affiliate])

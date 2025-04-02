@@ -31,8 +31,12 @@ defmodule RebuWebApi.Sales do
     Enum.group_by(offers, & &1.status)
   end
 
-  def get_offer_counts_by_status do
-    offers = Repo.all(RebuWebApi.Sales.Offer)
+  def get_offer_counts_by_status(affiliate_id) do
+    offers =
+      from(o in RebuWebApi.Sales.Offer,
+        where: o.affiliate_id == ^affiliate_id
+      )
+      |> Repo.all()
 
     offers
     |> Enum.group_by(& &1.status)
@@ -153,8 +157,16 @@ defmodule RebuWebApi.Sales do
     Enum.group_by(orders, & &1.status)
   end
 
-  def get_order_counts_by_status do
-    orders = Repo.all(RebuWebApi.Sales.Order)
+  def get_order_counts_by_status(affiliate_id) do
+    orders =
+      from(o in RebuWebApi.Sales.Order,
+        join: oo in "offers_orders",
+        on: oo.order_id == o.id,
+        join: offer in RebuWebApi.Sales.Offer,
+        on: offer.id == oo.offer_id,
+        where: offer.affiliate_id == ^affiliate_id
+      )
+      |> Repo.all()
 
     orders
     |> Enum.group_by(& &1.status)
@@ -163,7 +175,17 @@ defmodule RebuWebApi.Sales do
     |> Enum.into(%{})
   end
 
-  def get_orders_by_user(%User{} = user) do
+  # def get_order_counts_by_status do
+  #   orders = Repo.all(RebuWebApi.Sales.Order)
+
+  #   orders
+  #   |> Enum.group_by(& &1.status)
+  #   |> Enum.map(fn {status, list} -> {status, length(list)} end)
+  #   # Convert to a map for easy access
+  #   |> Enum.into(%{})
+  # end
+
+  def get_orders_by_user(user) do
     from(o in Order, where: o.user_id == ^user.id)
     |> Repo.all()
     |> Repo.preload(:offers)
@@ -200,8 +222,25 @@ defmodule RebuWebApi.Sales do
       {:error, %Ecto.Changeset{}}
 
   """
+  def create_order_seeds(attrs \\ %{}) do
+    check_completed_and_mint(attrs)
+
+    %Order{}
+    |> Order.changeset(attrs)
+    |> Ecto.Changeset.put_assoc(:offers, attrs.offers)
+    |> Ecto.Changeset.put_assoc(:user, attrs.user)
+    |> Repo.insert()
+  end
+
   def create_order(attrs \\ %{}) do
     check_completed_and_mint(attrs)
+
+    attrs =
+      if is_nil(Map.get(attrs, "order_date")) do
+        Map.put(attrs, "order_date", Timex.now())
+      else
+        attrs
+      end
 
     %Order{}
     |> Order.changeset(attrs)
@@ -224,6 +263,13 @@ defmodule RebuWebApi.Sales do
     |> Ecto.Changeset.put_assoc(:offers, offers)
     |> Ecto.Changeset.put_assoc(:user, attrs["user"])
     |> Repo.insert()
+    |> case do
+      {:ok, inserted_order} ->
+        {:ok, Repo.preload(inserted_order, :user)}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
   end
 
   def new_order(attrs \\ %{}) do
@@ -268,14 +314,26 @@ defmodule RebuWebApi.Sales do
 
     offer_ids = Map.get(attrs, "offers", [])
     dbg(offer_ids)
+
     # Fetch Offer structs
-    offers = Repo.all(from(o in Offer, where: o.id in ^offer_ids))
+    offers = offers_from_offer_ids(offer_ids)
     dbg(offers)
 
     order
     |> Order.changeset(attrs)
     |> Ecto.Changeset.put_assoc(:offers, offers)
     |> Repo.update()
+    |> case do
+      {:ok, updated_order} ->
+        {:ok, Repo.preload(updated_order, :user)}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  def offers_from_offer_ids(offer_ids) do
+    Repo.all(from(o in Offer, where: o.id in ^offer_ids))
   end
 
   # TODO sort token minting
@@ -338,9 +396,69 @@ defmodule RebuWebApi.Sales do
     |> Repo.update()
   end
 
-  def get_monthly_order_stats do
+  # def get_monthly_order_stats do
+  #   query =
+  #     from(o in Order,
+  #       select: {
+  #         # Format `date` field to `YYYY-MM`
+  #         fragment("TO_CHAR(?, 'YYYY-MM')", o.order_date),
+  #         fragment("TO_CHAR(?, 'Month')", o.order_date),
+  #         # Total orders in the month
+  #         count(o.id),
+  #         # Total rebate for completed orders
+  #         sum(
+  #           fragment(
+  #             "CASE WHEN ? = 'completed' THEN ? ELSE 0 END",
+  #             o.status,
+  #             o.total_rebate_amount
+  #           )
+  #         ),
+  #         # Total rebate for refunded orders
+  #         sum(
+  #           fragment(
+  #             "CASE WHEN ? = 'cancelled' THEN ? ELSE 0 END",
+  #             o.status,
+  #             o.total_rebate_amount
+  #           )
+  #         ),
+  #         # Count of completed orders
+  #         count(fragment("CASE WHEN ? = 'completed' THEN 1 ELSE NULL END", o.status)),
+  #         # Count of refunded orders
+  #         count(fragment("CASE WHEN ? = 'cancelled' THEN 1 ELSE NULL END", o.status))
+  #       },
+  #       # Group by month
+  #       group_by: [
+  #         fragment("TO_CHAR(?, 'YYYY-MM')", o.order_date),
+  #         fragment("TO_CHAR(?, 'Month')", o.order_date)
+  #       ]
+  #     )
+
+  #   Repo.all(query)
+
+  #   |> Enum.map(fn {month, month_name, total_orders, completed_rebate, cancelled_tokens,
+  #                   completed_orders, cancelled_orders} ->
+  #     {month,
+  #      %{
+  #        month: month_name,
+  #        total_orders: total_orders,
+  #        total_tokens_rebate_completed: completed_rebate || Decimal.new(0),
+  #        total_cancelled_tokens: cancelled_tokens || Decimal.new(0),
+  #        completed_orders: completed_orders,
+  #        cancelled_orders: cancelled_orders
+  #      }}
+  #   end)
+  #   # Convert to a map for easy lookup
+  #   |> Enum.into(%{})
+  # end
+
+  def get_monthly_order_stats(affiliate_id) do
     query =
       from(o in Order,
+        join: order_offer in "offers_orders",
+        on: order_offer.order_id == o.id,
+        join: offer in Offer,
+        on: offer.id == order_offer.offer_id,
+        where: offer.affiliate_id == ^affiliate_id,
         select: {
           # Format `date` field to `YYYY-MM`
           fragment("TO_CHAR(?, 'YYYY-MM')", o.order_date),
@@ -376,14 +494,14 @@ defmodule RebuWebApi.Sales do
       )
 
     Repo.all(query)
-    |> Enum.map(fn {month, month_name, total_orders, completed_rebate, rescinded_tokens,
+    |> Enum.map(fn {month, month_name, total_orders, completed_rebate, cancelled_tokens,
                     completed_orders, cancelled_orders} ->
       {month,
        %{
          month: month_name,
          total_orders: total_orders,
          total_tokens_rebate_completed: completed_rebate || Decimal.new(0),
-         total_rescinded_tokens: rescinded_tokens || Decimal.new(0),
+         total_cancelled_tokens: cancelled_tokens || Decimal.new(0),
          completed_orders: completed_orders,
          cancelled_orders: cancelled_orders
        }}

@@ -19,6 +19,7 @@ defmodule RebuWebApi.Marketplace.Product do
     belongs_to :category, RebuWebApi.Marketplace.Category
     has_many :reviews, RebuWebApi.Marketplace.Review
     has_many :purchases, RebuWebApi.Marketplace.Purchase
+    has_one :upload, RebuWebApi.Uploads.Upload
 
     timestamps(type: :utc_datetime)
   end
@@ -36,7 +37,8 @@ defmodule RebuWebApi.Marketplace.Product do
       :status,
       :qty,
       :seller_id,
-      :seller_type
+      :seller_type,
+      :avg_rating
     ])
     |> validate_required([
       :name,

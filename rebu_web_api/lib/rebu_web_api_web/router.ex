@@ -55,7 +55,7 @@ defmodule RebuWebApiWeb.Router do
     get "/users/:id", UserController, :get
     patch "/users/:id", UserController, :update
     # TODO implement this && add oban to do this periodically
-    delete "/users/:id", UserController, :archive
+    delete "/users/:id", UserController, :block
 
     # (User) Orders
     get "/orders", OrderController, :affiliate_get_orders
@@ -95,12 +95,13 @@ defmodule RebuWebApiWeb.Router do
     get "/offers", OfferController, :get_offers_for_user
 
     # uploads
-    # post "/upload", UploadController, :create
+    post "/upload", UploadController, :create
     post "/upload/url", UploadController, :gen_presigned_url
 
     # Marketplace
 
     patch "/products/:id", ProductController, :update
+    delete "/products/:id", ProductController, :mark_expired
     post "/products", ProductController, :create
     get "/products", ProductController, :get
     get "/products/all", ProductController, :get_all
@@ -109,11 +110,14 @@ defmodule RebuWebApiWeb.Router do
     get "/product/:id/reviews", ReviewController, :get_reviews_for_product
     post "/product/reviews/create", ReviewController, :create
     patch "/product/reviews/:id", ReviewController, :update
+    delete "/purchase/reviews/:id", ReviewController, :delete
 
     post "/category", CategoryController, :create
     get "/category", CategoryController, :get
 
-    post "/purchase", PurchaseController, :make
+    post "/purchase", PurchaseController, :create
+    get "/purchase/reviews/:product_id", ProductController, :get_user_reviews
+    get "/purchase/history", PurchaseController, :history
   end
 
   scope "/solana", RebuWebApiWeb do

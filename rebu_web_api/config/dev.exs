@@ -27,6 +27,13 @@ config :rebu_web_api, RebuWebApiWeb.Endpoint,
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:rebu_web_api, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:rebu_web_api, ~w(--watch)]}
+  ],
+  https: [
+    port: 4001,
+    ip: {127, 0, 0, 1},
+    cipher_suite: :compatible,
+    keyfile: "priv/cert/selfsigned_key.pem",
+    certfile: "priv/cert/selfsigned.pem"
   ]
 
 # ## SSL Support

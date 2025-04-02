@@ -53,8 +53,10 @@ ChartJS.register(
   LineElement,
   ArcElement,
   Tooltip,
-  Legend
+  Legend,
 );
+
+
 
 export default function DashboardPage() {
   // Hardcoded key metrics data
@@ -122,69 +124,8 @@ export default function DashboardPage() {
     }
   }, [statList]);
 
-  // const fetchUsers = async () => {
-  //   try {
-  //     const res = await fetch(`${API_BASE_URL}/affiliate/users`, {
-  //       method: "GET",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${session.accessToken}`,
-  //       },
-  //     });
 
-  //     if (!res.ok) throw new Error("Failed to fetch users");
 
-  //     const users = await res.json();
-
-  //     // let fetchedOrders: Order[] = await orders.map((order) => ({
-  //     //   id: order.id,
-  //     //   status: order.status,
-  //     //   date: order.inserted_at, // Renaming inserted_at to date
-  //     //   totalRebateAmount: parseFloat(order.total_rebate_amount).toFixed(2), // Convert to number
-  //     // }))
-
-  //     setUsers(users.slice(0, 3));
-  //     setTotalUsers(users.length);
-  //   } catch (error) {
-  //     console.error("Error fetching users:", error);
-  //   }
-  // };
-
-  // const fetchStats = async () => {
-  //   try {
-  //     const res = await fetch(`${API_BASE_URL}/affiliate/stats`, {
-  //       method: "GET",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${session!.accessToken}`,
-  //       },
-  //     });
-
-  //     if (!res.ok) throw new Error("Failed to fetch stats");
-
-  //     const stats = await res.json();
-  //     console.log("stats", stats);
-
-  //     // let fetchedOrders: Order[] = await orders.map((order) => ({
-  //     //   id: order.id,
-  //     //   status: order.status,
-  //     //   date: order.inserted_at, // Renaming inserted_at to date
-  //     //   totalRebateAmount: parseFloat(order.total_rebate_amount).toFixed(2), // Convert to number
-  //     // }))
-
-  //     setStats(stats);
-
-  //     console.log("stats", stats);
-
-  //     console.log(stats);
-  //   } catch (error) {
-  //     console.error("Error fetching stats:", error);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchStats();
-  // }, []);
 
   const numericBreakdown = monthlyBreakdown.map((item) => ({
     ...item,

@@ -10,7 +10,8 @@ defmodule RebuWebApiWeb.UserJSON do
     :role,
     :solana_pub_key,
     :date_joined,
-    :token_balance
+    :token_balance,
+    :blocked
   ]
   # define which fields that need to format or calculate, you have to define `render_field/2` below
   @relationships [

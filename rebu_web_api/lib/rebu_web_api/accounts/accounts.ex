@@ -78,6 +78,19 @@ defmodule RebuWebApi.Accounts do
     |> Repo.insert()
   end
 
+  def register_affiliate(attrs \\ %{}) do
+    attrs =
+      if is_nil(Map.get(attrs, "date_joined")) do
+        Map.put(attrs, "date_joined", Timex.now())
+      else
+        attrs
+      end
+
+    %Affiliate{}
+    |> Affiliate.registration_changeset(attrs)
+    |> Repo.insert()
+  end
+
   @doc """
   Updates a user.
 
@@ -108,6 +121,12 @@ defmodule RebuWebApi.Accounts do
     |> Repo.update()
   end
 
+  def update_pass(user, attrs) do
+    user
+    |> AccountChangesetHelpers.password_changeset(attrs)
+    |> Repo.update()
+  end
+
   # def update_user(id, attrs) do
   #   get_user!(id)
   #   |> AccountChangesetHelpers.name_changeset(attrs)
@@ -132,19 +151,26 @@ defmodule RebuWebApi.Accounts do
     Repo.delete(user)
   end
 
-  def authenticate_sign_in(email, password) do
-    query_results = from u in User, where: u.email == ^email
+  def authenticate_sign_in(email, password, "true" = _is_affiliate) do
+    query_results = from u in Affiliate, where: u.email == ^email
 
     case Repo.one(query_results) do
       nil ->
-        case Repo.one(from u in Affiliate, where: u.email == ^email) do
-          nil ->
-            Bcrypt.no_user_verify()
-            {:error, :invalid_credentials}
+        Bcrypt.no_user_verify()
+        {:error, :invalid_credentials}
 
-          affiliate ->
-            verify_pass(password, affiliate)
-        end
+      affiliate ->
+        verify_pass(password, affiliate)
+    end
+  end
+
+  def authenticate_sign_in(email, password, "false" = _is_affiliate) do
+    query_results = from u in User, where: u.email == ^email
+    dbg("hereeeeeeee")
+
+    case Repo.one(query_results) do
+      nil ->
+        {:error, :invalid_credentials}
 
       user ->
         verify_pass(password, user)
@@ -164,10 +190,10 @@ defmodule RebuWebApi.Accounts do
     token
   end
 
-  def update_user_balance(user, %{tokens: tokens, locked: _locked, rescinded: _rescinded}) do
+  def update_user_balance(user, balance) do
     user
     |> Ecto.Changeset.change(%{
-      token_balance: tokens
+      token_balance: balance
     })
     |> Repo.update()
   end
@@ -214,26 +240,39 @@ defmodule RebuWebApi.Accounts do
   #   end
   # end
 
-  def affiliate_balances!() do
-    orders = Sales.list_orders()
+  def total_rebates!(affiliate_id) do
+    orders = Sales.get_all_orders_for_affiliate(affiliate_id)
 
     aggregate_orders(orders)
   end
 
-  def aggregate_orders(orders) do
-    Enum.reduce(orders, %{tokens: 0, locked: 0, rescinded: 0}, fn order, acc ->
-      case order.status do
-        :pending ->
-          %{acc | locked: acc.locked + Decimal.to_float(order.total_rebate_amount)}
-
-        :completed ->
-          %{acc | tokens: acc.tokens + Decimal.to_float(order.total_rebate_amount)}
-
-        :cancelled ->
-          %{acc | rescinded: acc.rescinded + Decimal.to_float(order.total_rebate_amount)}
+  defp aggregate_orders(orders) do
+    orders
+    |> Enum.reduce(Decimal.new(0), fn order, acc ->
+      if order.status == :completed do
+        rebate = order.total_rebate_amount || Decimal.new(0)
+        Decimal.add(acc, rebate)
+      else
+        # If not completed, don't add to the accumulator
+        acc
       end
     end)
   end
+
+  # def aggregate_orders(orders) do
+  #   Enum.reduce(orders, %{tokens: 0, locked: 0, rescinded: 0}, fn order, acc ->
+  #     case order.status do
+  #       :pending ->
+  #         %{acc | locked: acc.locked + Decimal.to_float(order.total_rebate_amount)}
+
+  #       :completed ->
+  #         %{acc | tokens: acc.tokens + Decimal.to_float(order.total_rebate_amount)}
+
+  #       :cancelled ->
+  #         %{acc | rescinded: acc.rescinded + Decimal.to_float(order.total_rebate_amount)}
+  #     end
+  #   end)
+  # end
 
   def is_affiliate(%Affiliate{}) do
     true
@@ -260,10 +299,11 @@ defmodule RebuWebApi.Accounts do
     Sales.create_order(Map.merge(order_attrs, %{user_id: user_id, offer_id: offer_id}))
   end
 
-  def users_joined_per_month do
+  def users_joined_per_month(affiliate_id) do
     query =
       from u in User,
-        # Convert the date to "YYYY-MM" for grouping
+        # Filter by affiliate_id
+        where: u.affiliate_id == ^affiliate_id,
         group_by: fragment("TO_CHAR(?, 'Month')", u.date_joined),
         order_by: fragment("TO_CHAR(?, 'Month')", u.date_joined),
         select: {
@@ -271,28 +311,48 @@ defmodule RebuWebApi.Accounts do
           count(u.id)
         }
 
-    Enum.map(Repo.all(query), fn {month, count} ->
+    Repo.all(query)
+    |> Enum.map(fn {month, count} ->
       %{
-        # Remove trailing spaces if needed
         month: String.trim(month),
         count: count
       }
     end)
   end
 
+  # def users_joined_per_month do
+  #   query =
+  #     from u in User,
+  #       # Convert the date to "YYYY-MM" for grouping
+  #       group_by: fragment("TO_CHAR(?, 'Month')", u.date_joined),
+  #       order_by: fragment("TO_CHAR(?, 'Month')", u.date_joined),
+  #       select: {
+  #         fragment("TO_CHAR(?, 'Month')", u.date_joined),
+  #         count(u.id)
+  #       }
+
+  #   Enum.map(Repo.all(query), fn {month, count} ->
+  #     %{
+  #       # Remove trailing spaces if needed
+  #       month: String.trim(month),
+  #       count: count
+  #     }
+  #   end)
+  # end
+
   # Affiliate stuff
 
-  def register_affiliate(attrs \\ %{}) do
-    %Affiliate{}
-    |> Affiliate.registration_changeset(attrs)
-    |> Repo.insert()
-  end
+  # def register_affiliate(attrs \\ %{}) do
+  #   %Affiliate{}
+  #   |> Affiliate.registration_changeset(attrs)
+  #   |> Repo.insert()
+  # end
 
   def get_affiliate!(id), do: Repo.get!(Affiliate, id)
 
   def update_affiliate(%Affiliate{} = affiliate, attrs) do
     affiliate
-    |> Affiliate.registration_changeset(attrs)
+    |> Affiliate.update_changeset(attrs)
     |> Repo.update()
   end
 

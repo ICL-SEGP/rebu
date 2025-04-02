@@ -7,7 +7,7 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { Bar, Pie, Line, PolarArea } from "react-chartjs-2";
+import { Pie, Line, PolarArea } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   BarElement,

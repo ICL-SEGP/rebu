@@ -12,7 +12,8 @@ defmodule RebuWebApi.Accounts.User do
              :role,
              :solana_pub_key,
              :date_joined,
-             :token_balance
+             :token_balance,
+             :blocked
            ]}
 
   schema "users" do
@@ -24,6 +25,7 @@ defmodule RebuWebApi.Accounts.User do
     field :hashed_password, :string, redact: true
     field :solana_pub_key, :string
     field :date_joined, :date
+    field :blocked, :boolean
 
     field :role, Ecto.Enum, values: [:user], default: :user
 
@@ -47,7 +49,8 @@ defmodule RebuWebApi.Accounts.User do
       :password,
       :role,
       :date_joined,
-      :solana_pub_key
+      :solana_pub_key,
+      :blocked
     ])
     |> validate_required([
       :first_name,
@@ -68,7 +71,8 @@ defmodule RebuWebApi.Accounts.User do
       :password,
       :role,
       :date_joined,
-      :solana_pub_key
+      :solana_pub_key,
+      :blocked
     ])
     |> validate_required([
       :first_name,

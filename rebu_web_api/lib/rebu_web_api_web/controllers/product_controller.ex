@@ -2,10 +2,12 @@ defmodule RebuWebApiWeb.ProductController do
   use RebuWebApiWeb, :controller
   alias RebuWebApi.Accounts.{Affiliate, User}
   alias RebuWebApi.Marketplace
+  alias RebuWebApi.Uploads
   alias RebuWebApi.Solana
 
   def create(conn, %{"product" => product_params}) do
     seller = Guardian.Plug.current_resource(conn)
+    dbg(product_params)
 
     seller_type =
       case seller do
@@ -24,9 +26,9 @@ defmodule RebuWebApiWeb.ProductController do
         "category" => category
       })
 
-    case Marketplace.create_product(product_params) do
+    case dbg(Marketplace.create_product(product_params)) do
       {:ok, product} ->
-        Solana.make_listing(product.id, 5, Decimal.to_float(product.price))
+        Solana.make_listing(product.id, 500, Decimal.to_float(product.price))
 
         conn
         # Set status to 201 Created
@@ -35,7 +37,8 @@ defmodule RebuWebApiWeb.ProductController do
     end
   end
 
-  def update(conn, %{"id" => id, "product" => product_params}) do
+  def update(conn, %{"id" => id, "product" => product_params} = sent) do
+    dbg(sent)
     product = Marketplace.get_product!(id)
     category = Marketplace.get_category_by_name(product_params["category"])
 
@@ -44,7 +47,19 @@ defmodule RebuWebApiWeb.ProductController do
         "category" => category
       })
 
-    {:ok, product} = Marketplace.update_product(product, product_params)
+    case dbg(Marketplace.update_product(product, product_params)) do
+      {:ok, product} ->
+        Solana.modify_listing(product.id, 5, Decimal.to_float(product.price))
+
+        conn
+        |> render("product.json", product: product)
+    end
+  end
+
+  def mark_expired(conn, %{"id" => id}) do
+    product = Marketplace.get_product!(id)
+
+    {:ok, product} = Marketplace.mark_expired(product)
 
     conn
     |> render("product.json", product: product)
@@ -61,7 +76,7 @@ defmodule RebuWebApiWeb.ProductController do
   end
 
   def get_by_id(conn, %{"id" => id}) do
-    product = Marketplace.get_product!(id)
+    product = Marketplace.get_product_with_reviews(id)
 
     conn
     |> render("product.json", product: product)
@@ -74,5 +89,13 @@ defmodule RebuWebApiWeb.ProductController do
 
     conn
     |> render("product.json", products: products)
+  end
+
+  def get_user_reviews(conn, %{"product_id" => product_id}) do
+    user = Guardian.Plug.current_resource(conn)
+    product = Marketplace.get_product_with_user_reviews(product_id, user.id)
+
+    conn
+    |> render("product.json", product: product)
   end
 end

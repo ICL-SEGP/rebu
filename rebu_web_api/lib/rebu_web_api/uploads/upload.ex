@@ -9,7 +9,7 @@ defmodule RebuWebApi.Uploads.Upload do
     field :owner_id, :integer
     field :owner_type, Ecto.Enum, values: [:user, :affiliate]
     field :key, :string
-
+    belongs_to :product, RebuWebApi.Marketplace.Product
     timestamps(type: :utc_datetime)
   end
 

@@ -6,7 +6,8 @@ defmodule RebuWebApiWeb.ReviewJSON do
     :rating,
     :comment,
     :reviewer_id,
-    :reviewer_type
+    :reviewer_type,
+    :id
   ]
   # define which fields that need to format or calculate, you have to define `render_field/2` below
   @relationships [

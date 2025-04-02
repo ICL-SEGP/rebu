@@ -50,7 +50,7 @@ Enum.each(users, fn user ->
         offers: offers
       })
 
-    case Sales.create_order(order_params) do
+    case Sales.create_order_seeds(order_params) do
       {:ok, order} -> IO.puts("Order #{order.id} created for user #{user.id}.")
       {:error, changeset} -> IO.inspect(changeset.errors, label: "Order creation failed")
     end

@@ -18,6 +18,8 @@ defmodule RebuWebApiWeb.UserController do
   def update_profile(conn, %{"user" => user_params}) do
     user = Guardian.Plug.current_resource(conn)
 
+    dbg(user_params)
+
     {:ok, user} = Accounts.update_user(user, user_params)
 
     conn
@@ -56,6 +58,8 @@ defmodule RebuWebApiWeb.UserController do
     user_params = Map.put(user_params, "affiliate", affiliate)
 
     with {:ok, user} <- Accounts.register_user(user_params) do
+      RebuWebApi.Mailer.send_email(RebuWebApi.Emails.welcome(user))
+
       conn
       |> put_status(:created)
       |> json(user)
@@ -69,6 +73,23 @@ defmodule RebuWebApiWeb.UserController do
     if not (user.affiliate_id == affiliate.id) do
       raise ErrorResponse.Unauthorized
     end
+
+    conn
+    |> json(user)
+  end
+
+  def block(conn, %{"id" => id} = params) do
+    dbg(params)
+    affiliate = Guardian.Plug.current_resource(conn)
+    user = Accounts.get_user!(id)
+
+    if not (user.affiliate_id == affiliate.id) do
+      raise ErrorResponse.Unauthorized
+    end
+
+    {:ok, user} = Accounts.update_user(user, %{blocked: true})
+
+    RebuWebApi.Mailer.send_email(RebuWebApi.Emails.send_block_notification(user))
 
     conn
     |> json(user)

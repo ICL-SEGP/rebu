@@ -8,4 +8,6 @@ defmodule RebuWebApi.Uploads do
     |> Upload.changeset(attrs)
     |> Repo.insert()
   end
+
+   def get_upload!(id), do: Repo.get!(Upload, id)
 end

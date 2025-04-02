@@ -47,11 +47,22 @@ defmodule RebuWebApiWeb.AffiliateController do
 
   # TODO make this meaningful
   def stats(conn, _params) do
-    balances = Accounts.affiliate_balances!()
-    offer_counts = Sales.get_offer_counts_by_status()
-    order_counts = Sales.get_order_counts_by_status()
-    monthly_breakdown = Sales.get_monthly_order_stats()
-    users_per_month = Accounts.users_joined_per_month()
+    affiliate = Guardian.Plug.current_resource(conn)
+    balances = Accounts.total_rebates!(affiliate.id)
+    offer_counts = Sales.get_offer_counts_by_status(affiliate.id)
+    order_counts = Sales.get_order_counts_by_status(affiliate.id)
+    monthly_breakdown = Sales.get_monthly_order_stats(affiliate.id)
+    users_per_month = Accounts.users_joined_per_month(affiliate.id)
+
+    stats = %{
+      balances: balances,
+      offer_counts: offer_counts,
+      order_counts: order_counts,
+      monthly_breakdown: monthly_breakdown,
+      users_per_month: users_per_month
+    }
+
+    dbg(stats)
 
     conn
     |> put_status(200)

@@ -2,7 +2,7 @@ import Config
 
 # sops secrets
 
-if config_env() in [:dev] do
+if config_env() in [:dev, :prod] do
   # Setting and calling the config providers manually during development and
   # test environments
   config_providers = [
@@ -11,7 +11,6 @@ if config_env() in [:dev] do
       %{
         app_name: :rebu_web_api,
         secret_file_path: "priv/secrets/elixir-secrets.enc.yaml",
-        sops_binary_path: Application.get_env(:rebu_web_api, :sops_binary_path),
         env_variables: [{"SOPS_AGE_KEY_FILE", "priv/secrets/sops-key.txt"}],
         config_env: config_env()
       }
@@ -46,14 +45,14 @@ if System.get_env("PHX_SERVER") do
 end
 
 config :ex_aws,
-  access_key_id: Application.get_env(:aws, :AWS_ACCESS_KEY_ID),
-  secret_access_key: Application.get_env(:aws, :AWS_SECRET_ACCESS_KEY),
-  region: Application.get_env(:aws, :AWS_REGION)
+  access_key_id: Application.fetch_env!(:aws, :AWS_ACCESS_KEY_ID),
+  secret_access_key: Application.fetch_env!(:aws, :AWS_SECRET_ACCESS_KEY),
+  region: Application.fetch_env!(:aws, :AWS_REGION)
 
 config :ex_aws, :s3,
   scheme: "https://",
   host: "s3.amazonaws.com",
-  region: Application.get_env(:aws, :AWS_REGION)
+  region: Application.fetch_env!(:aws, :AWS_REGION)
 
 if config_env() == :prod do
   database_url =
@@ -83,22 +82,44 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
-  host = System.get_env("PHX_HOST") || "example.com"
+  # host = System.get_env("PHX_HOST") || "example.com"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
   config :rebu_web_api, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
-  config :rebu_web_api, RebuWebApiWeb.Endpoint,
-    url: [host: host, port: 443, scheme: "https"],
-    http: [
-      # Enable IPv6 and bind on all interfaces.
-      # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.
-      # See the documentation on https://hexdocs.pm/bandit/Bandit.html#t:options/0
-      # for details about using IPv6 vs IPv4 and loopback vs public addresses.
-      ip: {0, 0, 0, 0, 0, 0, 0, 0},
-      port: port
-    ],
-    secret_key_base: secret_key_base
+  # config :rebu_web_api, RebuWebApiWeb.Endpoint,
+  #   url: [host: host, port: 443, scheme: "https"],
+  #   http: [
+  #     # Enable IPv6 and bind on all interfaces.
+  #     # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.
+  #     # See the documentation on https://hexdocs.pm/bandit/Bandit.html#t:options/0
+  #     # for details about using IPv6 vs IPv4 and loopback vs public addresses.
+  #     ip: {0, 0, 0, 0},
+  #     port: port
+  #   ],
+  #   secret_key_base: secret_key_base
+
+  if config_env() == :prod do
+    config :rebu_web_api, RebuWebApiWeb.Endpoint,
+      http: [
+        port: String.to_integer(System.get_env("PORT") || "4000"),
+        ip: {0, 0, 0, 0}
+      ],
+      https: [
+        port: 443,
+        ip: {0, 0, 0, 0},
+        cipher_suite: :compatible,
+        keyfile: "/etc/letsencrypt/live/rebu.online/privkey.pem",
+        certfile: "/etc/letsencrypt/live/rebu.online/fullchain.pem"
+      ],
+      force_ssl: [hsts: true],
+      url: [host: "rebu.online", scheme: "https", port: 443],
+      server: true,
+      render_errors: [
+        formats: [json: RebuWebApiWeb.ErrorJSON],
+        layout: false
+      ]
+  end
 
   # ## SSL Support
   #

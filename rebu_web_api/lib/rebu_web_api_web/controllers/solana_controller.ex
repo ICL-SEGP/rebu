@@ -26,7 +26,7 @@ defmodule RebuWebApiWeb.SolanaController do
     {:ok, owner} = Marketplace.get_owner(seller_id, seller_type)
 
     conn
-    |> json(%{seller_pub_key: owner.solana_pub_key})
+    |> json(%{seller_pub_key: Solana.mnt, seller: owner})
   end
 
   def get_balance(conn, _params) do

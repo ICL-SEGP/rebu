@@ -15,23 +15,11 @@ config :rebu_web_api, RebuWebApi.Auth.Guardian,
 
 config :rebu_web_api, RebuWebApi.Repo, start_apps_before_migration: [:logger]
 
-# config :rustler,
-#   rustler_crates: [
-#     solana_api: [
-#       path: "native/solana_api",
-#       mode: :precompiled,
-#       precompiled_path: "priv/native/libsolana_api.so"
-#     ]
-#   ]
 
-# config :rebu_web_api, RebuWebApi.SolanaApi,
-#   crate: "solana_api",
-#   cargo: {:bin, "priv/native/solana_api.so"}
-
-# config :rebu_web_api, RebuWebApi.SolanaApi,
-#   crate: "solana_api",
-#   skip_compilation?: true,
-#   load_from: {:rebu_web_api, "priv/native/libsolana_api"}
+config :rebu_web_api, RebuWebApi.SolanaApi,
+  crate: "solana_api",
+  skip_compilation?: true,
+  load_from: {:rebu_web_api, "priv/native/libsolana_api"}
 
 config :rebu_web_api,
   ecto_repos: [RebuWebApi.Repo],
@@ -96,3 +84,16 @@ config :elixir, :inspect, limit: :infinity, pretty: true
 
 import_config "sops_config.exs"
 import_config "#{config_env()}.exs"
+
+# config :rustler,
+#   rustler_crates: [
+#     solana_api: [
+#       path: "native/solana_api",
+#       mode: :precompiled,
+#       precompiled_path: "priv/native/libsolana_api.so"
+#     ]
+#   ]
+
+# config :rebu_web_api, RebuWebApi.SolanaApi,
+#   crate: "solana_api",
+#   cargo: {:bin, "priv/native/solana_api.so"}

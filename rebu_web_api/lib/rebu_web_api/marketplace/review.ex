@@ -18,8 +18,8 @@ defmodule RebuWebApi.Marketplace.Review do
   @doc false
   def changeset(review, attrs) do
     review
-    |> cast(attrs, [:rating, :comment])
-    |> validate_required([:rating, :comment])
+    |> cast(attrs, [:rating, :comment, :reviewer_id, :reviewer_type])
+    |> validate_required([:rating, :comment, :reviewer_id, :reviewer_type])
     |> validate_number(:rating, greater_than_or_equal_to: 1, less_than_or_equal_to: 5)
     |> validate_inclusion(:reviewer_type, [:user, :affiliate])
   end

@@ -1,11 +1,11 @@
-mod api_funcs;
-use api_funcs::*;
+// mod api_funcs;
+// use api_funcs::*;
 
 
 // use anchor_client::{
-    // solana_client::rpc_client::RpcClient,
-    // solana_sdk::{
-        // commitment_config::CommitmentConfig, 
+//     // solana_client::rpc_client::RpcClient,
+//     solana_sdk::{
+//         // commitment_config::CommitmentConfig, 
 //         signature::Keypair,
 //     },
 // };
@@ -25,7 +25,8 @@ fn main() {
     // let mint = get_keypair_from_file(&mint_path);
     // println!("Mint account: {:?}", &mint.get_pubkey());
 
-    // let user_pubkey = get_pubkey_from_str("6nyYhkrgDfb3f1eVCaAjTPoPkVRxx5sev9tzr5f1mCDY");
+    // let user = get_keypair_from_str("3MxsSx8idKLRH9XsGiNXope5LRSPy8cpbMtNSQLpeXqq8r548tTwgBJn2KCHPjbXnubHJ2sK2fN751wjNC7C8KUN".to_string());
+    // let user_pubkey = &user.get_pubkey();
     // println!("User account: {:?}", user_pubkey);
     
     // let owner_token_account = get_token_account(&owner.get_pubkey(), &mint.get_pubkey());
@@ -43,34 +44,34 @@ fn main() {
 
     // while !client.confirm_transaction(&signature).unwrap() {}
 
-    // // let balance = client.get_balance(&owner.get_pubkey()).unwrap();
-    // // println!("Owner balance: {:?}", balance);
+    // let balance = client.get_balance(&owner.get_pubkey()).unwrap();
+    // println!("Owner balance: {:?}", balance);
 
     // let user_pubkey_str = format!("{:?}", &user_pubkey);
     // println!("New User: {}", &new_user.get_pubkey());
 
-    // let _result = mint_tokens_to_user(
+    // let result = mint_tokens_to_user(
     //     owner.to_base58_string(),
-    //     new_user.get_pubkey().to_string(),
-    //     50,
-    //     true
+    //     user_pubkey_str.to_string(),
+    //     9.5,
+    //     false
     // );
     
-    // // println!("Minted\n ");
+    // println!("Mint result: {:?}", result);
 
-    // let id = 101;
+    // let id = 1020;
 
     // let result = new_product_listing(
     //     owner.to_base58_string(),
     //     id,
     //     5,
-    //     50
+    //     10.1
     // );
 
-    // // println!("New listing result: {:?}", result);
+    // println!("New listing result: {:?}", result);
 
     // let result = make_purchase(
-    //     new_user.to_base58_string(),
+    //     user.to_base58_string(),
     //     owner.to_base58_string(),
     //     id
     // );
@@ -79,17 +80,17 @@ fn main() {
 
     // let result = verify_purchase(
     //     owner.to_base58_string(),
-    //     new_user.get_pubkey().to_string(),
+    //     user.get_pubkey().to_string(),
     //     id
     // );
 
     // println!("Verifying: {:?}", result);
 
-    let folder_path = "/home/astrobyte/personalProjects/segp/rebu/token-info/.config/solana/";
-    let owner_path = format!("{}{}", folder_path, "owner_keypair.json");
+    // let folder_path = "/home/astrobyte/personalProjects/segp/rebu/token-info/.config/solana/";
+    // let owner_path = format!("{}{}", folder_path, "owner_keypair.json");
 
-    let owner = get_keypair_from_file(&owner_path);
-    println!("Owner account: {:?}", &owner.get_pubkey());
+    // let owner = get_keypair_from_file(&owner_path);
+    // println!("Owner account: {:?}", &owner.get_pubkey());
 
     // let new_user = Keypair::new();
     // println!("New user: {:?}", &new_user.get_pubkey());
@@ -106,8 +107,8 @@ fn main() {
     // println!("Result: {:?}", result);
 
     // let result = burn_rebu(
-    //     new_user.to_base58_string(), 
-    //     3, 
+    //     user.to_base58_string(), 
+    //     10.2, 
     // );
 
     // println!("Result: {:?}", result);

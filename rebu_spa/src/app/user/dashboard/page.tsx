@@ -89,7 +89,8 @@ export default function DashboardPage() {
           icon: "ℹ",
           id: "no-wallet",
         });
-      }, 3000);
+        toast.dismiss();
+      }, 1000);
     }
   }, [publicKey]);
 

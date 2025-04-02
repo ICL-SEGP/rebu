@@ -70,9 +70,14 @@ echo "$GITHUB_TOKEN" | docker login ghcr.io \
 docker buildx build --platform linux/amd64 --load -t kanban:arch .
 docker save kanban:arch | ssh ec2-user@18.201.163.141 "docker load"
 
+DOCKER_HOST="ssh://ec2-user@$MANAGER_IP" \
+WEB_IMAGE="$IMAGE" \
+docker compose down
+
 # deploy the application
 DOCKER_HOST="ssh://ec2-user@$MANAGER_IP" \
 WEB_IMAGE="$IMAGE" \
 docker compose up -d
 
 echo "Deployment completed."
+
